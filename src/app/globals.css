@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #FFF9F0; /* Warm Cream */
+    color: #2D2D2D; /* Soft Charcoal */
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Playful Bubbly Card */
+.bubbly-card {
+  background: #ffffff;
+  border: 3px solid #2D2D2D;
+  border-radius: 2rem;
+  box-shadow: 8px 8px 0px #2D2D2D;
+  transition: all 0.2s ease;
+}
+
+.bubbly-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 12px 12px 0px #2D2D2D;
+}
+
+/* Notice Marquee - Colorful Edition */
+/* Thin Notice Marquee */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 40s linear infinite;
+  font-size: 10px; /* Smaller text */
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  line-height: 24px; /* Matches the new thin height */
+}
+
+.notice-band-container {
+  height: 28px; /* Very thin */
+  background-color: #FF5F5F;
+  border-bottom: 2px solid #2D2D2D;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
