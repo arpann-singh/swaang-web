@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/third-parties": "^16.2.2",
     "@tailwindcss/postcss": "^4.2.2",
     "clsx": "latest",
     "firebase": "^12.11.0",
