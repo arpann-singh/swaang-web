@@ -1,66 +1,79 @@
 "use client";
 import { db } from "@/lib/firebase";
-import { doc, deleteDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { motion } from "framer-motion";
 
-const InboxManager = ({ messages }: { messages: any[] }) => {
-  const deleteMsg = async (id: string) => {
-    if (confirm("Permanently delete this message?")) {
-      await deleteDoc(doc(db, "messages", id));
+export default function InboxManager({ messages }: { messages: any[] }) {
+  
+  const markAsRead = async (id: string) => {
+    try {
+      // 🔥 FIXED: Now updating the correct "messages" collection
+      await updateDoc(doc(db, "messages", id), { read: true });
+    } catch (error) {
+      console.error("Error marking as read:", error);
     }
   };
 
-  if (messages.length === 0) {
-    return (
-      <div className="bg-white border-4 border-dashed border-[#2D2D2D] p-20 rounded-[3rem] text-center">
-        <p className="font-black uppercase tracking-widest text-gray-400">The Inbox is empty. ✉️</p>
-      </div>
-    );
+  const deleteMessage = async (id: string) => {
+    if (confirm("Permanently delete this message?")) {
+      try {
+        // 🔥 FIXED: Now deleting from the correct "messages" collection
+        await deleteDoc(doc(db, "messages", id));
+      } catch (error) {
+        console.error("Error deleting message:", error);
+      }
+    }
+  };
+
+  if (!messages || messages.length === 0) {
+    return <div className="p-12 text-center font-black uppercase text-gray-400 border-4 border-dashed border-gray-300 rounded-[2rem]">Inbox is Empty. 📨</div>;
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6">
-      {messages.map((msg) => (
-        <div 
-          key={msg.id} 
-          className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[8px_8px_0px_#2D2D2D] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:-translate-y-1 transition-transform"
-        >
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="w-3 h-3 bg-[#FF5F5F] rounded-full border-2 border-[#2D2D2D]" />
-              <h4 className="font-black text-xl text-[#2D2D2D] tracking-tighter uppercase">
-                {msg.name}
-              </h4>
-            </div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              {msg.email} • {msg.timestamp?.toDate().toLocaleString() || "Recent"}
-            </p>
-            <div className="bg-[#FFF9F0] border-2 border-[#2D2D2D] p-4 rounded-2xl mt-4">
-              <p className="text-sm font-medium italic text-[#2D2D2D]">
-                "{msg.message}"
-              </p>
-            </div>
-          </div>
+    <div className="space-y-8">
+      <header className="border-b-8 border-black pb-6 mb-10">
+        <h1 className="text-5xl font-black uppercase tracking-tighter">Global Inbox</h1>
+        <p className="text-[#FF5F5F] font-bold uppercase text-[10px] tracking-[0.4em]">Direct Transmissions</p>
+      </header>
 
-          <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto">
-            {/* NEW CONTACT BUTTON */}
-            <a 
-              href={`mailto:${msg.email}?subject=Regarding your message to Swaang`}
-              className="flex-1 bg-[#06D6A0] text-[#2D2D2D] border-2 border-[#2D2D2D] px-6 py-3 rounded-xl text-center text-[10px] font-black uppercase shadow-[4px_4px_0px_#2D2D2D] active:shadow-none transition-all"
-            >
-              Reply / Contact
-            </a>
+      <div className="grid grid-cols-1 gap-6">
+        {messages.map((msg, i) => (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+            key={msg.id} 
+            className={`border-4 border-black p-6 md:p-8 rounded-[2rem] transition-all ${msg.read ? 'bg-gray-50 opacity-70' : 'bg-white shadow-[8px_8px_0px_#2D2D2D]'}`}
+          >
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h3 className="text-2xl font-black uppercase flex items-center gap-3">
+                  {msg.name} 
+                  {!msg.read && <span className="bg-[#FF5F5F] text-white text-[9px] px-2 py-1 rounded-full tracking-widest">NEW</span>}
+                </h3>
+                <p className="font-mono text-xs font-bold text-gray-500">{msg.email}</p>
+              </div>
+              <div className="flex gap-2">
+                {!msg.read && (
+                  <button onClick={() => markAsRead(msg.id)} className="bg-[#06D6A0] text-black border-2 border-black px-4 py-2 font-black uppercase text-[10px] rounded-xl hover:bg-[#05b586] transition-colors shadow-[2px_2px_0px_black]">
+                    Mark Read
+                  </button>
+                )}
+                <button onClick={() => deleteMessage(msg.id)} className="bg-[#FF5F5F] text-white border-2 border-black px-4 py-2 font-black uppercase text-[10px] rounded-xl hover:bg-red-600 transition-colors shadow-[2px_2px_0px_black]">
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-gray-100 p-4 rounded-xl border-2 border-black/10">
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Subject: {msg.subject || "No Subject"}</p>
+              <p className="font-bold text-sm">{msg.message}</p>
+            </div>
             
-            <button 
-              onClick={() => deleteMsg(msg.id)} 
-              className="flex-1 bg-white text-red-500 border-2 border-red-500 px-6 py-3 rounded-xl text-[9px] font-black uppercase hover:bg-red-50 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      ))}
+            <p className="text-right text-[9px] font-black uppercase tracking-widest opacity-40 mt-4">
+              {msg.timestamp ? new Date(msg.timestamp).toLocaleString() : "Unknown Date"}
+            </p>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default InboxManager;
+}

@@ -1,82 +1,97 @@
 "use client";
 import { db } from "@/lib/firebase";
-import { doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { motion } from "framer-motion";
 
-const AuditionsManager = ({ auditions }: { auditions: any[] }) => {
-  const deleteApp = async (id: string) => {
-    if (confirm("Reject and delete this application?")) await deleteDoc(doc(db, "audition_submissions", id));
-  };
-
-  const toggleShortlist = async (id: string, currentStatus: boolean) => {
+export default function AuditionsManager({ auditions }: { auditions: any[] }) {
+  
+  const updateStatus = async (id: string, newStatus: string) => {
     try {
-      await updateDoc(doc(db, "audition_submissions", id), {
-        shortlisted: !currentStatus
-      });
+      // 🔥 FIXED: Now pointing to the correct "auditions" collection!
+      await updateDoc(doc(db, "auditions", id), { status: newStatus });
     } catch (error) {
-      console.error("Error updating shortlist:", error);
+      console.error("Error updating status:", error);
     }
   };
 
-  if (auditions.length === 0) {
-    return (
-      <div className="bg-white border-4 border-dashed border-[#2D2D2D] p-20 rounded-[3rem] text-center">
-        <p className="font-black uppercase tracking-widest text-gray-400">No applications received yet. 🎭</p>
-      </div>
-    );
+  const deleteAudition = async (id: string) => {
+    if (confirm("Permanently delete this audition profile?")) {
+      try {
+        // 🔥 FIXED: Now pointing to the correct "auditions" collection!
+        await deleteDoc(doc(db, "auditions", id));
+      } catch (error) {
+        console.error("Error deleting audition:", error);
+      }
+    }
+  };
+
+  if (!auditions || auditions.length === 0) {
+    return <div className="p-12 text-center font-black uppercase text-gray-400 border-4 border-dashed border-gray-300 rounded-[2rem]">No Auditions Received Yet. 🎭</div>;
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8">
-      {auditions.map(app => (
-        <div 
-          key={app.id} 
-          className={`bg-white border-4 border-[#2D2D2D] p-10 rounded-[3rem] shadow-[12px_12px_0px_#2D2D2D] grid grid-cols-1 md:grid-cols-3 gap-8 transition-all ${app.shortlisted ? "border-[#FFD166] ring-4 ring-[#FFD166]/20" : ""}`}
-        >
-          <div className="space-y-4 relative">
-            {app.shortlisted && (
-              <div className="absolute -top-6 -left-6 bg-[#FFD166] border-2 border-[#2D2D2D] px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-[2px_2px_0px_#2D2D2D] animate-bounce">
-                Shortlisted ⭐
+    <div className="space-y-8">
+      <header className="border-b-8 border-black pb-6 mb-10">
+        <h1 className="text-5xl font-black uppercase tracking-tighter">Casting Desk</h1>
+        <p className="text-[#FFD166] font-bold uppercase text-[10px] tracking-[0.4em]">Audition Profiles</p>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {auditions.map((actor, i) => (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }}
+            key={actor.id} 
+            className="bg-white border-4 border-black p-6 rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-2xl font-black uppercase tracking-tighter">{actor.name}</h3>
+                  <span className="inline-block bg-black text-[#06D6A0] px-3 py-1 font-black text-[9px] uppercase tracking-widest rounded-full mt-1">
+                    {actor.role || "Unspecified Role"}
+                  </span>
+                </div>
+                {actor.status === 'pending' && (
+                  <span className="w-3 h-3 rounded-full bg-[#FFD166] animate-pulse border border-black" title="Pending Review" />
+                )}
               </div>
-            )}
-            <h3 className="text-2xl font-black uppercase tracking-tighter text-[#2D2D2D]">{app.name || "Anonymous Artist"}</h3>
-            <div className="flex flex-wrap gap-2">
-              <span className="bg-[#FFD166] border-2 border-[#2D2D2D] px-4 py-1 rounded-full text-[10px] font-black uppercase">{app.role || "Performer"}</span>
-              <span className="bg-[#06D6A0]/20 border-2 border-[#2D2D2D] px-4 py-1 rounded-full text-[10px] font-black uppercase">{app.branch}</span>
+
+              <div className="space-y-2 mb-6">
+                <p className="font-mono text-[10px] uppercase font-bold text-gray-500">📧 {actor.email}</p>
+                <p className="font-mono text-[10px] uppercase font-bold text-gray-500">📞 {actor.phone}</p>
+                {actor.portfolio && (
+                  <a href={actor.portfolio} target="_blank" className="font-mono text-[10px] uppercase font-black text-[#FF5F5F] hover:underline inline-block">
+                    🔗 View Portfolio ↗
+                  </a>
+                )}
+              </div>
+
+              {actor.reason && (
+                <div className="bg-gray-100 p-4 rounded-xl border-2 border-black/10 mb-6">
+                  <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Motivation</p>
+                  <p className="font-bold text-xs italic">"{actor.reason}"</p>
+                </div>
+              )}
             </div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Year {app.year} • {app.phone}</p>
-          </div>
-          
-          <div className="border-x-2 border-[#2D2D2D]/10 px-8 flex flex-col justify-center">
-            <p className="text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Experience & Portfolio</p>
-            <p className="text-sm font-medium italic text-[#2D2D2D] line-clamp-4">
-              "{app.experience || "No experience details provided."}"
-            </p>
-            {app.portfolio && (
-              <a href={app.portfolio} target="_blank" className="text-[#FF5F5F] font-black text-[10px] uppercase underline mt-3">View Portfolio ↗</a>
-            )}
-          </div>
 
-          <div className="flex flex-col gap-3 justify-center">
-            {/* NEW SHORTLIST BUTTON */}
-            <button 
-              onClick={() => toggleShortlist(app.id, app.shortlisted)}
-              className={`border-2 border-[#2D2D2D] py-3 rounded-xl text-[10px] font-black uppercase shadow-[4px_4px_0px_#2D2D2D] active:shadow-none transition-all ${app.shortlisted ? "bg-[#FFD166] text-[#2D2D2D]" : "bg-white text-[#2D2D2D] hover:bg-gray-50"}`}
-            >
-              {app.shortlisted ? "Remove from Shortlist" : "Shortlist Candidate"}
-            </button>
-
-            <a href={`mailto:${app.email}`} className="bg-[#06D6A0] text-[#2D2D2D] border-2 border-[#2D2D2D] py-3 rounded-xl text-center text-[10px] font-black uppercase shadow-[4px_4px_0px_#2D2D2D] active:shadow-none transition-all">
-              Contact Artist
-            </a>
-            
-            <button onClick={() => deleteApp(app.id)} className="text-[#FF5F5F] font-black text-[9px] uppercase underline hover:text-red-700 transition-colors mt-2">
-              Archive Application
-            </button>
-          </div>
-        </div>
-      ))}
+            <div className="flex flex-wrap gap-2 border-t-4 border-black pt-4 mt-auto">
+              <button 
+                onClick={() => updateStatus(actor.id, 'reviewed')}
+                disabled={actor.status === 'reviewed'}
+                className="flex-1 bg-[#06D6A0] text-black border-2 border-black py-2 font-black uppercase text-[9px] rounded-xl hover:bg-[#05b586] disabled:opacity-50 disabled:bg-gray-200 transition-colors"
+              >
+                {actor.status === 'reviewed' ? 'Reviewed ✓' : 'Mark Reviewed'}
+              </button>
+              <button 
+                onClick={() => deleteAudition(actor.id)}
+                className="bg-[#FF5F5F] text-white border-2 border-black px-4 py-2 font-black uppercase text-[9px] rounded-xl hover:bg-red-600 transition-colors"
+              >
+                Drop
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default AuditionsManager;
+}
