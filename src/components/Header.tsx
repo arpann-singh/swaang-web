@@ -51,7 +51,7 @@ export default function Header() {
         {/* 🔘 ACTION BUTTONS */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* 🔥 FIXED ROUTE: Now points to /audition */}
-          <Link href="/audition" className="bg-[#06D6A0] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
+          <Link href="/auditions" className="bg-[#06D6A0] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
             Join
           </Link>
           <Link href="/contact" className="bg-[#FFD166] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
