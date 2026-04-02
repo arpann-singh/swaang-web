@@ -4,7 +4,10 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function AuditionPage() {
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", role: "" });
+  // 🎭 Added 'reason' and 'portfolio' to our state
+  const [formData, setFormData] = useState({ 
+    name: "", email: "", phone: "", role: "", reason: "", portfolio: "" 
+  });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -14,7 +17,6 @@ export default function AuditionPage() {
     setErrorMessage("");
 
     try {
-      // 🔥 Sending to our secure Next.js API instead of Firebase directly
       const response = await fetch("/api/audition", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -28,7 +30,8 @@ export default function AuditionPage() {
       }
 
       setStatus("success");
-      setFormData({ name: "", email: "", phone: "", role: "" }); // Clear form
+      // 🧹 Clear the form, including the new fields
+      setFormData({ name: "", email: "", phone: "", role: "", reason: "", portfolio: "" }); 
 
     } catch (error: any) {
       console.error("Form Error:", error);
@@ -98,15 +101,29 @@ export default function AuditionPage() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Primary Interest</label>
+                <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full bg-black/50 border border-white/20 rounded-xl p-4 text-[#FFF9F0] focus:border-[#06D6A0] focus:outline-none transition-colors font-bold appearance-none">
+                  <option value="" disabled>Select your role...</option>
+                  <option value="Acting">Acting / Performance</option>
+                  <option value="Writing">Script Writing</option>
+                  <option value="Directing">Directing</option>
+                  <option value="Technical">Stage / Tech Crew</option>
+                </select>
+              </div>
+              
+              {/* 🔗 NEW PORTFOLIO FIELD */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Portfolio / Work (Optional)</label>
+                <input type="url" value={formData.portfolio} onChange={e => setFormData({...formData, portfolio: e.target.value})} className="w-full bg-black/50 border border-white/20 rounded-xl p-4 text-[#FFF9F0] focus:border-[#06D6A0] focus:outline-none transition-colors font-bold" placeholder="Link (Instagram, Drive, etc.)" />
+              </div>
+            </div>
+
+            {/* 🎭 NEW REASON FIELD */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Primary Interest</label>
-              <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full bg-black/50 border border-white/20 rounded-xl p-4 text-[#FFF9F0] focus:border-[#06D6A0] focus:outline-none transition-colors font-bold appearance-none">
-                <option value="" disabled>Select your role...</option>
-                <option value="Acting">Acting / Performance</option>
-                <option value="Writing">Script Writing</option>
-                <option value="Directing">Directing</option>
-                <option value="Technical">Stage / Tech Crew</option>
-              </select>
+              <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Why do you want to join Swaang?</label>
+              <textarea required value={formData.reason} onChange={e => setFormData({...formData, reason: e.target.value})} className="w-full bg-black/50 border border-white/20 rounded-xl p-4 text-[#FFF9F0] focus:border-[#06D6A0] focus:outline-none transition-colors font-bold h-24 resize-none" placeholder="Tell us what drives you..." />
             </div>
 
             <button 

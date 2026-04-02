@@ -34,7 +34,8 @@ export default function AdminDashboard() {
       setMessages(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    onSnapshot(query(collection(db, "audition_submissions"), orderBy("timestamp", "desc")), (s) => {
+    // 🔥 THE FIX: Now correctly pointing to "auditions" and sorting by "submittedAt"
+    onSnapshot(query(collection(db, "auditions"), orderBy("submittedAt", "desc")), (s) => {
       setAuditions(s.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
     });
@@ -50,7 +51,6 @@ export default function AdminDashboard() {
     { id: "team", label: "Team", color: "bg-[#FF5F5F]" },
     { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
     { id: "notices", label: "Notices", color: "bg-[#06D6A0]" },
-    // 🔥 Added Credits to the main loop so it gets the exact same styling
     { id: "credits", label: "Credits", color: "bg-[#FF5F5F]" },
   ];
 
@@ -89,7 +89,6 @@ export default function AdminDashboard() {
             {activeTab === "team" && <TeamManager />}
             {activeTab === "gallery" && <GalleryManager />}
             {activeTab === "notices" && <NoticesManager />}
-            {/* 🔥 Added the component rendering here */}
             {activeTab === "credits" && <CreditsEditor />}
           </motion.div>
         </AnimatePresence>
