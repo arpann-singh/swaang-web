@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
@@ -22,7 +21,6 @@ export default function Header() {
         {/* 🏢 LOGOS SECTION */}
         <Link href="/" className="flex items-center gap-2 md:gap-4 group">
           <div className="flex items-center gap-1.5 bg-gray-50 p-1 md:p-1.5 rounded-xl border-2 border-black/5 group-hover:border-black/20 transition-all">
-            {/* Standard HTML img tags are safest for public folder assets in this layout */}
             <img 
               src="/sstc-logo.png" 
               alt="SSTC Logo" 
@@ -52,7 +50,8 @@ export default function Header() {
 
         {/* 🔘 ACTION BUTTONS */}
         <div className="flex items-center gap-2 md:gap-4">
-          <Link href="/join" className="bg-[#06D6A0] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
+          {/* 🔥 FIXED ROUTE: Now points to /audition */}
+          <Link href="/audition" className="bg-[#06D6A0] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
             Join
           </Link>
           <Link href="/contact" className="bg-[#FFD166] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
