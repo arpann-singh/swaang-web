@@ -107,7 +107,6 @@ export default function EventsPage() {
         </AnimatePresence>
 
         <div className="h-40" />
-        <Footer />
       </main>
     </PageTransition>
   );

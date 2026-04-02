@@ -4,7 +4,6 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import SectionHeader from "@/components/SectionHeader";
 import PageTransition from "@/components/PageTransition";
-import Footer from "@/components/Footer";
 
 export default function MembersPage() {
   const [members, setMembers] = useState<any[]>([]);
@@ -71,7 +70,6 @@ export default function MembersPage() {
         </div>
         {/* Spacer for Footer */}
         <div className="h-40" /> 
-        <Footer />
       </main>
     </PageTransition>
   );

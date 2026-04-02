@@ -28,7 +28,6 @@ export default function ContactPage() {
           </button>
         </form>
       </div>
-      <Footer />
     </main>
   );
 }

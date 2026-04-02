@@ -1,156 +1,214 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
-const BrandingEditor = () => {
-  const [homeData, setHomeData] = useState<any>({ styles: {} });
-  const [footerData, setFooterData] = useState<any>({});
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState({ founder: false, hero: false });
+export default function BrandingEditor() {
+  const [data, setData] = useState<any>({ styles: {} });
+  const [aotm, setAotm] = useState<any>({});
+  const [activeTab, setActiveTab] = useState("founder");
+  const [uploading, setUploading] = useState("");
 
-  const IMGBB_API_KEY = "098e6a70fbe6f7594e40f4641a1998b0"; // 👈 PASTE YOUR KEY HERE
-
+  // 🎭 Load all stage data on mount
   useEffect(() => {
-    const unsubHome = onSnapshot(doc(db, "settings", "homepage"), (d) => {
-      if (d.exists()) setHomeData(d.data());
-    });
-    const unsubFooter = onSnapshot(doc(db, "settings", "footer"), (d) => {
-      if (d.exists()) setFooterData(d.data());
-      setLoading(false);
-    });
-    return () => { unsubHome(); unsubFooter(); };
+    const fetchAllData = async () => {
+      const homeDoc = await getDoc(doc(db, "settings", "homepage"));
+      const spotlightDoc = await getDoc(doc(db, "settings", "aotm"));
+      if (homeDoc.exists()) setData(homeDoc.data());
+      if (spotlightDoc.exists()) setAotm(spotlightDoc.data());
+    };
+    fetchAllData();
   }, []);
 
-  const updateNested = (section: string, field: string, value: any) => {
-    setHomeData({
-      ...homeData,
-      [section]: { ...homeData[section], [field]: value }
-    });
+  // 🚀 Sync everything to Firebase
+  const syncAll = async () => {
+    try {
+      await updateDoc(doc(db, "settings", "homepage"), data);
+      await updateDoc(doc(db, "settings", "aotm"), aotm);
+      alert("Full Stage Identity, Typography, and Cues Synced! 🎭");
+    } catch (err) {
+      alert("Sync Error: " + err);
+    }
   };
 
-  const handleFileUpload = async (e: any, type: 'founder' | 'hero') => {
+  // 📸 ImgBB Upload Logic
+  const handleUpload = async (e: any, field: string, isAotm = false) => {
     const file = e.target.files[0];
     if (!file) return;
-    setUploading({ ...uploading, [type]: true });
-    const body = new FormData();
-    body.append("image", file);
+    setUploading(field);
+    const formData = new FormData();
+    formData.append("image", file);
     try {
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`, {
         method: "POST",
-        body: body,
+        body: formData,
       });
       const resData = await res.json();
       if (resData.success) {
-        const field = type === 'founder' ? 'founderPhoto' : 'headerImageUrl';
-        setHomeData({ ...homeData, [field]: resData.data.url });
-        alert(`${type.toUpperCase()} Media Synced! 📸`);
+        const url = resData.data.url;
+        if (isAotm) setAotm({ ...aotm, [field]: url });
+        else setData({ ...data, [field]: url });
       }
-    } catch (err) { alert("Upload failed."); } finally { setUploading({ ...uploading, [type]: false }); }
+    } catch (err) {
+      alert("Upload Failed. Check API Key.");
+    } finally {
+      setUploading("");
+    }
   };
 
-  const handleSave = async (e: any, collection: string, data: any) => {
-    e.preventDefault();
-    try {
-      await updateDoc(doc(db, "settings", collection), data);
-      alert(`${collection.toUpperCase()} Identity Published! 🎭`);
-    } catch (err) { alert("Error syncing assets."); }
-  };
+  // 🖼️ Reusable Preview Component
+  const Preview = ({ url, loading }: { url: string; loading: boolean }) => (
+    <div className="w-20 h-20 rounded-2xl border-4 border-black overflow-hidden bg-gray-200 flex items-center justify-center shadow-[4px_4px_0px_black] shrink-0">
+      {loading ? (
+        <div className="animate-spin text-xl font-black">⏳</div>
+      ) : url ? (
+        <img src={url} className="w-full h-full object-cover" alt="Preview" />
+      ) : (
+        <span className="text-[8px] font-black opacity-30 uppercase text-center p-1">No Photo</span>
+      )}
+    </div>
+  );
 
-  const FontSlider = ({ section, field, label, max = 15 }: any) => {
-    const currentValue = parseFloat(homeData[section]?.[field + 'Size']) || 1;
+  // 📏 Reusable Slider Control
+  const Slider = ({ label, field, min = 1, max = 15 }: any) => {
+    const val = data.styles?.[field] ? parseFloat(data.styles[field]) : 4;
     return (
-      <div className="bg-[#FFF9F0] p-4 rounded-2xl border-2 border-[#2D2D2D] space-y-3">
+      <div className="flex flex-col gap-2 bg-gray-50 p-4 rounded-2xl border-2 border-black/5">
         <div className="flex justify-between items-center">
-          <label className="text-[9px] font-black uppercase text-[#FF5F5F] tracking-tighter">{label} Size</label>
-          <span className="text-[10px] font-black">{currentValue}rem</span>
+          <label className="text-[10px] font-black uppercase opacity-40">{label}</label>
+          <span className="text-[10px] font-bold bg-black text-white px-2 py-0.5 rounded">{val}rem</span>
         </div>
-        <input type="range" min="0.5" max={max} step="0.1" value={currentValue} onChange={(e) => updateNested(section, field + 'Size', e.target.value + 'rem')} className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#FF5F5F]" />
-        <select value={homeData[section]?.[field + 'Font'] || 'font-cinzel'} onChange={(e) => updateNested(section, field + 'Font', e.target.value)} className="w-full border-2 border-[#2D2D2D] rounded-lg text-[9px] p-1 font-black uppercase">
-          <option value="font-cinzel">Cinzel (Drama)</option>
-          <option value="font-sans">Inter (Sans)</option>
-        </select>
+        <input 
+          type="range" min={min} max={max} step="0.1" 
+          value={val} 
+          onChange={e => setData({...data, styles: {...data.styles, [field]: e.target.value + 'rem'}})}
+          className="w-full h-1.5 bg-black/10 accent-[#FF5F5F] cursor-pointer appearance-none rounded-full"
+        />
       </div>
     );
   };
 
-  if (loading) return <div className="p-10 font-black animate-pulse">Syncing Social Riggings...</div>;
-
   return (
-    <div className="space-y-12 pb-24">
-      <div className="border-b-4 border-[#2D2D2D] pb-6">
-        <h1 className="text-5xl font-black uppercase text-[#2D2D2D]">Identity Hub</h1>
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5F5F] mt-2">The Face of Swaang</p>
-      </div>
+    <div className="p-4 md:p-12 max-w-7xl mx-auto pb-40 space-y-12">
+      <header className="flex flex-col md:flex-row justify-between items-center border-b-8 border-black pb-8 gap-6">
+        <div>
+          <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">Master Hub</h1>
+          <p className="text-[#FF5F5F] font-bold uppercase text-[10px] tracking-[0.4em]">Swaang Identity Control</p>
+        </div>
+        <button onClick={syncAll} className="w-full md:w-auto bg-[#06D6A0] border-4 border-black px-12 py-5 font-black uppercase rounded-2xl shadow-[8px_8px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-xl">
+          Sync Global Stage
+        </button>
+      </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
-        {/* --- HERO STAGE --- */}
-        <form onSubmit={(e) => handleSave(e, "homepage", homeData)} className="bg-white border-4 border-[#2D2D2D] p-10 rounded-[3.5rem] shadow-[15px_15px_0px_#2D2D2D] space-y-8">
-          <h3 className="text-xl font-black uppercase bg-[#FF5F5F] text-white px-4 py-1 rounded-lg inline-block">Hero Stage</h3>
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <input type="text" placeholder="Title" value={homeData.headerTitle || ""} onChange={e => setHomeData({...homeData, headerTitle: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 rounded-xl font-black text-2xl uppercase" />
-              <FontSlider section="styles" field="heroTitle" label="Main Title" max={15} />
-            </div>
-            <div className="space-y-4">
-              <input type="text" placeholder="Tagline" value={homeData.headerSub || ""} onChange={e => setHomeData({...homeData, headerSub: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 rounded-xl font-bold" />
-              <FontSlider section="styles" field="heroSub" label="Sub Tagline" max={5} />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        
+        {/* 🎬 1. HERO STAGE */}
+        <div className="bg-white border-4 border-black rounded-[3rem] p-8 shadow-[12px_12px_0px_#06D6A0] space-y-6">
+          <h2 className="text-2xl font-black uppercase border-b-4 border-black pb-2 text-[#06D6A0]">Hero Configuration</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Slider label="Title Size" field="hTitleSize" max={18} />
+            <Slider label="Tagline Size" field="hTaglineSize" max={6} />
           </div>
-          <div className="pt-6 border-t-2 border-dashed space-y-4">
-             <input type="text" placeholder="Video URL (.mp4)" value={homeData.headerVideoUrl || ""} onChange={e => setHomeData({...homeData, headerVideoUrl: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-xs" />
-             <div className="relative group w-full h-24 bg-[#FFF9F0] border-4 border-dashed border-[#2D2D2D] rounded-2xl overflow-hidden flex items-center justify-center cursor-pointer shadow-[6px_6px_0px_#2D2D2D]">
-                {homeData.headerImageUrl ? <img src={homeData.headerImageUrl} className="h-full w-full object-cover" /> : <span className="text-[10px] font-black opacity-30">{uploading.hero ? "..." : "Hero Photo"}</span>}
-                <input type="file" onChange={(e) => handleFileUpload(e, 'hero')} className="absolute inset-0 opacity-0 cursor-pointer" />
+          <input className="w-full border-2 border-black p-4 font-bold rounded-xl" placeholder="Main Title" value={data.headerTitle || ""} onChange={e => setData({...data, headerTitle: e.target.value})} />
+          <textarea className="w-full border-2 border-black p-4 font-bold rounded-xl h-24" placeholder="Hero Tagline" value={data.headerTagline || ""} onChange={e => setData({...data, headerTagline: e.target.value})} />
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border-2 border-black">
+             <Preview url={data.headerImageUrl} loading={uploading === 'headerImageUrl'} />
+             <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-black uppercase opacity-50">Hero Image</label>
+                <input type="file" onChange={(e) => handleUpload(e, "headerImageUrl")} className="text-[10px]" />
              </div>
           </div>
-          <button type="submit" className="w-full bg-[#FF5F5F] text-white border-4 border-[#2D2D2D] py-5 rounded-2xl font-black uppercase shadow-[8px_8px_0px_#2D2D2D]">Publish Hero</button>
-        </form>
+        </div>
 
-        <div className="space-y-12">
-          {/* --- FOUNDER HUB --- */}
-          <form onSubmit={(e) => handleSave(e, "homepage", homeData)} className="bg-white border-4 border-[#2D2D2D] p-10 rounded-[3.5rem] shadow-[15px_15px_0px_#FFD166] space-y-6">
-            <h3 className="text-xl font-black uppercase bg-[#FFD166] text-[#2D2D2D] px-4 py-1 rounded-lg inline-block">Founder Hub</h3>
-            <div className="flex gap-6 items-center">
-              <div className="relative group w-32 h-44 bg-[#FFF9F0] border-4 border-dashed border-[#2D2D2D] rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center cursor-pointer shadow-[6px_6px_0px_#2D2D2D]">
-                {homeData.founderPhoto ? <img src={homeData.founderPhoto} className="h-full w-full object-cover" /> : <span className="text-[8px] font-black opacity-30">Photo</span>}
-                <input type="file" onChange={(e) => handleFileUpload(e, 'founder')} className="absolute inset-0 opacity-0 cursor-pointer" />
-              </div>
-              <div className="flex-1 space-y-3">
-                <input type="text" placeholder="Name" value={homeData.founderName || ""} onChange={e => setHomeData({...homeData, founderName: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-black" />
-                <FontSlider section="styles" field="founderName" label="Name Text" max={5} />
-              </div>
+        {/* 🔦 2. SPOTLIGHT HUB */}
+        <div className="bg-white border-4 border-black rounded-[3rem] p-8 shadow-[12px_12px_0px_#FF5F5F] space-y-4">
+          <h2 className="text-2xl font-black uppercase border-b-4 border-black pb-2 text-[#FF5F5F]">Spotlight Hub</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <input className="border-2 border-black p-3 font-bold rounded-xl" placeholder="Full Name" value={aotm.name || ""} onChange={e => setAotm({...aotm, name: e.target.value})} />
+            <input className="border-2 border-black p-3 font-bold rounded-xl" placeholder="Core Role" value={aotm.role || ""} onChange={e => setAotm({...aotm, role: e.target.value})} />
+          </div>
+          <textarea className="w-full border-2 border-black p-3 font-bold rounded-xl h-20" placeholder="Citation" value={aotm.citation || ""} onChange={e => setAotm({...aotm, citation: e.target.value})} />
+          <div className="grid grid-cols-2 gap-3">
+            <input className="border-2 border-black p-3 font-bold rounded-xl" placeholder="Achievement" value={aotm.achievement || ""} onChange={e => setAotm({...aotm, achievement: e.target.value})} />
+            <input className="border-2 border-black p-3 font-bold rounded-xl" placeholder="Impact" value={aotm.impact || ""} onChange={e => setAotm({...aotm, impact: e.target.value})} />
+          </div>
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border-2 border-black">
+             <Preview url={aotm.photo} loading={uploading === 'photo'} />
+             <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-black uppercase opacity-50">Portrait Upload</label>
+                <input type="file" onChange={(e) => handleUpload(e, "photo", true)} className="text-[10px]" />
+             </div>
+          </div>
+          <input className="w-full border-2 border-black p-3 font-mono text-xs rounded-xl" placeholder="Contributions URL" value={aotm.link || ""} onChange={e => setAotm({...aotm, link: e.target.value})} />
+        </div>
+
+        {/* 📟 3. STAGE CUES (BACKSTAGE TICKER) */}
+        <div className="bg-[#2D2D2D] border-4 border-black rounded-[3rem] p-8 shadow-[12px_12px_0px_white] text-white space-y-6">
+          <div className="flex justify-between items-center border-b border-white/20 pb-2">
+            <h2 className="text-xl font-black uppercase tracking-widest text-[#06D6A0]">Backstage Cues</h2>
+            <input 
+              type="checkbox" 
+              checked={data.showTicker || false} 
+              onChange={e => setData({...data, showTicker: e.target.checked})}
+              className="w-6 h-6 accent-[#06D6A0] cursor-pointer"
+            />
+          </div>
+          <p className="text-[10px] font-bold opacity-50 uppercase tracking-widest italic text-[#FF5F5F]">Display active notices in the Monochrome Film Strip</p>
+          <textarea 
+            className="w-full bg-black/30 border-2 border-white/10 p-4 font-mono text-sm rounded-xl focus:border-[#06D6A0] outline-none text-[#FFF9F0]" 
+            placeholder="TYPE NOTICE CUE HERE..." 
+            value={data.tickerText || ""} 
+            onChange={e => setData({...data, tickerText: e.target.value})} 
+          />
+        </div>
+
+        {/* 🎭 4. DIRECTORATE HUB */}
+        <div className="bg-white border-4 border-black rounded-[3rem] p-8 shadow-[12px_12px_0px_#FFD166] space-y-6">
+          <div className="flex justify-between items-center border-b-4 border-black pb-2 text-[#2D2D2D]">
+            <h2 className="text-2xl font-black uppercase">Directorate</h2>
+            <div className="flex gap-1">
+              {['founder', 'coFounder1', 'coFounder2'].map((tab, i) => (
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 border-2 border-black rounded-xl font-black text-[10px] uppercase transition-all ${activeTab === tab ? 'bg-black text-white shadow-[4px_4px_0px_gray]' : 'bg-gray-100'}`}>
+                  {i === 0 ? 'Founder' : `C${i}`}
+                </button>
+              ))}
             </div>
-            <textarea placeholder="Founder Note" value={homeData.founderNote || ""} onChange={e => setHomeData({...homeData, founderNote: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 rounded-xl font-medium h-32" />
-            <FontSlider section="styles" field="founderNote" label="Note Content" max={6} />
-            <button type="submit" className="w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase shadow-[8px_8px_0px_#2D2D2D]">Sync Founder</button>
-          </form>
+          </div>
+          <input className="w-full border-2 border-black p-4 font-bold rounded-xl" placeholder="Director Name" value={data[`${activeTab}Name`] || ""} onChange={e => setData({...data, [`${activeTab}Name`]: e.target.value})} />
+          <textarea className="w-full border-2 border-black p-4 font-bold rounded-xl h-32" placeholder="Director Message" value={data[`${activeTab}Note`] || ""} onChange={e => setData({...data, [`${activeTab}Note`]: e.target.value})} />
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border-2 border-black">
+             <Preview url={data[`${activeTab}Image`]} loading={uploading === `${activeTab}Image`} />
+             <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-black uppercase opacity-50">Upload Photo</label>
+                <input type="file" onChange={(e) => handleUpload(e, `${activeTab}Image`)} className="text-[10px]" />
+             </div>
+          </div>
+        </div>
 
-          {/* --- ENHANCED CONNECT HUB (SOCIALS) --- */}
-          <form onSubmit={(e) => handleSave(e, "footer", footerData)} className="bg-white border-4 border-[#2D2D2D] p-10 rounded-[3.5rem] shadow-[15px_15px_0px_#06D6A0] space-y-6">
-            <h3 className="text-xl font-black uppercase bg-[#06D6A0] text-[#2D2D2D] px-4 py-1 rounded-lg inline-block">Connect Hub</h3>
+        {/* 📍 5. CONNECT HUB (FOOTER) */}
+        <div className="bg-white border-4 border-black rounded-[3rem] p-8 shadow-[12px_12px_0px_#2D2D2D] lg:col-span-2 space-y-8">
+          <h2 className="text-3xl font-black uppercase border-b-4 border-black pb-4">Global Connect Hub</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-4">
-              <textarea placeholder="Address" value={footerData.address || ""} onChange={e => setFooterData({...footerData, address: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold h-20 text-xs" />
-              <div className="grid grid-cols-2 gap-4">
-                <input type="text" placeholder="Phone" value={footerData.phone || ""} onChange={e => setFooterData({...footerData, phone: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-[10px]" />
-                <input type="text" placeholder="Email" value={footerData.email || ""} onChange={e => setFooterData({...footerData, email: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-[10px]" />
-              </div>
+              <h3 className="text-xs font-black uppercase text-[#FF5F5F]">Contact</h3>
+              <input placeholder="Address" className="w-full border-2 border-black p-4 font-bold rounded-xl" value={data.address || ""} onChange={e => setData({...data, address: e.target.value})} />
+              <input placeholder="Phone" className="w-full border-2 border-black p-4 font-bold rounded-xl" value={data.phone || ""} onChange={e => setData({...data, phone: e.target.value})} />
+              <input placeholder="Email" className="w-full border-2 border-black p-4 font-bold rounded-xl" value={data.email || ""} onChange={e => setData({...data, email: e.target.value})} />
             </div>
-            
-            <div className="pt-4 border-t-2 border-dashed border-[#2D2D2D]/20 space-y-4">
-              <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Social Media Links</p>
-              <div className="grid grid-cols-2 gap-3">
-                <input type="text" placeholder="Instagram URL" value={footerData.instagram || ""} onChange={e => setFooterData({...footerData, instagram: e.target.value})} className="border-2 border-[#2D2D2D] p-2 rounded-lg font-bold text-[9px] bg-[#FFF9F0]" />
-                <input type="text" placeholder="YouTube URL" value={footerData.youtube || ""} onChange={e => setFooterData({...footerData, youtube: e.target.value})} className="border-2 border-[#2D2D2D] p-2 rounded-lg font-bold text-[9px] bg-[#FFF9F0]" />
-                <input type="text" placeholder="Twitter URL" value={footerData.twitter || ""} onChange={e => setFooterData({...footerData, twitter: e.target.value})} className="border-2 border-[#2D2D2D] p-2 rounded-lg font-bold text-[9px] bg-[#FFF9F0]" />
-                <input type="text" placeholder="LinkedIn URL" value={footerData.linkedin || ""} onChange={e => setFooterData({...footerData, linkedin: e.target.value})} className="border-2 border-[#2D2D2D] p-2 rounded-lg font-bold text-[9px] bg-[#FFF9F0]" />
-              </div>
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase text-[#06D6A0]">Socials</h3>
+              <input placeholder="Instagram" className="w-full border-2 border-black p-4 font-mono text-xs rounded-xl" value={data.instagram || ""} onChange={e => setData({...data, instagram: e.target.value})} />
+              <input placeholder="YouTube" className="w-full border-2 border-black p-4 font-mono text-xs rounded-xl" value={data.youtube || ""} onChange={e => setData({...data, youtube: e.target.value})} />
+              <input placeholder="LinkedIn" className="w-full border-2 border-black p-4 font-mono text-xs rounded-xl" value={data.linkedin || ""} onChange={e => setData({...data, linkedin: e.target.value})} />
+              <input placeholder="Twitter" className="w-full border-2 border-black p-4 font-mono text-xs rounded-xl" value={data.twitter || ""} onChange={e => setData({...data, twitter: e.target.value})} />
             </div>
-            <button type="submit" className="w-full bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase shadow-[8px_8px_0px_#2D2D2D]">Sync Global Footer</button>
-          </form>
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase text-[#FFD166]">Developer</h3>
+              <input placeholder="Curator (e.g. Arpan Singh)" className="w-full border-2 border-black p-4 font-bold rounded-xl" value={data.curatorName || ""} onChange={e => setData({...data, curatorName: e.target.value})} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-};
-export default BrandingEditor;
+}

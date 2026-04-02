@@ -1,71 +1,74 @@
 "use client";
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
 
-const Header = () => {
-  const [isAuditionOpen, setIsAuditionOpen] = useState(false);
+export default function Header() {
   const pathname = usePathname();
 
-  useEffect(() => {
-    // Listen to site_config for the Master Toggle
-    const unsub = onSnapshot(doc(db, "settings", "site_config"), (doc) => {
-      if (doc.exists()) setIsAuditionOpen(doc.data().auditionsOpen);
-    });
-    return () => unsub();
-  }, []);
-
-  if (pathname.startsWith("/admin")) return null;
+  const NavLink = ({ href, label }: { href: string; label: string }) => (
+    <Link 
+      href={href} 
+      className={`hover:text-[#FF5F5F] transition-colors font-black uppercase text-[11px] tracking-widest ${pathname === href ? 'text-[#FF5F5F]' : 'text-[#2D2D2D]'}`}
+    >
+      {label}
+    </Link>
+  );
 
   return (
-    <div className="fixed top-0 w-full z-[100]">
-      <div className="px-4 md:px-10 pt-5">
-        <header className="max-w-7xl mx-auto bg-white border-4 border-[#2D2D2D] rounded-full shadow-[8px_8px_0px_#2D2D2D] py-3 px-10 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-5 group">
-            <div className="flex items-center gap-3 bg-[#FFF9F0] border-2 border-[#2D2D2D] p-2 rounded-2xl shadow-[4px_4px_0px_#2D2D2D] group-hover:rotate-2 transition-transform">
-               <img src="/club-logo.png" alt="Swaang" className="w-9 h-9 object-contain" />
-               <div className="w-[2px] h-6 bg-[#2D2D2D]/15" />
-               <img src="/college-logo.png" alt="SSTC" className="w-9 h-9 object-contain" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl md:text-2xl font-black text-[#2D2D2D] tracking-tighter leading-none">SWAANG</span>
-              <span className="text-[10px] font-black text-[#FF5F5F] uppercase tracking-[0.25em] leading-none mt-1.5">SSTC BHILAI</span>
-            </div>
-          </Link>
-          
-          <nav className="hidden md:flex items-center gap-10">
-            {[{ name: "Events", href: "/events" }, { name: "Ensemble", href: "/members" }, { name: "Gallery", href: "/gallery" }].map((item) => (
-              <Link key={item.name} href={item.href} className={`text-[12px] font-black uppercase tracking-[0.15em] transition-all hover:text-[#FF5F5F] ${pathname === item.href ? "text-[#FF5F5F]" : "text-[#2D2D2D]"}`}>
-                {item.name}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <AnimatePresence>
-              {isAuditionOpen && (
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
-                  <Link href="/auditions">
-                    <button className="bg-[#06D6A0] text-[#2D2D2D] border-2 border-[#2D2D2D] px-6 py-2.5 rounded-full font-black text-[11px] uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none transition-all">
-                      Join
-                    </button>
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <Link href="/contact">
-              <button className="bg-[#FFD166] text-[#2D2D2D] border-2 border-[#2D2D2D] px-7 py-2.5 rounded-full font-black text-[11px] uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none transition-all">
-                Contact
-              </button>
-            </Link>
+    <header className="fixed top-2 md:top-6 left-0 right-0 z-[100] px-2 md:px-6">
+      <nav className="max-w-6xl mx-auto bg-white border-[3px] md:border-4 border-[#2D2D2D] rounded-2xl md:rounded-full px-3 md:px-8 py-2 md:py-3 flex justify-between items-center shadow-[4px_4px_0px_#2D2D2D] md:shadow-[8px_8px_0px_#2D2D2D]">
+        
+        {/* 🏢 LOGOS SECTION */}
+        <Link href="/" className="flex items-center gap-2 md:gap-4 group">
+          <div className="flex items-center gap-1.5 bg-gray-50 p-1 md:p-1.5 rounded-xl border-2 border-black/5 group-hover:border-black/20 transition-all">
+            {/* Standard HTML img tags are safest for public folder assets in this layout */}
+            <img 
+              src="/sstc-logo.png" 
+              alt="SSTC Logo" 
+              className="h-6 md:h-10 w-auto object-contain" 
+              onError={(e) => (e.currentTarget.src = 'https://placehold.co/40x40?text=SSTC')}
+            />
+            <div className="w-[2px] h-4 md:h-6 bg-black/10 mx-1" />
+            <img 
+              src="/swaang-logo.png" 
+              alt="Swaang Logo" 
+              className="h-6 md:h-10 w-auto object-contain" 
+              onError={(e) => (e.currentTarget.src = 'https://placehold.co/40x40?text=SW')}
+            />
           </div>
-        </header>
-      </div>
-    </div>
-  );
-};
+          <div className="flex flex-col leading-none">
+            <span className="font-black uppercase tracking-tighter text-sm md:text-2xl">Swaang</span>
+            <span className="text-[7px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-[#FF5F5F]">SSTC Bhilai</span>
+          </div>
+        </Link>
+        
+        {/* 🔗 DESKTOP NAVIGATION */}
+        <div className="hidden lg:flex gap-10">
+          <NavLink href="/events" label="Events" />
+          <NavLink href="/members" label="Ensemble" />
+          <NavLink href="/gallery" label="Gallery" />
+        </div>
 
-export default Header;
+        {/* 🔘 ACTION BUTTONS */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link href="/join" className="bg-[#06D6A0] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
+            Join
+          </Link>
+          <Link href="/contact" className="bg-[#FFD166] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
+            Contact
+          </Link>
+        </div>
+      </nav>
+
+      {/* 📱 MOBILE NAVIGATION BAR */}
+      <div className="lg:hidden flex justify-center mt-3">
+        <div className="bg-white/95 backdrop-blur-sm border-2 border-black rounded-full px-8 py-2.5 flex gap-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/10">
+          <Link href="/events" className="active:text-[#FF5F5F]">Events</Link>
+          <Link href="/members" className="active:text-[#FF5F5F]">Ensemble</Link>
+          <Link href="/gallery" className="active:text-[#FF5F5F]">Gallery</Link>
+        </div>
+      </div>
+    </header>
+  );
+}

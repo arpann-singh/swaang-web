@@ -42,7 +42,6 @@ export default function GalleryPage() {
           ))}
         </div>
         <div className="h-40" />
-        <Footer />
       </main>
     </PageTransition>
   );
