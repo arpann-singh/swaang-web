@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 export default function Header() {
   const pathname = usePathname();
 
+  // 🛑 THE KILL SWITCH: Keeps the header hidden inside the Admin Panel
+  if (pathname.startsWith("/admin")) return null;
+
   const NavLink = ({ href, label }: { href: string; label: string }) => (
     <Link 
       href={href} 
@@ -42,16 +45,17 @@ export default function Header() {
         </Link>
         
         {/* 🔗 DESKTOP NAVIGATION */}
-        <div className="hidden lg:flex gap-10">
+        <div className="hidden lg:flex gap-8">
           <NavLink href="/events" label="Events" />
           <NavLink href="/members" label="Ensemble" />
           <NavLink href="/gallery" label="Gallery" />
+          {/* 🎬 NEW: Credits Link */}
+          <NavLink href="/credits" label="Credits" />
         </div>
 
         {/* 🔘 ACTION BUTTONS */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* 🔥 FIXED ROUTE: Now points to /audition */}
-          <Link href="/auditions" className="bg-[#06D6A0] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
+          <Link href="/audition" className="bg-[#06D6A0] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
             Join
           </Link>
           <Link href="/contact" className="bg-[#FFD166] text-[#2D2D2D] border-2 md:border-[3px] border-[#2D2D2D] px-4 md:px-7 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs shadow-[3px_3px_0px_#2D2D2D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95">
@@ -62,10 +66,12 @@ export default function Header() {
 
       {/* 📱 MOBILE NAVIGATION BAR */}
       <div className="lg:hidden flex justify-center mt-3">
-        <div className="bg-white/95 backdrop-blur-sm border-2 border-black rounded-full px-8 py-2.5 flex gap-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/10">
-          <Link href="/events" className="active:text-[#FF5F5F]">Events</Link>
-          <Link href="/members" className="active:text-[#FF5F5F]">Ensemble</Link>
-          <Link href="/gallery" className="active:text-[#FF5F5F]">Gallery</Link>
+        <div className="bg-white/95 backdrop-blur-sm border-2 border-black rounded-full px-6 py-2.5 flex gap-5 font-black uppercase text-[9px] tracking-widest shadow-xl shadow-black/10 overflow-x-auto no-scrollbar max-w-[95vw]">
+          <Link href="/events" className="active:text-[#FF5F5F] shrink-0">Events</Link>
+          <Link href="/members" className="active:text-[#FF5F5F] shrink-0">Ensemble</Link>
+          <Link href="/gallery" className="active:text-[#FF5F5F] shrink-0">Gallery</Link>
+          {/* 🎬 NEW: Credits Link for Mobile */}
+          <Link href="/credits" className="active:text-[#FF5F5F] shrink-0">Credits</Link>
         </div>
       </div>
     </header>

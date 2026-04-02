@@ -6,20 +6,19 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    const docRef = await addDoc(collection(db, "auditions"), {
+    // Writes to the "messages" collection so your Admin Inbox can read it
+    const docRef = await addDoc(collection(db, "messages"), {
       ...data,
-      submittedAt: new Date().toISOString(),
-      status: "pending" 
+      timestamp: new Date().toISOString(),
+      read: false // Flags it as "New" for your inbox
     });
 
     return NextResponse.json({ success: true, id: docRef.id }, { status: 200 });
 
   } catch (error: any) {
-    console.error("FIREBASE SERVER ERROR:", error);
-    
-    // 🔥 This passes the EXACT Firebase error back to the phone
+    console.error("CONTACT SERVER ERROR:", error);
     return NextResponse.json(
-      { error: error.message || "Unknown Firebase Error" }, 
+      { error: error.message || "Failed to send message." }, 
       { status: 500 }
     );
   }

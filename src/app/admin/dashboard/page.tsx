@@ -15,6 +15,7 @@ import GalleryManager from "@/components/admin/GalleryManager";
 import NoticesManager from "@/components/admin/NoticesManager";
 import AOTMManager from "@/components/admin/AOTMManager";
 import TimelineManager from "@/components/admin/TimelineManager";
+import CreditsEditor from "@/components/admin/CreditsEditor";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("branding");
@@ -49,6 +50,8 @@ export default function AdminDashboard() {
     { id: "team", label: "Team", color: "bg-[#FF5F5F]" },
     { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
     { id: "notices", label: "Notices", color: "bg-[#06D6A0]" },
+    // 🔥 Added Credits to the main loop so it gets the exact same styling
+    { id: "credits", label: "Credits", color: "bg-[#FF5F5F]" },
   ];
 
   if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase">Syncing Dashboard...</div>;
@@ -70,6 +73,7 @@ export default function AdminDashboard() {
             </button>
           ))}
         </nav>
+        
         <button onClick={() => signOut(auth)} className="mt-auto p-4 border-4 border-[#2D2D2D] rounded-xl font-black uppercase text-[9px] bg-gray-50">Sign Out</button>
       </aside>
 
@@ -85,6 +89,8 @@ export default function AdminDashboard() {
             {activeTab === "team" && <TeamManager />}
             {activeTab === "gallery" && <GalleryManager />}
             {activeTab === "notices" && <NoticesManager />}
+            {/* 🔥 Added the component rendering here */}
+            {activeTab === "credits" && <CreditsEditor />}
           </motion.div>
         </AnimatePresence>
       </main>
