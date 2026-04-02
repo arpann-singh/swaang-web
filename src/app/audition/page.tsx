@@ -1,15 +1,29 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { db } from "@/lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 
 export default function AuditionPage() {
-  // 🎭 Added 'reason' and 'portfolio' to our state
-  const [formData, setFormData] = useState({ 
-    name: "", email: "", phone: "", role: "", reason: "", portfolio: "" 
-  });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", role: "", reason: "", portfolio: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  
+  // 🧠 State for the Master Toggle
+  const [isFormOpen, setIsFormOpen] = useState(true);
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
+
+  // 📡 Real-time listener for the Admin Toggle
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "settings", "site_config"), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().auditionsOpen !== undefined) {
+        setIsFormOpen(docSnap.data().auditionsOpen);
+      }
+      setIsConfigLoaded(true);
+    });
+    return () => unsub();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,21 +38,21 @@ export default function AuditionPage() {
       });
 
       const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Submission failed");
-      }
+      if (!response.ok) throw new Error(result.error || "Submission failed");
 
       setStatus("success");
-      // 🧹 Clear the form, including the new fields
       setFormData({ name: "", email: "", phone: "", role: "", reason: "", portfolio: "" }); 
-
     } catch (error: any) {
       console.error("Form Error:", error);
       setErrorMessage(error.message);
       setStatus("error");
     }
   };
+
+  // ⏳ Show nothing until we know the Admin's setting
+  if (!isConfigLoaded) {
+    return <main className="min-h-screen bg-[#1A1A1A] flex justify-center items-center font-black uppercase text-[#06D6A0] animate-pulse">Prepping the Stage...</main>;
+  }
 
   return (
     <main className="min-h-screen bg-[#1A1A1A] pt-32 pb-20 px-6 text-[#FFF9F0] flex justify-center items-center">
@@ -57,7 +71,27 @@ export default function AuditionPage() {
           </p>
         </motion.div>
 
-        {status === "success" ? (
+        {/* 🛑 IF ADMIN HAS PAUSED AUDITIONS */}
+        {!isFormOpen ? (
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white/5 border-2 border-white/10 rounded-[2rem] p-10 text-center backdrop-blur-sm"
+          >
+            <h2 className="text-3xl font-black uppercase text-[#FF5F5F] mb-4">The Curtain is Drawn</h2>
+            <p className="font-bold text-[#FFF9F0]/80 mb-8 leading-relaxed">
+              We are not accepting new auditions at this exact moment. The casting team is currently reviewing submissions. 
+              <br/><br/>
+              Keep an eye on the stage notices for our next opening!
+            </p>
+            <Link href="/" className="inline-block bg-[#FFF9F0] text-[#1A1A1A] font-black uppercase px-8 py-3 rounded-full hover:scale-105 transition-transform tracking-widest text-[10px]">
+              Return to Homepage
+            </Link>
+          </motion.div>
+        ) : 
+
+        /* ✅ IF AUDITIONS ARE OPEN */
+        status === "success" ? (
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -67,15 +101,13 @@ export default function AuditionPage() {
             <p className="font-bold text-[#FFF9F0]/80 mb-8">
               Your audition profile has been securely sent to the Director's desk. We will contact you shortly with your time slot.
             </p>
-            <Link href="/" className="inline-block bg-[#06D6A0] text-[#1A1A1A] font-black uppercase px-8 py-3 rounded-full hover:scale-105 transition-transform">
+            <Link href="/" className="inline-block bg-[#06D6A0] text-[#1A1A1A] font-black uppercase px-8 py-3 rounded-full hover:scale-105 transition-transform tracking-widest text-[10px]">
               Return to Stage
             </Link>
           </motion.div>
         ) : (
           <motion.form 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             onSubmit={handleSubmit} 
             className="bg-white/5 border border-white/10 p-8 md:p-12 rounded-3xl backdrop-blur-sm space-y-6"
           >
@@ -112,25 +144,18 @@ export default function AuditionPage() {
                   <option value="Technical">Stage / Tech Crew</option>
                 </select>
               </div>
-              
-              {/* 🔗 NEW PORTFOLIO FIELD */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Portfolio / Work (Optional)</label>
                 <input type="url" value={formData.portfolio} onChange={e => setFormData({...formData, portfolio: e.target.value})} className="w-full bg-black/50 border border-white/20 rounded-xl p-4 text-[#FFF9F0] focus:border-[#06D6A0] focus:outline-none transition-colors font-bold" placeholder="Link (Instagram, Drive, etc.)" />
               </div>
             </div>
 
-            {/* 🎭 NEW REASON FIELD */}
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Why do you want to join Swaang?</label>
               <textarea required value={formData.reason} onChange={e => setFormData({...formData, reason: e.target.value})} className="w-full bg-black/50 border border-white/20 rounded-xl p-4 text-[#FFF9F0] focus:border-[#06D6A0] focus:outline-none transition-colors font-bold h-24 resize-none" placeholder="Tell us what drives you..." />
             </div>
 
-            <button 
-              type="submit" 
-              disabled={status === "loading"}
-              className="w-full bg-[#FF5F5F] text-white font-black uppercase tracking-widest p-5 rounded-xl hover:bg-[#ff4444] active:scale-[0.98] transition-all disabled:opacity-50 mt-4 flex justify-center items-center"
-            >
+            <button type="submit" disabled={status === "loading"} className="w-full bg-[#FF5F5F] text-white font-black uppercase tracking-widest p-5 rounded-xl hover:bg-[#ff4444] active:scale-[0.98] transition-all disabled:opacity-50 mt-4 flex justify-center items-center">
               {status === "loading" ? <span className="animate-pulse">Transmitting...</span> : "Submit Audition"}
             </button>
           </motion.form>

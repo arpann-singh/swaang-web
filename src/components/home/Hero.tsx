@@ -4,22 +4,22 @@ import { motion } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
-export default function Hero({ data }: { data: any }) {
+// 🔥 Added activeNoticesCount to the incoming props!
+export default function Hero({ data, activeNoticesCount = 0 }: { data: any, activeNoticesCount?: number }) {
   const [activeNotice, setActiveNotice] = useState<any>(null);
   
   // 🧠 THE SMART SCALING FIX:
-  // Extract the raw number from Admin (e.g., "8rem" -> 8)
   const adminTitle = data.styles?.hTitleSize ? parseFloat(data.styles.hTitleSize) : 9;
   const adminTag = data.styles?.hTaglineSize ? parseFloat(data.styles.hTaglineSize) : 1.2;
 
-  // Construct a protective clamp: (Mobile Min, Growth Rate, Desktop Max from Admin)
   const safeTitleSize = `clamp(2rem, 10vw, ${adminTitle}rem)`;
   const safeTagSize = `clamp(0.5rem, 2.5vw, ${adminTag}rem)`;
 
   const imageSource = data.headerImageUrl || data.headerImage;
 
   useEffect(() => {
-    const q = query(collection(db, "notices"), where("live", "==", true));
+    // 🔥 FIXED: Changed "live" to "isActive" so the ticker matches your Admin Panel!
+    const q = query(collection(db, "notices"), where("isActive", "==", true));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) setActiveNotice(snapshot.docs[0].data());
       else setActiveNotice(null);
@@ -50,14 +50,27 @@ export default function Hero({ data }: { data: any }) {
         <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1A] via-transparent to-[#1A1A1A] opacity-90" />
       </div>
 
-      {/* ✍️ CONTENT: Edge-Safe Padding (px-8 on mobile, px-12 on tablets) */}
+      {/* ✍️ CONTENT: Edge-Safe Padding */}
       <div className="relative z-10 text-center px-8 sm:px-12 w-full max-w-6xl flex flex-col items-center justify-center pb-28 md:pb-0">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="w-full"
+          className="w-full flex flex-col items-center"
         >
+          
+          {/* 🚨 NEW: THE ALERT BADGE */}
+          {activeNoticesCount > 0 && (
+            <a 
+              href="#call-board" 
+              className="inline-flex items-center gap-2 bg-[#FF5F5F] border-2 md:border-4 border-[#2D2D2D] text-white px-4 md:px-6 py-2 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all mb-6 md:mb-8 group cursor-pointer"
+            >
+              <span className="w-2 h-2 md:w-3 md:h-3 bg-white rounded-full animate-pulse" />
+              {activeNoticesCount} Active Alert{activeNoticesCount > 1 ? 's' : ''}
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 -mr-2">↓</span>
+            </a>
+          )}
+
           <h1 
             style={{ 
               fontSize: safeTitleSize, 
