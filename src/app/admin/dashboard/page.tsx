@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
-import { doc, onSnapshot, collection, query, orderBy, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,7 +34,6 @@ export default function AdminDashboard() {
       setMessages(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    // 🔥 THE FIX: Now correctly pointing to "auditions" and sorting by "submittedAt"
     onSnapshot(query(collection(db, "auditions"), orderBy("submittedAt", "desc")), (s) => {
       setAuditions(s.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
@@ -54,18 +53,29 @@ export default function AdminDashboard() {
     { id: "credits", label: "Credits", color: "bg-[#FF5F5F]" },
   ];
 
-  if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase">Syncing Dashboard...</div>;
+  if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest">Syncing Dashboard...</div>;
 
   return (
-    <div className="min-h-screen bg-[#FFF9F0] flex font-sans text-[#2D2D2D]">
-      <aside className="w-72 bg-white border-r-4 border-[#2D2D2D] p-8 flex flex-col h-screen sticky top-0 overflow-y-auto">
-        <h2 className="font-cinzel text-3xl font-black mb-8 tracking-tighter uppercase">SWAANG</h2>
-        <nav className="flex flex-col gap-3">
+    // 🔥 The crucial flex-col on mobile makes the sidebar jump to the top!
+    <div className="min-h-screen bg-[#FFF9F0] flex flex-col xl:flex-row font-sans text-[#2D2D2D] w-full overflow-hidden">
+      
+      {/* 📱 TOP BAR ON MOBILE / SIDEBAR ON DESKTOP */}
+      <aside className="w-full xl:w-72 bg-white border-b-4 xl:border-b-0 xl:border-r-4 border-[#2D2D2D] flex flex-col shrink-0 h-auto xl:h-screen sticky top-0 z-50">
+        
+        <div className="p-4 xl:p-8 pb-3 xl:pb-0 flex justify-between items-center xl:items-start xl:flex-col">
+          <h2 className="font-cinzel text-2xl xl:text-3xl font-black xl:mb-8 tracking-tighter uppercase">SWAANG</h2>
+          <button onClick={() => signOut(auth)} className="xl:hidden px-4 py-2 border-2 border-[#2D2D2D] rounded-lg font-black uppercase text-[9px] bg-red-100 text-red-600 shadow-[2px_2px_0px_#2D2D2D] active:translate-y-0.5 active:shadow-none">
+            Sign Out
+          </button>
+        </div>
+
+        {/* 👆 SWIPEABLE HORIZONTAL MENU ON MOBILE */}
+        <nav className="flex flex-row xl:flex-col gap-2 xl:gap-3 px-4 xl:px-8 pb-4 xl:pb-0 overflow-x-auto no-scrollbar items-center xl:items-stretch whitespace-nowrap w-full">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`p-4 rounded-2xl border-4 border-[#2D2D2D] font-black uppercase text-[11px] transition-all ${activeTab === tab.id ? `${tab.color} text-white shadow-[6px_6px_0px_#2D2D2D] -translate-y-1` : "bg-white shadow-[4px_4px_0px_#2D2D2D]"}`}
+              className={`shrink-0 px-4 py-2.5 xl:p-4 rounded-xl xl:rounded-2xl border-2 xl:border-4 border-[#2D2D2D] font-black uppercase text-[10px] xl:text-[11px] transition-all ${activeTab === tab.id ? `${tab.color} text-white shadow-[3px_3px_0px_#2D2D2D] xl:shadow-[6px_6px_0px_#2D2D2D] -translate-y-0.5 xl:-translate-y-1` : "bg-white shadow-[2px_2px_0px_#2D2D2D] xl:shadow-[4px_4px_0px_#2D2D2D]"}`}
             >
               {tab.label}
               {tab.id === "inbox" && messages.length > 0 && ` (${messages.length})`}
@@ -74,12 +84,15 @@ export default function AdminDashboard() {
           ))}
         </nav>
         
-        <button onClick={() => signOut(auth)} className="mt-auto p-4 border-4 border-[#2D2D2D] rounded-xl font-black uppercase text-[9px] bg-gray-50">Sign Out</button>
+        <button onClick={() => signOut(auth)} className="hidden xl:block mt-auto mx-8 mb-8 p-4 border-4 border-[#2D2D2D] rounded-xl font-black uppercase text-[9px] bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-colors">
+          Sign Out
+        </button>
       </aside>
 
-      <main className="flex-1 p-16 overflow-y-auto">
+      {/* 🎭 MAIN CONTENT AREA */}
+      <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto p-2 sm:p-6 xl:p-12">
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
             {activeTab === "branding" && <BrandingEditor />}
             {activeTab === "spotlight" && <AOTMManager />}
             {activeTab === "timeline" && <TimelineManager />}
