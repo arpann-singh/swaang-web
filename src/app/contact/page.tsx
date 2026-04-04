@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
+  // 🔥 ADDED 'phone' to the initial state
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -14,7 +15,6 @@ export default function ContactPage() {
     setErrorMessage("");
 
     try {
-      // 🔥 Hits your secure server tunnel instead of Firebase client
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -28,7 +28,8 @@ export default function ContactPage() {
       }
 
       setStatus("success");
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      // 🔥 Reset 'phone' along with everything else
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
 
     } catch (error: any) {
       console.error("Form Error:", error);
@@ -82,14 +83,20 @@ export default function ContactPage() {
               </div>
             )}
 
+            {/* Changed from 2 columns to 1 on mobile, 3 on desktop so Phone fits nicely */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Full Name</label>
                 <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="Your Name" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Email</label>
                 <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="you@sstc.ac.in" />
+              </div>
+              {/* 🔥 ADDED PHONE INPUT */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Phone Number (Optional)</label>
+                <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="+91 XXXXX XXXXX" />
               </div>
             </div>
 

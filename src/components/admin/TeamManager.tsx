@@ -1,161 +1,211 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { 
-  collection, addDoc, doc, deleteDoc, updateDoc, 
-  onSnapshot, query, orderBy 
-} from "firebase/firestore";
-import { motion, AnimatePresence } from "framer-motion";
+import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from "firebase/firestore";
 
-const TeamManager = () => {
+export default function TeamManager() {
   const [team, setTeam] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ 
+    name: "", 
+    role: "", 
+    branch: "", 
+    year: "", 
+    image: "", 
+    status: "current", 
+    showOnHome: false,
+    isPresident: false, // 🔥 NEW: President Flag
+    term: ""            // 🔥 NEW: President Term
+  });
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
-  const IMGBB_API_KEY = "098e6a70fbe6f7594e40f4641a1998b0"; // 👈 PASTE YOUR KEY HERE
-
-  const [formData, setFormData] = useState({
-    name: "",
-    role: "",
-    image: "",
-    branch: "",
-    year: "",
-    status: "current",
-    showOnHome: false
-  });
 
   useEffect(() => {
-    const q = query(collection(db, "team"), orderBy("name", "asc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setTeam(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setLoading(false);
+    const unsub = onSnapshot(collection(db, "team"), (snap) => {
+      let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Sort by creation time in Javascript to avoid Firebase Index errors!
+      fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setTeam(fetched);
     });
     return () => unsub();
   }, []);
 
-  const handlePhotoUpload = async (e: any) => {
+  const handleUpload = async (e: any) => {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const body = new FormData();
-    body.append("image", file);
+    const formData = new FormData();
+    formData.append("image", file);
+    
     try {
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: "POST",
-        body: body,
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`, {
+        method: "POST", body: formData
       });
       const data = await res.json();
-      if (data.success) setFormData({ ...formData, image: data.data.url });
+      if (data.success) setForm({ ...form, image: data.data.url });
     } catch (err) {
-      alert("Photo upload failed.");
+      alert("Upload failed.");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleEdit = (member: any) => {
-    setEditingId(member.id);
-    setFormData({
-      name: member.name,
-      role: member.role,
-      image: member.image,
-      branch: member.branch || "",
-      year: member.year || "",
-      status: member.status || "current",
-      showOnHome: member.showOnHome || false
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    if (!formData.image) return alert("Please upload a photo first!");
+  const saveMember = async () => {
+    if (!form.name || !form.role) return alert("Name and Role are required!");
+    
     try {
       if (editingId) {
-        await updateDoc(doc(db, "team", editingId), formData);
+        await updateDoc(doc(db, "team", editingId), form);
         setEditingId(null);
       } else {
-        await addDoc(collection(db, "team"), { ...formData, isArtistOfMonth: false });
+        const newId = doc(collection(db, "team")).id;
+        await setDoc(doc(db, "team", newId), { ...form, createdAt: Date.now() });
       }
-      setFormData({ name: "", role: "", image: "", branch: "", year: "", status: "current", showOnHome: false });
+      setForm({ name: "", role: "", branch: "", year: "", image: "", status: "current", showOnHome: false, isPresident: false, term: "" });
     } catch (err) {
-      alert("Error saving artist profile.");
+      alert("Failed to save member.");
     }
   };
 
-  // Logic for Artist of the Month (Only 1 at a time)
-  const toggleAOTM = async (id: string, current: boolean) => {
-    if (!current) {
-      for (const m of team) {
-        if (m.isArtistOfMonth) await updateDoc(doc(db, "team", m.id), { isArtistOfMonth: false });
-      }
-    }
-    await updateDoc(doc(db, "team", id), { isArtistOfMonth: !current });
+  const startEdit = (member: any) => {
+    setForm({ 
+      name: member.name || member.fullName || "", 
+      role: member.role || "", 
+      branch: member.branch || "", 
+      year: member.year || "", 
+      image: member.image || member.photo || member.imageUrl || "", 
+      status: member.status || "current",
+      showOnHome: member.showOnHome || false,
+      isPresident: member.isPresident || false,
+      term: member.term || ""
+    });
+    setEditingId(member.id);
   };
 
-  // Logic for Home Visibility (Multiple allowed)
-  const toggleHomeVisibility = async (id: string, current: boolean) => {
-    await updateDoc(doc(db, "team", id), { showOnHome: !current });
+  const toggleHome = async (id: string, currentStatus: boolean) => {
+    await updateDoc(doc(db, "team", id), { showOnHome: !currentStatus });
   };
-
-  if (loading) return <div className="p-10 font-black text-gray-400">Loading the Ensemble...</div>;
 
   return (
-    <div className="space-y-12">
-      <div className="border-b-4 border-[#2D2D2D] pb-6">
-        <h1 className="text-5xl font-black tracking-tighter uppercase text-[#2D2D2D]">Ensemble Directory</h1>
-      </div>
+    <div className="p-4 md:p-8">
+      <h2 className="text-3xl md:text-5xl font-black uppercase mb-8 border-b-8 border-[#2D2D2D] pb-4 tracking-tighter">Ensemble Directory</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* FORM SIDE */}
+        <div className="lg:col-span-5 bg-white border-4 border-[#2D2D2D] p-6 rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D] h-fit">
+          <h3 className="font-black text-[#06D6A0] uppercase tracking-widest text-sm mb-6">
+            {editingId ? "Edit Member" : "New Member"}
+          </h3>
+          
+          <div className="space-y-4">
+            <label className="block w-full border-4 border-dashed border-[#2D2D2D]/30 p-8 text-center rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors">
+              <input type="file" className="hidden" onChange={handleUpload} />
+              {uploading ? (
+                <span className="font-black uppercase animate-pulse">Uploading...</span>
+              ) : form.image ? (
+                <img src={form.image} className="w-24 h-24 object-cover rounded-full mx-auto border-4 border-[#2D2D2D]" alt="Preview" />
+              ) : (
+                <span className="text-[10px] font-black uppercase text-gray-400">Click to Upload Photo</span>
+              )}
+            </label>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-        <div className="xl:col-span-1">
-          <form onSubmit={handleSubmit} className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[10px_10px_0px_#2D2D2D] space-y-5 sticky top-10">
-            <h2 className="font-black uppercase text-[#06D6A0] tracking-widest text-sm">
-              {editingId ? "Update Member" : "New Member"}
-            </h2>
-            <div className="relative group w-full h-44 bg-[#FFF9F0] border-4 border-dashed border-[#2D2D2D] rounded-3xl overflow-hidden flex items-center justify-center">
-              {formData.image ? <img src={formData.image} className="w-full h-full object-cover" alt="preview" /> : <span className="text-[10px] font-black uppercase opacity-30">{uploading ? "Uploading..." : "Click to Upload Photo"}</span>}
-              <input type="file" onChange={handlePhotoUpload} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
-            </div>
-            <input required type="text" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold bg-[#FFF9F0]" />
-            <input required type="text" placeholder="Role" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
+            <input placeholder="Full Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
+            <input placeholder="Role (e.g. Actor, Director)" value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
+            
             <div className="grid grid-cols-2 gap-4">
-              <input type="text" placeholder="Branch" value={formData.branch} onChange={e => setFormData({...formData, branch: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-xs" />
-              <input type="text" placeholder="Year" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-xs" />
+              <input placeholder="Branch" value={form.branch} onChange={e => setForm({...form, branch: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
+              <input placeholder="Year" value={form.year} onChange={e => setForm({...form, year: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
             </div>
-            <div className="flex gap-2">
-              <button type="submit" disabled={uploading} className="flex-1 bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all disabled:opacity-50">
-                {editingId ? "Save Profile" : "Onboard"}
+
+            <select 
+              value={form.status} 
+              onChange={e => setForm({...form, status: e.target.value})} 
+              className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl appearance-none cursor-pointer"
+            >
+              <option value="current">Active Member</option>
+              <option value="alumni">Alumni Legacy</option>
+            </select>
+
+            {/* 🔥 PRESIDENTIAL CONTROLS */}
+            <div className="border-2 border-[#FFD166] bg-yellow-50 p-4 rounded-xl space-y-3">
+              <div className="flex items-center gap-3">
+                <input 
+                  type="checkbox" 
+                  checked={form.isPresident} 
+                  onChange={e => setForm({...form, isPresident: e.target.checked})}
+                  className="w-5 h-5 accent-[#FFD166] cursor-pointer"
+                />
+                <span className="font-black text-[10px] uppercase tracking-widest text-[#2D2D2D]">Club President?</span>
+              </div>
+              {form.isPresident && (
+                <input 
+                  placeholder="Term (e.g. 2024-2025)" 
+                  value={form.term} 
+                  onChange={e => setForm({...form, term: e.target.value})} 
+                  className="w-full border-2 border-[#2D2D2D] p-3 font-bold rounded-lg text-sm" 
+                />
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 bg-gray-100 p-4 rounded-xl border-2 border-[#2D2D2D]">
+              <input 
+                type="checkbox" 
+                checked={form.showOnHome} 
+                onChange={e => setForm({...form, showOnHome: e.target.checked})}
+                className="w-5 h-5 accent-[#06D6A0] cursor-pointer"
+              />
+              <span className="font-black text-[10px] uppercase tracking-widest text-[#2D2D2D]">Show on Homepage</span>
+            </div>
+
+            <button onClick={saveMember} className="w-full bg-[#06D6A0] text-[#2D2D2D] font-black uppercase py-4 rounded-xl border-4 border-[#2D2D2D] shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all">
+              {editingId ? "Update Member" : "Onboard Member"}
+            </button>
+            
+            {editingId && (
+              <button onClick={() => {setEditingId(null); setForm({ name: "", role: "", branch: "", year: "", image: "", status: "current", showOnHome: false, isPresident: false, term: "" });}} className="w-full text-center text-[10px] font-black uppercase text-red-500 mt-2 hover:underline">
+                Cancel Edit
               </button>
-              {editingId && <button type="button" onClick={() => {setEditingId(null); setFormData({name:"", role:"", image:"", branch:"", year:"", status:"current", showOnHome:false})}} className="bg-gray-200 border-4 border-[#2D2D2D] px-4 rounded-xl font-black uppercase text-xs">X</button>}
-            </div>
-          </form>
+            )}
+          </div>
         </div>
 
-        <div className="xl:col-span-2 space-y-4">
-          <AnimatePresence>
-            {team.map((m) => (
-              <motion.div layout key={m.id} className="bg-white border-4 border-[#2D2D2D] p-5 rounded-[2rem] shadow-[6px_6px_0px_#2D2D2D] flex flex-col md:flex-row items-center gap-5">
-                <img src={m.image} alt={m.name} className={`w-16 h-16 rounded-full object-cover border-4 border-[#2D2D2D] ${m.isArtistOfMonth ? "border-[#FF5F5F]" : ""}`} />
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="text-lg font-black uppercase tracking-tight">{m.name}</h3>
-                  <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-1">
-                    {m.isArtistOfMonth && <span className="bg-[#FF5F5F] text-white text-[8px] font-black px-2 py-0.5 rounded border border-[#2D2D2D]">🏆 AOTM</span>}
-                    {m.showOnHome && <span className="bg-[#FFD166] text-[#2D2D2D] text-[8px] font-black px-2 py-0.5 rounded border border-[#2D2D2D]">🏠 HOME</span>}
+        {/* LIST SIDE */}
+        <div className="lg:col-span-7 space-y-4 max-h-[80vh] overflow-y-auto pr-2 pb-20">
+          {team.map(m => (
+            <div key={m.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-4 border-[#2D2D2D] bg-white rounded-[2rem] shadow-[4px_4px_0px_#2D2D2D] gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gray-200 rounded-full border-2 border-[#2D2D2D] overflow-hidden shrink-0">
+                  {(m.image || m.photo || m.imageUrl) ? <img src={m.image || m.photo || m.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs">🎭</div>}
+                </div>
+                <div>
+                  <h4 className="font-black uppercase text-[#2D2D2D] text-sm leading-tight">{m.name || m.fullName}</h4>
+                  <div className="flex gap-2 mt-1">
+                    {m.isPresident && <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded-sm border border-[#2D2D2D] bg-[#FFD166]">👑 President</span>}
+                    {!m.isPresident && m.status === 'alumni' && <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded-sm border border-[#2D2D2D] bg-gray-200">🎓 Alumni</span>}
+                    {!m.isPresident && (m.status === 'current' || !m.status) && <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded-sm border border-[#2D2D2D] bg-[#06D6A0]">🎭 Active</span>}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <button onClick={() => toggleAOTM(m.id, m.isArtistOfMonth)} className={`px-3 py-2 rounded-xl border-2 border-[#2D2D2D] font-black text-[9px] uppercase shadow-[2px_2px_0px_#2D2D2D] ${m.isArtistOfMonth ? "bg-[#FF5F5F] text-white" : "bg-white"}`}>🏆 AOTM</button>
-                  <button onClick={() => toggleHomeVisibility(m.id, m.showOnHome)} className={`px-3 py-2 rounded-xl border-2 border-[#2D2D2D] font-black text-[9px] uppercase shadow-[2px_2px_0px_#2D2D2D] ${m.showOnHome ? "bg-[#FFD166]" : "bg-white"}`}>🏠 HOME</button>
-                  <button onClick={() => handleEdit(m)} className="bg-white border-2 border-[#2D2D2D] px-3 py-2 rounded-xl text-[9px] font-black uppercase">Edit</button>
-                  <button onClick={() => deleteDoc(doc(db, "team", m.id))} className="bg-white text-red-500 border-2 border-red-500 p-2 rounded-xl">🗑️</button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+              </div>
+
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button 
+                  onClick={() => toggleHome(m.id, m.showOnHome)} 
+                  className={`flex-1 sm:flex-none px-3 py-1.5 border-2 border-[#2D2D2D] rounded-lg font-black text-[9px] uppercase transition-colors ${m.showOnHome ? 'bg-[#FF5F5F] text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                >
+                  🏠 Home
+                </button>
+                <button onClick={() => startEdit(m)} className="px-3 py-1.5 border-2 border-[#2D2D2D] rounded-lg font-black text-[9px] uppercase bg-gray-100 hover:bg-gray-200">
+                  Edit
+                </button>
+                <button onClick={() => confirm("Remove member?") && deleteDoc(doc(db, "team", m.id))} className="px-3 py-1.5 border-2 border-[#2D2D2D] rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
+
       </div>
     </div>
   );
-};
-export default TeamManager;
+}
