@@ -165,7 +165,7 @@ export default function Footer() {
               <span className="text-[10px]">🔒</span> Stage Door
             </Link>
             <span className="text-white/10">|</span>
-            <Link href="/admin/login" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#06D6A0] transition-colors flex items-center gap-2">
+            <Link href="/admin/" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#06D6A0] transition-colors flex items-center gap-2">
               <span className="text-[10px]">⚙️</span> Directorate
             </Link>
           </div>
