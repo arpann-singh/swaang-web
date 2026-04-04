@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 export default function Footer() {
   const pathname = usePathname();
 
+  // Keep the footer hidden when you are actually inside the Admin Panel!
   if (pathname?.startsWith("/admin")) return null;
 
   return (
@@ -69,7 +70,6 @@ export default function Footer() {
             <h3 className="font-black uppercase tracking-[0.2em] text-[#06D6A0] text-xs mb-6">Social Hub</h3>
             
             <div className="flex flex-wrap gap-4">
-              {/* Instagram Button */}
               <a href="https://instagram.com/swaangclub" target="_blank" rel="noreferrer" className="flex items-center gap-3 border-2 border-white hover:border-[#FF5F5F] hover:bg-[#FF5F5F] text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-[4px_4px_0px_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 group">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 group-hover:scale-110 transition-transform">
                   <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
@@ -79,7 +79,6 @@ export default function Footer() {
                 Instagram
               </a>
 
-              {/* YouTube Button */}
               <a href="https://youtube.com/@swaangclub" target="_blank" rel="noreferrer" className="flex items-center gap-3 border-2 border-white hover:border-[#FFD166] hover:bg-[#FFD166] hover:text-[#1A1A1A] text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-[4px_4px_0px_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 group">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 group-hover:scale-110 transition-transform">
                   <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/>
@@ -93,15 +92,26 @@ export default function Footer() {
         </div>
 
         {/* 🎬 BOTTOM STAGE LINE */}
-        <div className="border-t-2 border-[#2D2D2D] pt-8 flex flex-col md:flex-row justify-between items-center md:items-end gap-6">
+        <div className="border-t-2 border-[#2D2D2D] pt-8 flex flex-col lg:flex-row justify-between items-center gap-6">
           
-          <div className="text-center md:text-left">
+          <div className="text-center lg:text-left">
             <p className="font-bold text-xs uppercase tracking-widest text-white/60 mb-2">
               © {new Date().getFullYear()} SWAANG DRAMA CLUB • SSTC BHILAI
             </p>
           </div>
 
-          <div className="text-center md:text-right group cursor-default">
+          {/* 🔥 NEW: The Secret Backstage & Admin Links */}
+          <div className="flex items-center gap-6">
+            <Link href="/crew" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 hover:text-[#FF5F5F] transition-colors flex items-center gap-2">
+              <span className="text-xs">🔒</span> Stage Door
+            </Link>
+            <span className="text-white/20">|</span>
+            <Link href="/admin/login" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 hover:text-[#06D6A0] transition-colors flex items-center gap-2">
+              <span className="text-xs">⚙️</span> Directorate
+            </Link>
+          </div>
+
+          <div className="text-center lg:text-right group cursor-default">
             <p className="font-black text-[8px] uppercase tracking-[0.4em] text-white/50 mb-1 group-hover:text-white transition-colors">
               Developed By
             </p>

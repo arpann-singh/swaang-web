@@ -12,10 +12,11 @@ import AuditionsManager from "@/components/admin/AuditionsManager";
 import EventsManager from "@/components/admin/EventsManager";
 import TeamManager from "@/components/admin/TeamManager";
 import GalleryManager from "@/components/admin/GalleryManager";
-import NoticesManager from "@/components/admin/NoticesManager";
 import AOTMManager from "@/components/admin/AOTMManager";
 import TimelineManager from "@/components/admin/TimelineManager";
 import CreditsEditor from "@/components/admin/CreditsEditor";
+import NoticesManager from "@/components/admin/NoticesManager";
+import BackstageManager from "@/components/admin/BackstageManager";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("branding");
@@ -49,17 +50,16 @@ export default function AdminDashboard() {
     { id: "events", label: "Events", color: "bg-[#06D6A0]" },
     { id: "team", label: "Team", color: "bg-[#FF5F5F]" },
     { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
-    { id: "notices", label: "Notices", color: "bg-[#06D6A0]" },
+    { id: "notices", label: "Public", color: "bg-[#FF5F5F]" },
+    { id: "backstage", label: "Backstage", color: "bg-[#06D6A0]" },
     { id: "credits", label: "Credits", color: "bg-[#FF5F5F]" },
   ];
 
-  if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest">Syncing Dashboard...</div>;
+  if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest text-[#2D2D2D]">Syncing Dashboard...</div>;
 
   return (
-    // 🔥 The crucial flex-col on mobile makes the sidebar jump to the top!
     <div className="min-h-screen bg-[#FFF9F0] flex flex-col xl:flex-row font-sans text-[#2D2D2D] w-full overflow-hidden">
       
-      {/* 📱 TOP BAR ON MOBILE / SIDEBAR ON DESKTOP */}
       <aside className="w-full xl:w-72 bg-white border-b-4 xl:border-b-0 xl:border-r-4 border-[#2D2D2D] flex flex-col shrink-0 h-auto xl:h-screen sticky top-0 z-50">
         
         <div className="p-4 xl:p-8 pb-3 xl:pb-0 flex justify-between items-center xl:items-start xl:flex-col">
@@ -69,7 +69,6 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* 👆 SWIPEABLE HORIZONTAL MENU ON MOBILE */}
         <nav className="flex flex-row xl:flex-col gap-2 xl:gap-3 px-4 xl:px-8 pb-4 xl:pb-0 overflow-x-auto no-scrollbar items-center xl:items-stretch whitespace-nowrap w-full">
           {tabs.map((tab) => (
             <button
@@ -89,7 +88,6 @@ export default function AdminDashboard() {
         </button>
       </aside>
 
-      {/* 🎭 MAIN CONTENT AREA */}
       <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto p-2 sm:p-6 xl:p-12">
         <AnimatePresence mode="wait">
           <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
@@ -102,6 +100,7 @@ export default function AdminDashboard() {
             {activeTab === "team" && <TeamManager />}
             {activeTab === "gallery" && <GalleryManager />}
             {activeTab === "notices" && <NoticesManager />}
+            {activeTab === "backstage" && <BackstageManager />}
             {activeTab === "credits" && <CreditsEditor />}
           </motion.div>
         </AnimatePresence>

@@ -151,11 +151,24 @@ export default function Footer() {
         </div>
 
         {/* 📜 BOTTOM BAR */}
-        <div className="pt-8 flex flex-col md:flex-row justify-between items-center md:items-end gap-6 text-center md:text-left">
+        <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           
-          <p className="font-bold text-xs uppercase tracking-widest text-white/60 mb-2 md:mb-0">
-            © {new Date().getFullYear()} Swaang Drama Club • SSTC Bhilai
-          </p>
+          <div className="text-center md:text-left">
+            <p className="font-bold text-xs uppercase tracking-widest text-white/60 mb-2 md:mb-0">
+              © {new Date().getFullYear()} Swaang Drama Club • SSTC Bhilai
+            </p>
+          </div>
+
+          {/* 🔥 NEW: The Secret Backstage & Admin Links */}
+          <div className="flex items-center gap-6">
+            <Link href="/crew" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#FF5F5F] transition-colors flex items-center gap-2">
+              <span className="text-[10px]">🔒</span> Stage Door
+            </Link>
+            <span className="text-white/10">|</span>
+            <Link href="/admin/login" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#06D6A0] transition-colors flex items-center gap-2">
+              <span className="text-[10px]">⚙️</span> Directorate
+            </Link>
+          </div>
           
           <div className="text-center md:text-right group cursor-default">
             <p className="font-black text-[8px] uppercase tracking-[0.4em] text-white/50 mb-1 group-hover:text-white transition-colors">
