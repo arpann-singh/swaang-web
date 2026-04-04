@@ -25,13 +25,22 @@ export default function Home() {
     onSnapshot(doc(db, "settings", "homepage"), (d) => setData(d.data() || {}));
     onSnapshot(doc(db, "settings", "aotm"), (d) => setAotm(d.data()));
     
+    // 🔥 FIXED: Changed m.showOnHome to m.isSpotlight so the Ensemble section updates!
     onSnapshot(collection(db, "team"), (s) => 
-      setTeam(s.docs.map(d => ({id: d.id, ...d.data()})).filter((m:any) => m.showOnHome))
+      setTeam(s.docs.map(d => ({id: d.id, ...d.data()})).filter((m:any) => m.isSpotlight))
     );
     
-    onSnapshot(query(collection(db, "events"), orderBy("date", "desc")), (s) => 
-      setEvents(s.docs.map(d => ({id: d.id, ...d.data()})).filter((e:any) => e.showOnHome))
-    );
+    onSnapshot(query(collection(db, "events"), orderBy("date", "desc")), (s) => {
+      const fetchedEvents = s.docs.map(d => ({id: d.id, ...d.data()})).filter((e:any) => e.showOnHome);
+      
+      fetchedEvents.sort((a: any, b: any) => {
+        if (a.isSpotlight && !b.isSpotlight) return -1;
+        if (!a.isSpotlight && b.isSpotlight) return 1;
+        return 0; 
+      });
+      
+      setEvents(fetchedEvents);
+    });
     
     onSnapshot(query(collection(db, "timeline"), orderBy("year", "asc")), (s) => {
       setTimeline(s.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -45,7 +54,6 @@ export default function Home() {
     });
   }, []);
 
-  // 🔥 NEW: Calculate how many notices are currently "Live"
   const activeNoticesCount = notices.filter(n => n.isActive).length;
 
   if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-tighter">Cleaning the Stage...</div>;
@@ -53,10 +61,8 @@ export default function Home() {
   return (
     <PageTransition>
       <main className="min-h-screen">
-        {/* 🔥 NEW: Pass the count to the Hero component */}
         <Hero data={data} activeNoticesCount={activeNoticesCount} />
         
-        {/* 🔥 NEW: Added an ID so the Hero button can scroll directly to this spot! */}
         <div id="call-board">
           <StageNotices notices={notices} />
         </div>

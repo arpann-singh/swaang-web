@@ -19,7 +19,8 @@ export default function Productions({ events }: { events: any[] }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {events.slice(0, 3).map((e, i) => (
+          {/* 🔥 FIXED: Removed .slice(0, 3) to render dynamic list */}
+          {events.map((e, i) => (
             <motion.div 
               key={e.id}
               initial={{ y: 50, opacity: 0 }}
