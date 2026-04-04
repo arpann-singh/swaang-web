@@ -7,7 +7,6 @@ export default function BackstageManager() {
   const [notices, setNotices] = useState<any[]>([]);
   const [vault, setVault] = useState<any[]>([]);
   
-  // 🔥 NEW: State for Call Sheet and Security
   const [crewSettings, setCrewSettings] = useState({
     passcode: "SWAANG26",
     callDate: "",
@@ -20,21 +19,20 @@ export default function BackstageManager() {
   const [vaultForm, setVaultForm] = useState({ title: "", link: "", type: "script" });
 
   useEffect(() => {
-    // Fetch Private Call Board
+    // 🔥 FIXED: Added "as any" and typed a, b as "any" to satisfy Vercel's strict build
     const noticeSub = onSnapshot(collection(db, "callboard"), (snap) => {
-      let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+      fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
       setNotices(fetched);
     });
 
-    // Fetch Vault
+    // 🔥 FIXED: Added "as any" and typed a, b as "any" to satisfy Vercel's strict build
     const vaultSub = onSnapshot(collection(db, "vault"), (snap) => {
-      let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+      fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
       setVault(fetched);
     });
 
-    // 🔥 NEW: Fetch Crew Settings (Passcode & Call Sheet)
     const settingsSub = onSnapshot(doc(db, "settings", "crew"), (docSnap) => {
       if (docSnap.exists()) {
         setCrewSettings(prev => ({ ...prev, ...docSnap.data() }));
@@ -44,7 +42,6 @@ export default function BackstageManager() {
     return () => { noticeSub(); vaultSub(); settingsSub(); };
   }, []);
 
-  // 🔥 NEW: Save Call Sheet & Security
   const saveCrewSettings = async () => {
     try {
       await setDoc(doc(db, "settings", "crew"), crewSettings, { merge: true });
@@ -58,7 +55,7 @@ export default function BackstageManager() {
       await addDoc(collection(db, "callboard"), { 
         ...noticeForm, 
         createdAt: Date.now(),
-        acknowledgedBy: [] // 🔥 NEW: Empty array to track who read it!
+        acknowledgedBy: [] 
       });
       setNoticeForm({ title: "", message: "", priority: "normal", author: "Directorate" });
     } catch (err) { alert("Failed to post notice."); }
@@ -87,7 +84,6 @@ export default function BackstageManager() {
         <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Manage Crew Resources</p>
       </div>
 
-      {/* 🔥 NEW: THE COMMAND CENTER (Call Sheet & Passcode) */}
       <div className="bg-[#2D2D2D] border-4 border-[#FFD166] p-6 rounded-[2rem] shadow-[8px_8px_0px_#FFD166] mb-12 text-white">
         <div className="flex items-center gap-3 mb-6">
            <div className="h-8 w-2 bg-[#FFD166] rounded-full" />
@@ -123,7 +119,6 @@ export default function BackstageManager() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
         
-        {/* 📢 THE MEGAPHONE */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
              <div className="h-8 w-2 bg-[#FFD166] rounded-full" />
@@ -155,7 +150,6 @@ export default function BackstageManager() {
                   <p className="text-[10px] font-bold opacity-60 line-clamp-1 mt-1">{n.message}</p>
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-[8px] font-black uppercase tracking-widest text-[#06D6A0] block">{n.author}</span>
-                    {/* 🔥 NEW: Acknowledgment Counter */}
                     {n.priority === 'urgent' && (
                       <span className="text-[8px] font-black uppercase tracking-widest bg-gray-100 px-2 py-1 rounded-md">
                         👀 {n.acknowledgedBy?.length || 0} Read
@@ -171,7 +165,6 @@ export default function BackstageManager() {
           </div>
         </div>
 
-        {/* 🗄️ THE FILING CABINET */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
              <div className="h-8 w-2 bg-[#06D6A0] rounded-full" />
