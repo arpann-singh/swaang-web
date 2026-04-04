@@ -17,8 +17,9 @@ export default function InboxManager({ messages: initialMessages }: { messages?:
       // Fallback in case the Firebase index hasn't been built yet
       console.warn("Falling back to JS sorting", error);
       const fallbackUnsub = onSnapshot(collection(db, "messages"), (fallbackSnap) => {
-        let fetched = fallbackSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        // 🔥 FIXED: Added "as any" and typed a, b as "any" to satisfy Vercel
+        let fetched = fallbackSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+        fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
         setMessages(fetched);
       });
     });
