@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
-// 🔥 NEW: Import our token generator
 import { getDeviceToken } from "@/lib/firebase";
 
 export default function BackstageManager() {
@@ -17,20 +16,20 @@ export default function BackstageManager() {
     callWho: "Full Cast & Crew"
   });
 
-  // 🔥 FIXED: Added sendPush boolean to the state
   const [noticeForm, setNoticeForm] = useState({ title: "", message: "", priority: "normal", author: "Directorate", sendPush: false });
-  const [vaultForm, setVaultForm] = useState({ title: "", link: "", type: "script" });
+  // 🔥 UPDATED: Added sendPush to Vault form state
+  const [vaultForm, setVaultForm] = useState({ title: "", link: "", type: "script", sendPush: false });
 
   useEffect(() => {
     const noticeSub = onSnapshot(collection(db, "callboard"), (snap) => {
       let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-      fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+      fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setNotices(fetched);
     });
 
     const vaultSub = onSnapshot(collection(db, "vault"), (snap) => {
       let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-      fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+      fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setVault(fetched);
     });
 
@@ -50,35 +49,41 @@ export default function BackstageManager() {
     } catch (err) { alert("Failed to save settings."); }
   };
 
-  // 🔥 NEW: Function for Crew Members to Opt-In to Notifications
-  const enableNotifications = async () => {
+  // 🔥 NEW: Register this specific device as an ADMIN
+  const registerAsAdmin = async () => {
     try {
-      // Ask for browser permission first before Firebase tries to grab the token
       const permission = await Notification.requestPermission();
-      
-      if (permission === 'denied') {
-        alert("🚨 Notifications are currently BLOCKED in your browser! Please click the padlock icon in your address bar, change Notifications to 'Allow', and try again.");
-        return; // Stop the code here so it doesn't crash Firebase
-      }
+      if (permission === 'denied') return alert("Reset browser permissions first.");
 
       const token = await getDeviceToken();
       if (token) {
-        // Save token to database so we can blast it later
-        await setDoc(doc(db, "fcm_tokens", token), { token, createdAt: Date.now() });
-        alert("Push Notifications Enabled! You will now receive alerts on this device. 🔔");
-      } else {
-        alert("Failed to get token. If you are on iPhone, you must 'Add to Home Screen' first.");
+        // Save token with 'admin' role so you receive Absence/Audition alerts
+        await setDoc(doc(db, "fcm_tokens", token), { 
+          token, 
+          role: "admin", 
+          createdAt: Date.now() 
+        }, { merge: true });
+        alert("Admin device registered! You will now receive internal pings. 👑");
       }
-    } catch (err) {
-      console.error(err);
-      alert("Notification setup failed.");
-    }
+    } catch (err) { alert("Admin setup failed."); }
+  };
+
+  const enableNotifications = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'denied') return alert("Enable notifications in browser.");
+
+      const token = await getDeviceToken();
+      if (token) {
+        await setDoc(doc(db, "fcm_tokens", token), { token, createdAt: Date.now() });
+        alert("Push Notifications Enabled! 🔔");
+      }
+    } catch (err) { alert("Setup failed."); }
   };
 
   const postNotice = async () => {
     if (!noticeForm.title || !noticeForm.message) return alert("Title and Message required!");
     try {
-      // 1. Save Notice to Database
       await addDoc(collection(db, "callboard"), { 
         title: noticeForm.title,
         message: noticeForm.message,
@@ -88,41 +93,56 @@ export default function BackstageManager() {
         acknowledgedBy: [] 
       });
 
-      // 2. 🔥 NEW: If Push is checked, trigger the backend API
       if (noticeForm.sendPush) {
-        try {
-           await fetch("/api/notify-crew", {
-             method: "POST",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({ title: noticeForm.title, message: noticeForm.message })
-           });
-           alert("Notice Posted & Push Alert Sent to Crew! 🚀");
-        } catch (e) {
-           console.error("Push Dispatch failed", e);
-           alert("Notice posted, but Push API is missing.");
-        }
-      } else {
-        alert("Notice Posted silently. 🎭");
+        await fetch("/api/notify-crew", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            title: noticeForm.title, 
+            message: noticeForm.message,
+            recipientType: "all" 
+          })
+        });
       }
-
       setNoticeForm({ title: "", message: "", priority: "normal", author: "Directorate", sendPush: false });
-    } catch (err) { alert("Failed to post notice."); }
+      alert("Notice Posted!");
+    } catch (err) { alert("Failed."); }
   };
 
   const deleteNotice = async (id: string) => {
     if (confirm("Delete this notice?")) await deleteDoc(doc(db, "callboard", id));
   };
 
+  // 🔥 UPDATED: Vault Upload with Push Logic
   const addToVault = async () => {
     if (!vaultForm.title || !vaultForm.link) return alert("Title and Link required!");
     try {
-      await addDoc(collection(db, "vault"), { ...vaultForm, createdAt: Date.now() });
-      setVaultForm({ title: "", link: "", type: "script" });
-    } catch (err) { alert("Failed to add to vault."); }
+      await addDoc(collection(db, "vault"), { 
+        title: vaultForm.title, 
+        link: vaultForm.link, 
+        type: vaultForm.type, 
+        createdAt: Date.now() 
+      });
+
+      if (vaultForm.sendPush) {
+        await fetch("/api/notify-crew", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            title: `📜 NEW ${vaultForm.type.toUpperCase()}`, 
+            message: `${vaultForm.title} has been added to the Vault. Check it now!`,
+            recipientType: "all"
+          })
+        });
+      }
+
+      setVaultForm({ title: "", link: "", type: "script", sendPush: false });
+      alert("Vault Updated! 📁");
+    } catch (err) { alert("Failed."); }
   };
 
   const deleteFromVault = async (id: string) => {
-    if (confirm("Remove this item from the vault?")) await deleteDoc(doc(db, "vault", id));
+    if (confirm("Remove this item?")) await deleteDoc(doc(db, "vault", id));
   };
 
   return (
@@ -133,10 +153,15 @@ export default function BackstageManager() {
           <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Manage Crew Resources</p>
         </div>
         
-        {/* 🔥 NEW: The Opt-In Button for Crew Members */}
-        <button onClick={enableNotifications} className="bg-[#06D6A0] text-white border-4 border-[#2D2D2D] px-6 py-3 rounded-xl font-black uppercase text-[10px] md:text-xs shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all">
-          🔔 Subscribe to Crew Alerts
-        </button>
+        <div className="flex gap-3">
+          {/* 🔥 NEW: Admin registration button */}
+          <button onClick={registerAsAdmin} className="bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] px-4 py-2 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 transition-all">
+            👑 Admin Sync
+          </button>
+          <button onClick={enableNotifications} className="bg-[#06D6A0] text-white border-4 border-[#2D2D2D] px-6 py-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 transition-all">
+            🔔 Crew Alerts
+          </button>
+        </div>
       </div>
 
       <div className="bg-[#2D2D2D] border-4 border-[#FFD166] p-6 rounded-[2rem] shadow-[8px_8px_0px_#FFD166] mb-12 text-white">
@@ -148,26 +173,26 @@ export default function BackstageManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <div className="space-y-2 lg:col-span-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Date</label>
-            <input type="text" placeholder="e.g. Oct 24" value={crewSettings.callDate} onChange={e => setCrewSettings({...crewSettings, callDate: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none transition-colors" />
+            <input type="text" placeholder="e.g. Oct 24" value={crewSettings.callDate} onChange={e => setCrewSettings({...crewSettings, callDate: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
           </div>
           <div className="space-y-2 lg:col-span-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Time</label>
-            <input type="text" placeholder="e.g. 5:00 PM" value={crewSettings.callTime} onChange={e => setCrewSettings({...crewSettings, callTime: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none transition-colors" />
+            <input type="text" placeholder="e.g. 5:00 PM" value={crewSettings.callTime} onChange={e => setCrewSettings({...crewSettings, callTime: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
           </div>
           <div className="space-y-2 lg:col-span-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Location</label>
-            <input type="text" placeholder="e.g. Auditorium" value={crewSettings.callLocation} onChange={e => setCrewSettings({...crewSettings, callLocation: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none transition-colors" />
+            <input type="text" placeholder="e.g. Auditorium" value={crewSettings.callLocation} onChange={e => setCrewSettings({...crewSettings, callLocation: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
           </div>
           <div className="space-y-2 lg:col-span-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Who is Called?</label>
-            <input type="text" placeholder="e.g. Leads Only" value={crewSettings.callWho} onChange={e => setCrewSettings({...crewSettings, callWho: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none transition-colors" />
+            <input type="text" placeholder="e.g. Leads Only" value={crewSettings.callWho} onChange={e => setCrewSettings({...crewSettings, callWho: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
           </div>
           <div className="space-y-2 lg:col-span-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-[#FF5F5F]">Master Passcode</label>
-            <input type="text" value={crewSettings.passcode} onChange={e => setCrewSettings({...crewSettings, passcode: e.target.value})} className="w-full bg-black/20 border-2 border-[#FF5F5F]/50 p-3 rounded-xl font-black tracking-widest focus:border-[#FF5F5F] outline-none transition-colors text-[#FF5F5F]" />
+            <input type="text" value={crewSettings.passcode} onChange={e => setCrewSettings({...crewSettings, passcode: e.target.value})} className="w-full bg-black/20 border-2 border-[#FF5F5F]/50 p-3 rounded-xl font-black tracking-widest text-[#FF5F5F]" />
           </div>
         </div>
-        <button onClick={saveCrewSettings} className="mt-6 w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#FFD166] py-3 rounded-xl font-black uppercase shadow-[4px_4px_0px_#FFF9F0] hover:translate-y-1 hover:shadow-none transition-all">
+        <button onClick={saveCrewSettings} className="mt-6 w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] py-3 rounded-xl font-black uppercase shadow-[4px_4px_0px_#FFF9F0] hover:translate-y-1 transition-all">
           Update Call Sheet & Passcode
         </button>
       </div>
@@ -182,29 +207,23 @@ export default function BackstageManager() {
 
           <div className="bg-white border-4 border-[#2D2D2D] p-6 rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D]">
             <div className="space-y-4">
-              <input placeholder="Notice Title (e.g. Call Time Changed)" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
-              <textarea placeholder="Type your internal announcement here..." value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl h-24 resize-none" />
+              <input placeholder="Notice Title" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
+              <textarea placeholder="Announcement..." value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl h-24 resize-none" />
               
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Author (e.g. Arpan / Stage Mgr)" value={noticeForm.author} onChange={e => setNoticeForm({...noticeForm, author: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl text-sm" />
-                <select value={noticeForm.priority} onChange={e => setNoticeForm({...noticeForm, priority: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl cursor-pointer">
+                <input placeholder="Author" value={noticeForm.author} onChange={e => setNoticeForm({...noticeForm, author: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl text-sm" />
+                <select value={noticeForm.priority} onChange={e => setNoticeForm({...noticeForm, priority: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl">
                   <option value="normal">🔵 Normal</option>
                   <option value="urgent">🔴 Urgent (Requires Ack)</option>
                 </select>
               </div>
 
-              {/* 🔥 NEW: Checkbox to send the Push Alert to phones */}
               <div className="flex items-center gap-3 p-4 bg-[#FF5F5F]/10 border-2 border-[#FF5F5F] rounded-xl">
-                <input 
-                  type="checkbox" 
-                  checked={noticeForm.sendPush} 
-                  onChange={e => setNoticeForm({...noticeForm, sendPush: e.target.checked})} 
-                  className="w-5 h-5 accent-[#FF5F5F] cursor-pointer" 
-                />
+                <input type="checkbox" checked={noticeForm.sendPush} onChange={e => setNoticeForm({...noticeForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#FF5F5F]" />
                 <label className="text-[10px] font-black uppercase tracking-widest text-[#2D2D2D]">Send Mobile Push Alert to Crew</label>
               </div>
 
-              <button onClick={postNotice} className="w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all">
+              <button onClick={postNotice} className="w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 transition-all">
                 Post to Call Board
               </button>
             </div>
@@ -212,22 +231,12 @@ export default function BackstageManager() {
 
           <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 pb-10">
             {notices.map(n => (
-              <div key={n.id} className={`bg-white border-4 border-[#2D2D2D] p-4 rounded-2xl flex justify-between items-start gap-4 ${n.priority === 'urgent' ? 'border-l-8 border-l-[#FF5F5F]' : ''}`}>
+              <div key={n.id} className="bg-white border-4 border-[#2D2D2D] p-4 rounded-2xl flex justify-between items-start gap-4">
                 <div className="flex-1">
                   <h4 className="font-black uppercase text-sm leading-tight">{n.title}</h4>
-                  <p className="text-[10px] font-bold opacity-60 line-clamp-1 mt-1">{n.message}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[#06D6A0] block">{n.author}</span>
-                    {n.priority === 'urgent' && (
-                      <span className="text-[8px] font-black uppercase tracking-widest bg-gray-100 px-2 py-1 rounded-md">
-                        👀 {n.acknowledgedBy?.length || 0} Read
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-[10px] font-bold opacity-60 mt-1">{n.author} • {n.priority}</p>
                 </div>
-                <button onClick={() => deleteNotice(n.id)} className="bg-red-50 text-red-500 border-2 border-[#2D2D2D] p-2 rounded-lg hover:bg-[#FF5F5F] hover:text-white transition-colors shrink-0">
-                  🗑️
-                </button>
+                <button onClick={() => deleteNotice(n.id)} className="bg-red-50 text-red-500 border-2 border-[#2D2D2D] p-2 rounded-lg">🗑️</button>
               </div>
             ))}
           </div>
@@ -243,12 +252,19 @@ export default function BackstageManager() {
             <div className="space-y-4">
               <input placeholder="Document Name" value={vaultForm.title} onChange={e => setVaultForm({...vaultForm, title: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
               <input placeholder="Drive Link" type="url" value={vaultForm.link} onChange={e => setVaultForm({...vaultForm, link: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
-              <select value={vaultForm.type} onChange={e => setVaultForm({...vaultForm, type: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl cursor-pointer">
+              <select value={vaultForm.type} onChange={e => setVaultForm({...vaultForm, type: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl">
                 <option value="script">📝 Script</option>
                 <option value="audio">🎵 Audio</option>
                 <option value="document">📁 Document</option>
               </select>
-              <button onClick={addToVault} className="w-full bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all">
+
+              {/* 🔥 NEW: Vault push checkbox */}
+              <div className="flex items-center gap-3 p-4 bg-[#06D6A0]/10 border-2 border-[#06D6A0] rounded-xl">
+                <input type="checkbox" checked={vaultForm.sendPush} onChange={e => setVaultForm({...vaultForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#06D6A0]" />
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#2D2D2D]">Push Alert about this update</label>
+              </div>
+
+              <button onClick={addToVault} className="w-full bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D]">
                 Upload to Vault
               </button>
             </div>
@@ -258,17 +274,10 @@ export default function BackstageManager() {
             {vault.map(v => (
               <div key={v.id} className="bg-white border-4 border-[#2D2D2D] p-3 rounded-2xl flex justify-between items-center gap-4">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-8 h-8 bg-gray-100 border-2 border-[#2D2D2D] rounded-lg flex items-center justify-center shrink-0 text-xs">
-                    {v.type === 'script' ? '📝' : v.type === 'audio' ? '🎵' : '📁'}
-                  </div>
-                  <div className="truncate pr-2">
-                    <h4 className="font-black uppercase text-xs truncate">{v.title}</h4>
-                    <a href={v.link} target="_blank" rel="noreferrer" className="text-[8px] font-black uppercase tracking-widest text-blue-500 hover:underline">Link ⤾</a>
-                  </div>
+                  <div className="w-8 h-8 bg-gray-100 border-2 border-[#2D2D2D] rounded-lg flex items-center justify-center shrink-0">{v.type === 'script' ? '📝' : '📁'}</div>
+                  <h4 className="font-black uppercase text-xs truncate">{v.title}</h4>
                 </div>
-                <button onClick={() => deleteFromVault(v.id)} className="bg-red-50 text-red-500 border-2 border-[#2D2D2D] p-2 rounded-lg hover:bg-[#FF5F5F] hover:text-white transition-colors shrink-0">
-                  🗑️
-                </button>
+                <button onClick={() => deleteFromVault(v.id)} className="bg-red-50 text-red-500 border-2 border-[#2D2D2D] p-2 rounded-lg">🗑️</button>
               </div>
             ))}
           </div>

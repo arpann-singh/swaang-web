@@ -87,11 +87,12 @@ export default function CrewPage() {
     } catch (err) { alert("Failed to acknowledge. Check connection."); }
   };
 
-  // 🏃 Handle Absence Ping (Sends direct to Admin Inbox)
+  // 🔥 UPDATED: Absence Ping sends data AND a push notification to Admins
   const sendPing = async (e: React.FormEvent) => {
     e.preventDefault();
     setPingStatus("sending");
     try {
+      // 1. Save record to Inbox
       await addDoc(collection(db, "messages"), {
         name: pingForm.name,
         email: "crew@internal.swaang",
@@ -101,6 +102,18 @@ export default function CrewPage() {
         status: "unread",
         createdAt: Date.now()
       });
+
+      // 2. 🔥 TRIGGER ADMIN PING (ONLY you and Harsh get this)
+      await fetch("/api/notify-crew", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          title: "ABSENCE ALERT", 
+          message: `${pingForm.name} is ${pingForm.type}. MSG: ${pingForm.message}`,
+          recipientType: "admin" // 🔥 This targets only Admin-roled tokens
+        })
+      });
+
       setPingStatus("sent");
       setPingForm({ name: "", type: "Late", message: "" });
       setTimeout(() => setPingStatus("idle"), 3000);
