@@ -29,6 +29,7 @@ export default function TeamManager() {
     category: "active", 
     tenure: "",       
     passoutYear: "",  
+    joiningYear: "", 
     isActive: true,    
     isSpotlight: false,
     isCurrentPresident: false
@@ -40,7 +41,8 @@ export default function TeamManager() {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "team"), (snap) => {
       let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-      fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      // 🔥 Sorting by joiningYear (Oldest First)
+      fetched.sort((a, b) => (parseInt(a.joiningYear) || 9999) - (parseInt(b.joiningYear) || 9999));
       setTeam(fetched);
       setLoading(false);
     });
@@ -125,6 +127,12 @@ export default function TeamManager() {
               <input required type="text" placeholder="Role (e.g. Actor)" value={formData.role || ""} onChange={e => setFormData({...formData, role: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-sm" />
             </div>
 
+            {/* 🔥 Seniority Tracking Field */}
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase opacity-40 ml-2">Seniority (Joining Year)</label>
+              <input required type="number" placeholder="e.g. 2023" value={formData.joiningYear || ""} onChange={e => setFormData({...formData, joiningYear: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
+            </div>
+
             {formData.category === 'active' && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="grid grid-cols-2 gap-2 p-3 bg-[#06D6A0]/10 border-2 border-[#06D6A0] rounded-xl overflow-hidden">
                 <input type="text" placeholder="Branch (e.g. IT)" value={formData.branch || ""} onChange={e => setFormData({...formData, branch: e.target.value})} className="border-2 border-[#2D2D2D] p-2 rounded-lg text-[10px] font-bold" />
@@ -176,15 +184,17 @@ export default function TeamManager() {
                       {m.image ? <img src={m.image} className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center text-xl opacity-20 bg-gray-100 italic">?</span>}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-black uppercase text-sm leading-none">{m.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-black uppercase text-sm leading-none">{m.name}</h4>
+                        {/* 🔥 Displaying joining year for admin reference */}
+                        <span className="text-[8px] font-black bg-gray-100 px-1.5 py-0.5 rounded border border-black/10">Est. {m.joiningYear || '—'}</span>
+                      </div>
                       <p className="text-[10px] font-bold text-[#FF5F5F] uppercase mt-1">{m.role} {m.branch && `• ${m.branch} ${m.year}`}</p>
                       
-                      {/* 🔥 NEW: TAGS DISPLAY ROW */}
                       <div className="flex flex-wrap gap-2 mt-2">
                         {m.isSpotlight && <span className="bg-[#FFD166] text-[#2D2D2D] border border-[#2D2D2D] px-2 py-0.5 rounded-md text-[7px] font-black uppercase shadow-[1px_1px_0px_#2D2D2D]">★ Spotlighted</span>}
                         {m.isCurrentPresident && <span className="bg-[#06D6A0] text-[#2D2D2D] border border-[#2D2D2D] px-2 py-0.5 rounded-md text-[7px] font-black uppercase shadow-[1px_1px_0px_#2D2D2D]">👑 Leader</span>}
                         {m.category === 'alumni' && <span className="bg-gray-200 text-[#2D2D2D] border border-[#2D2D2D] px-2 py-0.5 rounded-md text-[7px] font-black uppercase shadow-[1px_1px_0px_#2D2D2D]">🎓 Graduated</span>}
-                        {(m.instagram || m.linkedin || m.github) && <span className="bg-white text-gray-400 border border-gray-200 px-2 py-0.5 rounded-md text-[7px] font-black uppercase">🔗 Socials Added</span>}
                       </div>
 
                     </div>
