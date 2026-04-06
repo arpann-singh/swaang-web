@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, addDoc } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, addDoc, setDoc } from "firebase/firestore";
+// 🔥 NEW: Import our token generator
+import { getDeviceToken } from "@/lib/firebase";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -101,6 +103,30 @@ export default function CrewPage() {
     }
   };
 
+  // 🔥 NEW: Crash-Proof Notification Subscription
+  const enableNotifications = async () => {
+    try {
+      // Ask for browser permission first
+      const permission = await Notification.requestPermission();
+      
+      if (permission === 'denied') {
+        alert("🚨 Notifications are currently BLOCKED in your browser! Please click the padlock icon in your address bar, change Notifications to 'Allow', and try again.");
+        return; 
+      }
+
+      const token = await getDeviceToken();
+      if (token) {
+        await setDoc(doc(db, "fcm_tokens", token), { token, createdAt: Date.now() });
+        alert("Push Notifications Enabled! You will now receive alerts on this device. 🔔");
+      } else {
+        alert("Failed to get token. If you are on iPhone, you must 'Add to Home Screen' first.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Notification setup failed.");
+    }
+  };
+
   if (loading) return <div className="min-h-screen bg-[#2D2D2D] text-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest">Unlocking Backstage...</div>;
 
   // 🛑 THE LOCK SCREEN
@@ -148,9 +174,16 @@ export default function CrewPage() {
                 Backstage <span className="text-[#FFF9F0]">Hub</span>
               </h1>
             </div>
-            <button onClick={() => { localStorage.removeItem("swaang_crew_auth"); setIsAuthenticated(false); }} className="px-6 py-3 border-4 border-[#FFF9F0]/20 rounded-xl font-black uppercase text-[10px] hover:bg-[#FFF9F0] hover:text-[#2D2D2D] transition-colors">
-              Lock Screen
-            </button>
+            
+            {/* 🔥 NEW: Grouped Header Buttons */}
+            <div className="flex flex-wrap items-center gap-4">
+              <button onClick={enableNotifications} className="px-6 py-3 bg-[#FF5F5F] text-[#FFF9F0] border-4 border-[#FFF9F0] rounded-xl font-black uppercase text-[10px] hover:translate-y-1 shadow-[4px_4px_0px_#FFF9F0] hover:shadow-none transition-all">
+                🔔 Get Push Alerts
+              </button>
+              <button onClick={() => { localStorage.removeItem("swaang_crew_auth"); setIsAuthenticated(false); }} className="px-6 py-3 border-4 border-[#FFF9F0]/20 rounded-xl font-black uppercase text-[10px] hover:bg-[#FFF9F0] hover:text-[#2D2D2D] transition-colors">
+                Lock Screen
+              </button>
+            </div>
           </div>
 
           {/* 📅 THE DAILY CALL SHEET */}

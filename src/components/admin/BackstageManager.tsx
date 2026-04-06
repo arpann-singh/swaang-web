@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
+// 🔥 NEW: Import our token generator
+import { getDeviceToken } from "@/lib/firebase";
 
 export default function BackstageManager() {
   const [notices, setNotices] = useState<any[]>([]);
@@ -15,18 +17,17 @@ export default function BackstageManager() {
     callWho: "Full Cast & Crew"
   });
 
-  const [noticeForm, setNoticeForm] = useState({ title: "", message: "", priority: "normal", author: "Directorate" });
+  // 🔥 FIXED: Added sendPush boolean to the state
+  const [noticeForm, setNoticeForm] = useState({ title: "", message: "", priority: "normal", author: "Directorate", sendPush: false });
   const [vaultForm, setVaultForm] = useState({ title: "", link: "", type: "script" });
 
   useEffect(() => {
-    // 🔥 FIXED: Added "as any" and typed a, b as "any" to satisfy Vercel's strict build
     const noticeSub = onSnapshot(collection(db, "callboard"), (snap) => {
       let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
       fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
       setNotices(fetched);
     });
 
-    // 🔥 FIXED: Added "as any" and typed a, b as "any" to satisfy Vercel's strict build
     const vaultSub = onSnapshot(collection(db, "vault"), (snap) => {
       let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
       fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -49,15 +50,62 @@ export default function BackstageManager() {
     } catch (err) { alert("Failed to save settings."); }
   };
 
+  // 🔥 NEW: Function for Crew Members to Opt-In to Notifications
+  const enableNotifications = async () => {
+    try {
+      // Ask for browser permission first before Firebase tries to grab the token
+      const permission = await Notification.requestPermission();
+      
+      if (permission === 'denied') {
+        alert("🚨 Notifications are currently BLOCKED in your browser! Please click the padlock icon in your address bar, change Notifications to 'Allow', and try again.");
+        return; // Stop the code here so it doesn't crash Firebase
+      }
+
+      const token = await getDeviceToken();
+      if (token) {
+        // Save token to database so we can blast it later
+        await setDoc(doc(db, "fcm_tokens", token), { token, createdAt: Date.now() });
+        alert("Push Notifications Enabled! You will now receive alerts on this device. 🔔");
+      } else {
+        alert("Failed to get token. If you are on iPhone, you must 'Add to Home Screen' first.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Notification setup failed.");
+    }
+  };
+
   const postNotice = async () => {
     if (!noticeForm.title || !noticeForm.message) return alert("Title and Message required!");
     try {
+      // 1. Save Notice to Database
       await addDoc(collection(db, "callboard"), { 
-        ...noticeForm, 
+        title: noticeForm.title,
+        message: noticeForm.message,
+        priority: noticeForm.priority,
+        author: noticeForm.author,
         createdAt: Date.now(),
         acknowledgedBy: [] 
       });
-      setNoticeForm({ title: "", message: "", priority: "normal", author: "Directorate" });
+
+      // 2. 🔥 NEW: If Push is checked, trigger the backend API
+      if (noticeForm.sendPush) {
+        try {
+           await fetch("/api/notify-crew", {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ title: noticeForm.title, message: noticeForm.message })
+           });
+           alert("Notice Posted & Push Alert Sent to Crew! 🚀");
+        } catch (e) {
+           console.error("Push Dispatch failed", e);
+           alert("Notice posted, but Push API is missing.");
+        }
+      } else {
+        alert("Notice Posted silently. 🎭");
+      }
+
+      setNoticeForm({ title: "", message: "", priority: "normal", author: "Directorate", sendPush: false });
     } catch (err) { alert("Failed to post notice."); }
   };
 
@@ -79,9 +127,16 @@ export default function BackstageManager() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8 border-b-8 border-[#2D2D2D] pb-4">
-        <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Backstage Control</h2>
-        <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Manage Crew Resources</p>
+      <div className="mb-8 border-b-8 border-[#2D2D2D] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Backstage Control</h2>
+          <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Manage Crew Resources</p>
+        </div>
+        
+        {/* 🔥 NEW: The Opt-In Button for Crew Members */}
+        <button onClick={enableNotifications} className="bg-[#06D6A0] text-white border-4 border-[#2D2D2D] px-6 py-3 rounded-xl font-black uppercase text-[10px] md:text-xs shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all">
+          🔔 Subscribe to Crew Alerts
+        </button>
       </div>
 
       <div className="bg-[#2D2D2D] border-4 border-[#FFD166] p-6 rounded-[2rem] shadow-[8px_8px_0px_#FFD166] mb-12 text-white">
@@ -129,6 +184,7 @@ export default function BackstageManager() {
             <div className="space-y-4">
               <input placeholder="Notice Title (e.g. Call Time Changed)" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
               <textarea placeholder="Type your internal announcement here..." value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl h-24 resize-none" />
+              
               <div className="grid grid-cols-2 gap-4">
                 <input placeholder="Author (e.g. Arpan / Stage Mgr)" value={noticeForm.author} onChange={e => setNoticeForm({...noticeForm, author: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl text-sm" />
                 <select value={noticeForm.priority} onChange={e => setNoticeForm({...noticeForm, priority: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl cursor-pointer">
@@ -136,6 +192,18 @@ export default function BackstageManager() {
                   <option value="urgent">🔴 Urgent (Requires Ack)</option>
                 </select>
               </div>
+
+              {/* 🔥 NEW: Checkbox to send the Push Alert to phones */}
+              <div className="flex items-center gap-3 p-4 bg-[#FF5F5F]/10 border-2 border-[#FF5F5F] rounded-xl">
+                <input 
+                  type="checkbox" 
+                  checked={noticeForm.sendPush} 
+                  onChange={e => setNoticeForm({...noticeForm, sendPush: e.target.checked})} 
+                  className="w-5 h-5 accent-[#FF5F5F] cursor-pointer" 
+                />
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#2D2D2D]">Send Mobile Push Alert to Crew</label>
+              </div>
+
               <button onClick={postNotice} className="w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all">
                 Post to Call Board
               </button>
