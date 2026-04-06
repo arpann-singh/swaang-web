@@ -14,6 +14,9 @@ export default function CrewPage() {
   const [crewSettings, setCrewSettings] = useState({ passcode: "SWAANG26", callDate: "", callTime: "", callLocation: "", callWho: "" });
   const [loading, setLoading] = useState(true);
 
+  // 🔥 NEW: Permission Tracking State
+  const [permissionStatus, setPermissionStatus] = useState<string>("granted");
+
   // 🔒 Security State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passcodeInput, setPasscodeInput] = useState("");
@@ -21,12 +24,17 @@ export default function CrewPage() {
 
   // 🏃 Absence Ping State
   const [pingForm, setPingForm] = useState({ name: "", type: "Late", message: "" });
-  const [pingStatus, setPingStatus] = useState("idle"); // idle, sending, sent
+  const [pingStatus, setPingStatus] = useState("idle"); 
 
   useEffect(() => {
     // Check if they already logged in recently
     if (localStorage.getItem("swaang_crew_auth") === "true") {
       setIsAuthenticated(true);
+    }
+
+    // 🔥 NEW: Check Notification Permission on Load
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPermissionStatus(Notification.permission);
     }
 
     // Fetch Private Call Board
@@ -68,7 +76,6 @@ export default function CrewPage() {
     const name = window.prompt("Enter your name to acknowledge this notice:");
     if (!name) return;
     
-    // Prevent duplicate names just in case
     if (currentAcks?.map(a => a.toLowerCase()).includes(name.toLowerCase())) {
       return alert("You have already acknowledged this notice.");
     }
@@ -87,7 +94,7 @@ export default function CrewPage() {
     try {
       await addDoc(collection(db, "messages"), {
         name: pingForm.name,
-        email: "crew@internal.swaang", // Placeholder to satisfy Inbox requirements
+        email: "crew@internal.swaang",
         phone: "",
         subject: `🚨 CREW PING: ${pingForm.type}`,
         message: pingForm.message || "No additional details provided.",
@@ -103,14 +110,14 @@ export default function CrewPage() {
     }
   };
 
-  // 🔥 NEW: Crash-Proof Notification Subscription
+  // 🔥 UPDATED: Automatic Enable Logic
   const enableNotifications = async () => {
     try {
-      // Ask for browser permission first
       const permission = await Notification.requestPermission();
+      setPermissionStatus(permission); // Update UI state instantly
       
       if (permission === 'denied') {
-        alert("🚨 Notifications are currently BLOCKED in your browser! Please click the padlock icon in your address bar, change Notifications to 'Allow', and try again.");
+        alert("🚨 Notifications are currently BLOCKED in your browser! Please click the padlock icon in your address bar, change Notifications to 'Allow', and refresh.");
         return; 
       }
 
@@ -127,7 +134,7 @@ export default function CrewPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#2D2D2D] text-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest">Unlocking Backstage...</div>;
+  if (loading) return <div className="min-h-screen bg-[#2D2D2D] text-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest italic">Unlocking Backstage...</div>;
 
   // 🛑 THE LOCK SCREEN
   if (!isAuthenticated) {
@@ -164,6 +171,34 @@ export default function CrewPage() {
     <PageTransition>
       <main className="min-h-screen bg-[#2D2D2D] pt-32 pb-20 px-6 text-[#FFF9F0]">
         <div className="max-w-7xl mx-auto">
+
+          {/* 🔥 NEW: AUTOMATIC NOTIFICATION PROMPT BANNER */}
+          <AnimatePresence>
+            {permissionStatus === "default" && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }} 
+                animate={{ height: "auto", opacity: 1 }} 
+                exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                className="mb-10 overflow-hidden"
+              >
+                <div className="bg-[#FF5F5F] border-4 border-[#FFF9F0] p-6 md:p-8 rounded-[2.5rem] shadow-[8px_8px_0px_#FFF9F0] flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 bg-[#FFF9F0] text-[#FF5F5F] rounded-full flex items-center justify-center text-3xl shadow-[4px_4px_0px_#2D2D2D] shrink-0">🔔</div>
+                    <div>
+                      <h4 className="font-black uppercase text-xl md:text-2xl leading-none mb-1">Don't Miss the Call!</h4>
+                      <p className="font-black uppercase tracking-widest text-[9px] md:text-[10px] opacity-90">Enable push alerts to get instant notifications for urgent notices.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={enableNotifications} 
+                    className="w-full md:w-auto bg-[#2D2D2D] text-white px-8 py-4 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_#FFF9F0] hover:translate-y-1 hover:shadow-none transition-all shrink-0"
+                  >
+                    Enable Alerts Now
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-8 border-[#FFF9F0]/10 pb-8 gap-6">
             <div>
@@ -175,11 +210,7 @@ export default function CrewPage() {
               </h1>
             </div>
             
-            {/* 🔥 NEW: Grouped Header Buttons */}
             <div className="flex flex-wrap items-center gap-4">
-              <button onClick={enableNotifications} className="px-6 py-3 bg-[#FF5F5F] text-[#FFF9F0] border-4 border-[#FFF9F0] rounded-xl font-black uppercase text-[10px] hover:translate-y-1 shadow-[4px_4px_0px_#FFF9F0] hover:shadow-none transition-all">
-                🔔 Get Push Alerts
-              </button>
               <button onClick={() => { localStorage.removeItem("swaang_crew_auth"); setIsAuthenticated(false); }} className="px-6 py-3 border-4 border-[#FFF9F0]/20 rounded-xl font-black uppercase text-[10px] hover:bg-[#FFF9F0] hover:text-[#2D2D2D] transition-colors">
                 Lock Screen
               </button>
@@ -248,7 +279,6 @@ export default function CrewPage() {
                         <span>{notice.createdAt ? new Date(notice.createdAt).toLocaleDateString() : "Just now"}</span>
                       </div>
                       
-                      {/* ✅ ACKNOWLEDGMENT BUTTON */}
                       {notice.priority === 'urgent' && (
                         <button 
                           onClick={() => acknowledgeNotice(notice.id, notice.acknowledgedBy)}
