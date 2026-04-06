@@ -68,7 +68,7 @@ export default function Header() {
       <div className="lg:hidden flex justify-center mt-3">
         <div className="bg-white/95 backdrop-blur-sm border-2 border-black rounded-full px-6 py-2.5 flex gap-5 font-black uppercase text-[9px] tracking-widest shadow-xl shadow-black/10 overflow-x-auto no-scrollbar max-w-[95vw]">
           <Link href="/events" className="active:text-[#FF5F5F] shrink-0">Events</Link>
-          <Link href="/members" className="active:text-[#FF5F5F] shrink-0">Ensemble</Link>
+          <Link href="/team" className="active:text-[#FF5F5F] shrink-0">Ensemble</Link>
           <Link href="/gallery" className="active:text-[#FF5F5F] shrink-0">Gallery</Link>
           {/* 🎬 NEW: Credits Link for Mobile */}
           <Link href="/credits" className="active:text-[#FF5F5F] shrink-0">Credits</Link>
