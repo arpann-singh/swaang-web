@@ -89,7 +89,6 @@ export default function BrandingEditor() {
   };
 
   return (
-    // 🔥 FIXED: max-w-full and overflow-x-hidden prevent the entire page from breaking right
     <div className="p-0 md:p-4 w-full max-w-full overflow-x-hidden space-y-8 md:space-y-12 pb-40">
       
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b-8 border-black pb-6 md:pb-8 gap-4 md:gap-6">
@@ -105,7 +104,6 @@ export default function BrandingEditor() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
         
         {/* 🎬 1. HERO STAGE */}
-        {/* 🔥 FIXED: Reduced massive padding and border-radius on mobile */}
         <div className="bg-white border-4 border-black rounded-[2rem] md:rounded-[3rem] p-5 md:p-8 shadow-[6px_6px_0px_#06D6A0] md:shadow-[12px_12px_0px_#06D6A0] space-y-4 md:space-y-6 max-w-full">
           <h2 className="text-xl md:text-2xl font-black uppercase border-b-4 border-black pb-2 text-[#06D6A0]">Hero Configuration</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -115,7 +113,17 @@ export default function BrandingEditor() {
           <input className="w-full border-2 border-black p-3 md:p-4 font-bold rounded-xl text-sm" placeholder="Main Title" value={data.headerTitle || ""} onChange={e => setData({...data, headerTitle: e.target.value})} />
           <textarea className="w-full border-2 border-black p-3 md:p-4 font-bold rounded-xl h-24 text-sm" placeholder="Hero Tagline" value={data.headerTagline || ""} onChange={e => setData({...data, headerTagline: e.target.value})} />
           
-          {/* 🔥 FIXED: Stacked upload on mobile to prevent clipping */}
+          {/* 🔥 NEW: Noir Mode / Grayscale Filter Toggle */}
+          <div className="flex items-center gap-3 p-3 bg-gray-50 border-2 border-black rounded-xl">
+            <input 
+              type="checkbox" 
+              checked={data.heroGrayscale !== false} 
+              onChange={e => setData({...data, heroGrayscale: e.target.checked})} 
+              className="w-5 h-5 accent-[#06D6A0] cursor-pointer" 
+            />
+            <label className="text-[10px] font-black uppercase opacity-60">Noir Mode (Black & White Filter)</label>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border-2 border-black w-full overflow-hidden">
              <Preview url={data.headerImageUrl} loading={uploading === 'headerImageUrl'} />
              <div className="flex flex-col gap-1 w-full">
@@ -128,7 +136,6 @@ export default function BrandingEditor() {
         {/* 🔦 2. SPOTLIGHT HUB */}
         <div className="bg-white border-4 border-black rounded-[2rem] md:rounded-[3rem] p-5 md:p-8 shadow-[6px_6px_0px_#FF5F5F] md:shadow-[12px_12px_0px_#FF5F5F] space-y-4 max-w-full">
           <h2 className="text-xl md:text-2xl font-black uppercase border-b-4 border-black pb-2 text-[#FF5F5F]">Spotlight Hub</h2>
-          {/* 🔥 FIXED: grid-cols-1 on tiny screens, grid-cols-2 on slightly larger */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input className="border-2 border-black p-3 font-bold rounded-xl text-sm w-full" placeholder="Full Name" value={aotm.name || ""} onChange={e => setAotm({...aotm, name: e.target.value})} />
             <input className="border-2 border-black p-3 font-bold rounded-xl text-sm w-full" placeholder="Core Role" value={aotm.role || ""} onChange={e => setAotm({...aotm, role: e.target.value})} />
@@ -170,7 +177,6 @@ export default function BrandingEditor() {
 
         {/* 🎭 4. DIRECTORATE HUB */}
         <div className="bg-white border-4 border-black rounded-[2rem] md:rounded-[3rem] p-5 md:p-8 shadow-[6px_6px_0px_#FFD166] md:shadow-[12px_12px_0px_#FFD166] space-y-4 md:space-y-6 max-w-full">
-          {/* 🔥 FIXED: Wrap tabs on mobile */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-4 border-black pb-3 md:pb-2 text-[#2D2D2D] gap-3">
             <h2 className="text-xl md:text-2xl font-black uppercase">Directorate</h2>
             <div className="flex flex-wrap gap-1">

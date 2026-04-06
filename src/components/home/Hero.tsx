@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
-// 🔥 Added activeNoticesCount to the incoming props!
 export default function Hero({ data, activeNoticesCount = 0 }: { data: any, activeNoticesCount?: number }) {
   const [activeNotice, setActiveNotice] = useState<any>(null);
   
@@ -18,7 +17,6 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
   const imageSource = data.headerImageUrl || data.headerImage;
 
   useEffect(() => {
-    // 🔥 FIXED: Changed "live" to "isActive" so the ticker matches your Admin Panel!
     const q = query(collection(db, "notices"), where("isActive", "==", true));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) setActiveNotice(snapshot.docs[0].data());
@@ -39,12 +37,13 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
       
       {/* 🎞️ BACKGROUND */}
       <div className="absolute inset-0 z-0">
+        {/* 🔥 FIXED: Comment moved outside the tag! Dynamically injects 'grayscale' based on Admin Setting */}
         {imageSource && (
           <motion.img 
             initial={{ scale: 1.1, opacity: 0 }}
             animate={{ scale: 1, opacity: 0.35 }}
             src={imageSource} 
-            className="w-full h-full object-cover grayscale brightness-50" 
+            className={`w-full h-full object-cover brightness-50 ${data?.heroGrayscale !== false ? 'grayscale' : ''}`}
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1A] via-transparent to-[#1A1A1A] opacity-90" />
