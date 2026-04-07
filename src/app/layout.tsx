@@ -9,13 +9,22 @@ export const metadata: Metadata = {
   description: "Official platform of Swaang SSTC Bhilai.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ 
+  children 
+}: { 
+  children: React.ReactNode 
+}) {
   return (
-    <html lang="en">
-      <body className="bg-[#FFF9F0] text-[#2D2D2D] antialiased">
+    <html lang="en" className="scroll-smooth">
+      <body className="bg-[#FFF9F0] text-[#2D2D2D] antialiased overflow-x-hidden font-inter">
           <Header />
-          {children}
-          <Footer /> {/* 👈 This is now global! */}
+          <GlobalTicker />
+          
+          <main>
+            {children}
+          </main>
+
+          <Footer />
       </body>
     </html>
   );

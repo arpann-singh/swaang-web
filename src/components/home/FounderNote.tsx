@@ -29,7 +29,7 @@ export default function FounderNote({ data }: { data: any }) {
   return (
     <section className="py-24 md:py-40 px-6 bg-white border-b-[12px] border-black">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-5xl md:text-8xl font-black uppercase mb-20 tracking-tighter border-b-8 border-black inline-block">The Directorate</h2>
+        <h2 className="text-5xl md:text-8xl font-black uppercase mb-20 tracking-tighter border-b-8 border-black inline-block">The Founders</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16 md:gap-12">
           <DirectorCard role="Founder & Director" name={data.founderName} note={data.founderNote} img={data.founderImage} color="bg-[#FF5F5F]" />
           <DirectorCard role="Co-Founder" name={data.coFounder1Name} note={data.coFounder1Note} img={data.coFounder1Image} color="bg-[#06D6A0]" />

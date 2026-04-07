@@ -6,6 +6,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
+// --- EXISTING COMPONENTS ---
 import BrandingEditor from "@/components/admin/BrandingEditor";
 import InboxManager from "@/components/admin/InboxManager";
 import AuditionsManager from "@/components/admin/AuditionsManager";
@@ -18,6 +19,10 @@ import CreditsEditor from "@/components/admin/CreditsEditor";
 import NoticesManager from "@/components/admin/NoticesManager";
 import BackstageManager from "@/components/admin/BackstageManager";
 
+// --- NEW PRODUCTIVITY COMPONENTS ---
+import LetterGenerator from "@/components/admin/LetterGenerator"; 
+import ConflictMapper from "@/components/admin/ConflictMapper";
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("branding");
   const [siteConfig, setSiteConfig] = useState<any>({});
@@ -27,20 +32,36 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (u) => { if (!u) router.push("/admin/login"); });
+    // 🔐 Auth Guard
+    const unsubAuth = onAuthStateChanged(auth, (u) => { 
+      if (!u) router.push("/admin/login"); 
+    });
 
-    onSnapshot(doc(db, "settings", "site_config"), (d) => setSiteConfig(d.data() || {}));
+    // 🌐 Site Config Sync
+    const unsubConfig = onSnapshot(doc(db, "settings", "site_config"), (d) => {
+      setSiteConfig(d.data() || {});
+    });
 
-    onSnapshot(query(collection(db, "messages"), orderBy("timestamp", "desc")), (s) => 
+    // 📩 Inbox Sync
+    const unsubInbox = onSnapshot(query(collection(db, "messages"), orderBy("createdAt", "desc")), (s) => 
       setMessages(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    onSnapshot(query(collection(db, "auditions"), orderBy("submittedAt", "desc")), (s) => {
+    // 🎭 Auditions Sync
+    const unsubAuditions = onSnapshot(query(collection(db, "auditions"), orderBy("submittedAt", "desc")), (s) => {
       setAuditions(s.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
     });
+
+    return () => {
+      unsubAuth();
+      unsubConfig();
+      unsubInbox();
+      unsubAuditions();
+    };
   }, [router]);
 
+  // 🗂️ TAB CONFIGURATION (Zero Reductions)
   const tabs = [
     { id: "branding", label: "Branding", color: "bg-[#FF5F5F]" },
     { id: "spotlight", label: "Spotlight", color: "bg-[#FFD166]" },
@@ -50,31 +71,49 @@ export default function AdminDashboard() {
     { id: "events", label: "Events", color: "bg-[#06D6A0]" },
     { id: "team", label: "Team", color: "bg-[#FF5F5F]" },
     { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
-    { id: "notices", label: "Public", color: "bg-[#FF5F5F]" },
+    { id: "letters", label: "Letters", color: "bg-[#FF5F5F]" },   // 🔥 Letter Engine
+    { id: "conflicts", label: "Conflicts", color: "bg-[#06D6A0]" }, // 🔥 Availability Heatmap
+    { id: "notices", label: "Public", color: "bg-[#FFD166]" },
     { id: "backstage", label: "Backstage", color: "bg-[#06D6A0]" },
     { id: "credits", label: "Credits", color: "bg-[#FF5F5F]" },
   ];
 
-  if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest text-[#2D2D2D]">Syncing Dashboard...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FFF9F0] flex flex-col items-center justify-center font-black uppercase tracking-widest text-[#2D2D2D]">
+        <div className="w-12 h-12 border-8 border-black border-t-[#FF5F5F] rounded-full animate-spin mb-4" />
+        Syncing Dashboard...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FFF9F0] flex flex-col xl:flex-row font-sans text-[#2D2D2D] w-full overflow-hidden">
       
-      <aside className="w-full xl:w-72 bg-white border-b-4 xl:border-b-0 xl:border-r-4 border-[#2D2D2D] flex flex-col shrink-0 h-auto xl:h-screen sticky top-0 z-50">
+      {/* 📱💻 ADAPTIVE SIDEBAR */}
+      <aside className="w-full xl:w-72 bg-white border-b-4 xl:border-b-0 xl:border-r-4 border-[#2D2D2D] flex flex-col shrink-0 h-auto xl:h-screen sticky top-0 z-50 shadow-[4px_0px_0px_rgba(0,0,0,0.05)]">
         
         <div className="p-4 xl:p-8 pb-3 xl:pb-0 flex justify-between items-center xl:items-start xl:flex-col">
-          <h2 className="font-cinzel text-2xl xl:text-3xl font-black xl:mb-8 tracking-tighter uppercase">SWAANG</h2>
+          <div className="flex flex-col">
+            <h2 className="font-cinzel text-2xl xl:text-4xl font-black tracking-tighter uppercase leading-none">SWAANG</h2>
+            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-[#FF5F5F] mt-1">Admin Control</p>
+          </div>
           <button onClick={() => signOut(auth)} className="xl:hidden px-4 py-2 border-2 border-[#2D2D2D] rounded-lg font-black uppercase text-[9px] bg-red-100 text-red-600 shadow-[2px_2px_0px_#2D2D2D] active:translate-y-0.5 active:shadow-none">
             Sign Out
           </button>
         </div>
 
-        <nav className="flex flex-row xl:flex-col gap-2 xl:gap-3 px-4 xl:px-8 pb-4 xl:pb-0 overflow-x-auto no-scrollbar items-center xl:items-stretch whitespace-nowrap w-full">
+        {/* SCROLLABLE NAV */}
+        <nav className="flex flex-row xl:flex-col gap-2 xl:gap-3 px-4 xl:px-8 pb-4 xl:pb-4 mt-6 xl:mt-10 overflow-x-auto xl:overflow-y-auto no-scrollbar items-center xl:items-stretch whitespace-nowrap w-full">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`shrink-0 px-4 py-2.5 xl:p-4 rounded-xl xl:rounded-2xl border-2 xl:border-4 border-[#2D2D2D] font-black uppercase text-[10px] xl:text-[11px] transition-all ${activeTab === tab.id ? `${tab.color} text-white shadow-[3px_3px_0px_#2D2D2D] xl:shadow-[6px_6px_0px_#2D2D2D] -translate-y-0.5 xl:-translate-y-1` : "bg-white shadow-[2px_2px_0px_#2D2D2D] xl:shadow-[4px_4px_0px_#2D2D2D]"}`}
+              className={`shrink-0 px-4 py-2.5 xl:p-4 rounded-xl xl:rounded-2xl border-2 xl:border-4 border-[#2D2D2D] font-black uppercase text-[10px] xl:text-[11px] transition-all duration-200 ${
+                activeTab === tab.id 
+                ? `${tab.color} text-white shadow-[3px_3px_0px_#2D2D2D] xl:shadow-[6px_6px_0px_#2D2D2D] -translate-y-0.5 xl:-translate-y-1` 
+                : "bg-white shadow-[2px_2px_0px_#2D2D2D] xl:shadow-[4px_4px_0px_#2D2D2D] hover:bg-gray-50"
+              }`}
             >
               {tab.label}
               {tab.id === "inbox" && messages.length > 0 && ` (${messages.length})`}
@@ -83,14 +122,22 @@ export default function AdminDashboard() {
           ))}
         </nav>
         
-        <button onClick={() => signOut(auth)} className="hidden xl:block mt-auto mx-8 mb-8 p-4 border-4 border-[#2D2D2D] rounded-xl font-black uppercase text-[9px] bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-colors">
-          Sign Out
+        <button onClick={() => signOut(auth)} className="hidden xl:block mt-auto mx-8 mb-8 p-4 border-4 border-[#2D2D2D] rounded-xl font-black uppercase text-[9px] bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-all shadow-[4px_4px_0px_#2D2D2D] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
+          Secure Sign Out
         </button>
       </aside>
 
-      <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto p-2 sm:p-6 xl:p-12">
+      {/* 🚀 MAIN CONTENT AREA */}
+      <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto p-4 sm:p-6 xl:p-12">
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+          <motion.div 
+            key={activeTab} 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -10 }} 
+            transition={{ duration: 0.2 }}
+            className="max-w-7xl mx-auto"
+          >
             {activeTab === "branding" && <BrandingEditor />}
             {activeTab === "spotlight" && <AOTMManager />}
             {activeTab === "timeline" && <TimelineManager />}
@@ -99,6 +146,11 @@ export default function AdminDashboard() {
             {activeTab === "events" && <EventsManager />}
             {activeTab === "team" && <TeamManager />}
             {activeTab === "gallery" && <GalleryManager />}
+            
+            {/* NEW TAB RENDERING */}
+            {activeTab === "letters" && <LetterGenerator />} 
+            {activeTab === "conflicts" && <ConflictMapper />}
+
             {activeTab === "notices" && <NoticesManager />}
             {activeTab === "backstage" && <BackstageManager />}
             {activeTab === "credits" && <CreditsEditor />}

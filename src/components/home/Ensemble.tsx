@@ -69,7 +69,7 @@ export default function Ensemble({ team: parentTeam }: { team?: any[] }) {
                         <img 
                           src={memberImage} 
                           alt={m.name || "Swaang Member"}
-                          className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-100" 
+                          className="h-full w-full object-cover grayscale-0 group-hover:grayscale transition-all duration-500 scale-110 group-hover:scale-100" 
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center font-black opacity-20 text-xl uppercase bg-[#FFF9F0] text-[#2D2D2D]">

@@ -8,9 +8,13 @@ import Hero from "@/components/home/Hero";
 import StageNotices from "@/components/home/StageNotices";
 import FounderNote from "@/components/home/FounderNote";
 import Spotlight from "@/components/home/Spotlight";
+import FacultyBlueprint from "@/components/home/FacultyBlueprint";
 import Timeline from "@/components/home/Timeline";
 import Productions from "@/components/home/Productions";
 import Ensemble from "@/components/home/Ensemble";
+
+// 🔥 FIXED: Added the missing imports for your new interactive components
+import TwisterMarquee from "@/components/home/TwisterMarquee";
 
 export default function Home() {
   const [data, setData] = useState<any>({});
@@ -25,7 +29,6 @@ export default function Home() {
     onSnapshot(doc(db, "settings", "homepage"), (d) => setData(d.data() || {}));
     onSnapshot(doc(db, "settings", "aotm"), (d) => setAotm(d.data()));
     
-    // 🔥 FIXED: Changed m.showOnHome to m.isSpotlight so the Ensemble section updates!
     onSnapshot(collection(db, "team"), (s) => 
       setTeam(s.docs.map(d => ({id: d.id, ...d.data()})).filter((m:any) => m.isSpotlight))
     );
@@ -67,11 +70,16 @@ export default function Home() {
           <StageNotices notices={notices} />
         </div>
         
+        <FacultyBlueprint />
         <FounderNote data={data} />
         <Spotlight aotm={aotm} />
+        
         <Timeline timeline={timeline} />
         <Productions events={events} />
         <Ensemble team={team} />
+
+        {/* 🔥 NEW INTERACTIVE ELEMENTS */}
+        <TwisterMarquee />
       </main>
     </PageTransition>
   );

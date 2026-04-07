@@ -57,7 +57,7 @@ export default function Team() {
                         <img 
                           src={m.image} 
                           alt={m.name}
-                          className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-100" 
+                          className="h-full w-full object-cover grayscale-0 group-hover:grayscale transition-all duration-500 scale-110 group-hover:scale-100" 
                         />
                       </div>
                     </div>

@@ -16,6 +16,11 @@ export default function TeamManager() {
   const [graduatingId, setGraduatingId] = useState<string | null>(null);
   const [gradData, setGradData] = useState({ passoutYear: "", tenure: "" });
 
+  // 🔥 NEW: Faculty State
+  const [facultyForm, setFacultyForm] = useState<any>({
+    name: "", role: "", citation: "", image: "", stat1: 100, stat2: 100, stat3: 100
+  });
+
   const initialForm = {
     name: "",
     role: "",
@@ -39,15 +44,34 @@ export default function TeamManager() {
   const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "team"), (snap) => {
+    // 1. Sync Team Data
+    const unsubTeam = onSnapshot(collection(db, "team"), (snap) => {
       let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-      // 🔥 Sorting by joiningYear (Oldest First)
       fetched.sort((a, b) => (parseInt(a.joiningYear) || 9999) - (parseInt(b.joiningYear) || 9999));
       setTeam(fetched);
       setLoading(false);
     });
-    return () => unsub();
+
+    // 2. 🔥 Sync Faculty Settings
+    const unsubFaculty = onSnapshot(doc(db, "settings", "faculty"), (d) => {
+      if (d.exists()) setFacultyForm(d.data());
+    });
+
+    return () => {
+      unsubTeam();
+      unsubFaculty();
+    };
   }, []);
+
+  // 🔥 Faculty Save Logic
+  const handleFacultySave = async () => {
+    try {
+      await updateDoc(doc(db, "settings", "faculty"), facultyForm);
+      alert("Faculty Blueprint Updated! 🏛️");
+    } catch (err) {
+      alert("Faculty Update failed. Ensure 'settings/faculty' exists in DB.");
+    }
+  };
 
   const toggleField = async (id: string, field: string, current: boolean) => {
     try {
@@ -71,7 +95,7 @@ export default function TeamManager() {
     } catch (err) { alert("Error."); }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'team' | 'faculty') => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
@@ -83,7 +107,10 @@ export default function TeamManager() {
         body: data,
       });
       const json = await res.json();
-      if (json.success) setFormData(prev => ({ ...prev, image: json.data.url }));
+      if (json.success) {
+        if (target === 'team') setFormData(prev => ({ ...prev, image: json.data.url }));
+        else setFacultyForm((prev: any) => ({ ...prev, image: json.data.url }));
+      }
     } catch (err) { alert("Upload error."); } finally { setUploading(false); }
   };
 
@@ -101,10 +128,82 @@ export default function TeamManager() {
     } catch (err) { alert("Save error."); }
   };
 
-  if (loading) return <div className="p-10 font-black opacity-20">Syncing...</div>;
+  if (loading) return <div className="p-10 font-black opacity-20">Syncing Personnel Data...</div>;
 
   return (
     <div className="p-4 md:p-8 bg-[#FFF9F0] min-h-screen">
+      
+      {/* 🔥 NEW: FACULTY BLUEPRINT SETTINGS SECTION */}
+      <div className="mb-20 bg-[#2D2D2D] p-8 md:p-12 rounded-[3.5rem] shadow-[15px_15px_0px_#FFD166] text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF5F5F] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-[#FFD166] rounded-2xl flex items-center justify-center text-[#2D2D2D] text-2xl">🏛️</div>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Faculty Blueprint</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-2">Official Identity</label>
+                <input type="text" placeholder="Faculty Name" value={facultyForm.name} onChange={e => setFacultyForm({...facultyForm, name: e.target.value})} className="w-full bg-white/5 border-2 border-white/10 p-4 rounded-2xl font-bold text-white placeholder:text-white/20 focus:border-[#FFD166] outline-none transition-colors" />
+              </div>
+              <input type="text" placeholder="Position (e.g. Faculty Coordinator)" value={facultyForm.role} onChange={e => setFacultyForm({...facultyForm, role: e.target.value})} className="w-full bg-white/5 border-2 border-white/10 p-4 rounded-2xl font-bold text-white placeholder:text-white/20 focus:border-[#FFD166] outline-none transition-colors" />
+              <textarea placeholder="Backbone Citation (The Quote)" value={facultyForm.citation} onChange={e => setFacultyForm({...facultyForm, citation: e.target.value})} className="w-full bg-white/5 border-2 border-white/10 p-4 rounded-2xl font-bold text-white placeholder:text-white/20 h-24 focus:border-[#FFD166] outline-none transition-colors" />
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <p className="font-black text-[10px] uppercase opacity-40 tracking-widest">Blueprint Impact Stats (%)</p>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-black uppercase text-[#FFD166]">
+                    <span>Strategic Support</span>
+                    <span>{facultyForm.stat1}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={facultyForm.stat1} onChange={e => setFacultyForm({...facultyForm, stat1: parseInt(e.target.value)})} className="w-full accent-[#FFD166]" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-black uppercase text-[#06D6A0]">
+                    <span>Creative Freedom</span>
+                    <span>{facultyForm.stat2}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={facultyForm.stat2} onChange={e => setFacultyForm({...facultyForm, stat2: parseInt(e.target.value)})} className="w-full accent-[#06D6A0]" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-black uppercase text-[#FF5F5F]">
+                    <span>Institutional Synergy</span>
+                    <span>{facultyForm.stat3}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={facultyForm.stat3} onChange={e => setFacultyForm({...facultyForm, stat3: parseInt(e.target.value)})} className="w-full accent-[#FF5F5F]" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6 bg-white/5 p-5 rounded-3xl border-2 border-dashed border-white/10">
+                 <div className="w-20 h-20 bg-white/10 rounded-2xl overflow-hidden shrink-0 border-2 border-white/20">
+                    {facultyForm.image ? <img src={facultyForm.image} className="w-full h-full object-cover" /> : <span className="flex items-center justify-center h-full opacity-20 text-[8px] font-black uppercase">No Data</span>}
+                 </div>
+                 <div className="space-y-2">
+                   <p className="text-[9px] font-black uppercase opacity-40">System Image</p>
+                   <label className="inline-block bg-[#FFF] text-[#2D2D2D] px-4 py-2 rounded-lg font-black uppercase text-[10px] cursor-pointer hover:bg-[#FFD166] transition-colors">
+                     {uploading ? "Uploading..." : "Replace Visual"}
+                     <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'faculty')} />
+                   </label>
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          <button onClick={handleFacultySave} className="mt-12 w-full bg-[#FFD166] text-[#2D2D2D] py-5 rounded-[1.5rem] font-black uppercase tracking-widest shadow-[0px_8px_0px_rgba(255,255,255,0.2)] hover:translate-y-1 hover:shadow-none transition-all active:scale-[0.98]">
+            Push Changes to System
+          </button>
+        </div>
+      </div>
+
+      {/* --- ORIGINAL PERSONNEL DESK HEADER --- */}
       <div className="mb-12 border-b-8 border-[#2D2D2D] pb-6">
         <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-[#2D2D2D]">Personnel Desk</h2>
         <p className="font-black uppercase tracking-[0.3em] text-[#FF5F5F] text-[10px] mt-2">Manage Swaang Talent</p>
@@ -127,7 +226,6 @@ export default function TeamManager() {
               <input required type="text" placeholder="Role (e.g. Actor)" value={formData.role || ""} onChange={e => setFormData({...formData, role: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-sm" />
             </div>
 
-            {/* 🔥 Seniority Tracking Field */}
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase opacity-40 ml-2">Seniority (Joining Year)</label>
               <input required type="number" placeholder="e.g. 2023" value={formData.joiningYear || ""} onChange={e => setFormData({...formData, joiningYear: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
@@ -161,7 +259,7 @@ export default function TeamManager() {
               </div>
               <label className="flex-1 cursor-pointer bg-white border-2 border-[#2D2D2D] p-2 rounded-lg text-center font-black uppercase text-[10px]">
                 {uploading ? "..." : "Upload Photo"}
-                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'team')} />
               </label>
             </div>
 
@@ -186,7 +284,6 @@ export default function TeamManager() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-black uppercase text-sm leading-none">{m.name}</h4>
-                        {/* 🔥 Displaying joining year for admin reference */}
                         <span className="text-[8px] font-black bg-gray-100 px-1.5 py-0.5 rounded border border-black/10">Est. {m.joiningYear || '—'}</span>
                       </div>
                       <p className="text-[10px] font-bold text-[#FF5F5F] uppercase mt-1">{m.role} {m.branch && `• ${m.branch} ${m.year}`}</p>
@@ -217,7 +314,6 @@ export default function TeamManager() {
         </div>
       </div>
 
-      {/* --- GRADUATION MODAL --- */}
       <AnimatePresence>
         {graduatingId && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#2D2D2D]/80 backdrop-blur-sm">

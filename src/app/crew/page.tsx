@@ -1,17 +1,35 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, addDoc, setDoc } from "firebase/firestore";
+import { 
+  collection, 
+  onSnapshot, 
+  query, 
+  orderBy, 
+  doc, 
+  updateDoc, 
+  arrayUnion, 
+  addDoc, 
+  setDoc 
+} from "firebase/firestore";
 // 🔥 NEW: Import our token generator
 import { getDeviceToken } from "@/lib/firebase";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+// 🔥 NEW: Import the Availability Grid component
+import AvailabilityGrid from "@/components/crew/AvailabilityGrid";
 
 export default function CrewPage() {
   // 🧠 Core State
   const [notices, setNotices] = useState<any[]>([]);
   const [vault, setVault] = useState<any[]>([]);
-  const [crewSettings, setCrewSettings] = useState({ passcode: "SWAANG26", callDate: "", callTime: "", callLocation: "", callWho: "" });
+  const [crewSettings, setCrewSettings] = useState({ 
+    passcode: "SWAANG26", 
+    callDate: "", 
+    callTime: "", 
+    callLocation: "", 
+    callWho: "" 
+  });
   const [loading, setLoading] = useState(true);
 
   // 🔥 NEW: Permission Tracking State
@@ -25,6 +43,10 @@ export default function CrewPage() {
   // 🏃 Absence Ping State
   const [pingForm, setPingForm] = useState({ name: "", type: "Late", message: "" });
   const [pingStatus, setPingStatus] = useState("idle"); 
+
+  // 🚀 MEDIA STAGING STATE
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
+  const IMGBB_API_KEY = "098e6a70fbe6f7594e40f4641a1998b0";
 
   useEffect(() => {
     // Check if they already logged in recently
@@ -103,14 +125,14 @@ export default function CrewPage() {
         createdAt: Date.now()
       });
 
-      // 2. 🔥 TRIGGER ADMIN PING (ONLY you and Harsh get this)
+      // 2. 🔥 TRIGGER ADMIN PING
       await fetch("/api/notify-crew", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           title: "ABSENCE ALERT", 
           message: `${pingForm.name} is ${pingForm.type}. MSG: ${pingForm.message}`,
-          recipientType: "admin" // 🔥 This targets only Admin-roled tokens
+          recipientType: "admin" 
         })
       });
 
@@ -123,23 +145,64 @@ export default function CrewPage() {
     }
   };
 
+  // 🔥 MEDIA STAGING LOGIC
+  const handleBulkUpload = async (e: any) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setIsBulkUploading(true);
+    
+    for (const file of files as File[]) {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      try {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          await addDoc(collection(db, "gallery"), {
+            url: data.data.url,
+            title: `Crew Upload - ${new Date().toLocaleDateString()}`,
+            description: "Staged by Crew. Awaiting Admin Curation.",
+            showOnHome: false,
+            status: "Pending Curation",
+            createdAt: Date.now()
+          });
+        }
+      } catch (error) {
+        console.error("Single upload failed:", error);
+      }
+    }
+    
+    setIsBulkUploading(false);
+    alert("Media Staged! The Admin will now curate these for the Gallery. 🎞️");
+  };
+
   // 🔥 UPDATED: Automatic Enable Logic
   const enableNotifications = async () => {
     try {
       const permission = await Notification.requestPermission();
-      setPermissionStatus(permission); // Update UI state instantly
+      setPermissionStatus(permission); 
       
       if (permission === 'denied') {
-        alert("🚨 Notifications are currently BLOCKED in your browser! Please click the padlock icon in your address bar, change Notifications to 'Allow', and refresh.");
+        alert("🚨 Notifications are currently BLOCKED! Please check browser settings and refresh.");
         return; 
       }
 
       const token = await getDeviceToken();
       if (token) {
-        await setDoc(doc(db, "fcm_tokens", token), { token, createdAt: Date.now() });
-        alert("Push Notifications Enabled! You will now receive alerts on this device. 🔔");
+        await setDoc(doc(db, "fcm_tokens", token), { 
+          token, 
+          createdAt: Date.now(),
+          platform: window.innerWidth < 768 ? "mobile" : "desktop"
+        });
+        alert("Push Notifications Enabled! 🔔");
       } else {
-        alert("Failed to get token. If you are on iPhone, you must 'Add to Home Screen' first.");
+        alert("Failed to get token. If on iPhone, you must 'Add to Home Screen' first.");
       }
     } catch (err) {
       console.error(err);
@@ -185,14 +248,14 @@ export default function CrewPage() {
       <main className="min-h-screen bg-[#2D2D2D] pt-32 pb-20 px-6 text-[#FFF9F0]">
         <div className="max-w-7xl mx-auto">
 
-          {/* 🔥 NEW: AUTOMATIC NOTIFICATION PROMPT BANNER */}
+          {/* 🔔 NOTIFICATION PROMPT BANNER */}
           <AnimatePresence>
             {permissionStatus === "default" && (
               <motion.div 
                 initial={{ height: 0, opacity: 0 }} 
                 animate={{ height: "auto", opacity: 1 }} 
                 exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-                className="mb-10 overflow-hidden"
+                className="mb-10 overflow-hidden text-left"
               >
                 <div className="bg-[#FF5F5F] border-4 border-[#FFF9F0] p-6 md:p-8 rounded-[2.5rem] shadow-[8px_8px_0px_#FFF9F0] flex flex-col md:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-5">
@@ -213,10 +276,17 @@ export default function CrewPage() {
             )}
           </AnimatePresence>
           
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-8 border-[#FFF9F0]/10 pb-8 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-8 border-[#FFF9F0]/10 pb-8 gap-6 text-left">
             <div>
-              <div className="inline-block bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#FFF9F0] px-4 py-1 rounded-full mb-4 shadow-[4px_4px_0px_#FFF9F0]">
-                <span className="font-black uppercase tracking-[0.2em] text-[10px]">Access Granted</span>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-block bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#FFF9F0] px-4 py-1 rounded-full shadow-[4px_4px_0px_#FFF9F0]">
+                  <span className="font-black uppercase tracking-[0.2em] text-[10px]">Access Granted</span>
+                </div>
+                {/* 🔴 LIVE INDICATOR */}
+                <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/10">
+                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_red]" />
+                   <span className="font-black text-[8px] uppercase tracking-widest opacity-60">Live Monitor</span>
+                </div>
               </div>
               <h1 className="font-cinzel text-5xl md:text-7xl font-black uppercase tracking-tighter text-[#FFD166]">
                 Backstage <span className="text-[#FFF9F0]">Hub</span>
@@ -232,7 +302,7 @@ export default function CrewPage() {
 
           {/* 📅 THE DAILY CALL SHEET */}
           {(crewSettings.callDate || crewSettings.callTime) && (
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#FFD166] text-[#2D2D2D] border-4 border-[#FFF9F0] rounded-[2rem] p-6 md:p-8 mb-12 shadow-[8px_8px_0px_#FFF9F0] relative overflow-hidden">
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#FFD166] text-[#2D2D2D] border-4 border-[#FFF9F0] rounded-[2rem] p-6 md:p-8 mb-12 shadow-[8px_8px_0px_#FFF9F0] relative overflow-hidden text-left">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-[80px] opacity-40 -z-0" />
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
@@ -257,7 +327,7 @@ export default function CrewPage() {
             </motion.div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 text-left">
             
             {/* 📢 THE CALL BOARD */}
             <div className="lg:col-span-7 space-y-8">
@@ -285,6 +355,16 @@ export default function CrewPage() {
                     </div>
                     <p className="font-medium text-sm md:text-base leading-relaxed mb-6 whitespace-pre-wrap">{notice.message}</p>
                     
+                    {/* ✅ ACKNOWLEDGMENT DISPLAY */}
+                    {notice.priority === 'urgent' && notice.acknowledgedBy?.length > 0 && (
+                        <div className="mb-6 flex flex-wrap gap-2">
+                           <span className="text-[8px] font-black uppercase text-[#2D2D2D]/40 w-full mb-1">Seen By:</span>
+                           {notice.acknowledgedBy.map((name: string, i: number) => (
+                              <span key={i} className="bg-gray-100 border border-black/10 px-2 py-1 rounded text-[9px] font-bold">{name}</span>
+                           ))}
+                        </div>
+                    )}
+
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-t-2 border-dashed border-[#2D2D2D]/20 pt-4">
                       <div className="text-[10px] font-black uppercase tracking-widest opacity-60">
                         <span>Posted by: {notice.author || "Directorate"}</span>
@@ -306,10 +386,20 @@ export default function CrewPage() {
               )}
             </div>
 
-            {/* 🗄️ THE VAULT & PING */}
+            {/* 🗄️ THE VAULT & PING & CONFLICTS */}
             <div className="lg:col-span-5 space-y-8">
               
-              <div className="flex items-center gap-4 mb-8">
+              {/* 🔥 NEW: AVAILABILITY GRID (CONFLICT MAPPER INPUT) */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-10 w-3 bg-[#FFD166] rounded-full" />
+                <h2 className="font-cinzel text-3xl font-black uppercase tracking-tighter">My Schedule</h2>
+              </div>
+              <AvailabilityGrid 
+                userId={localStorage.getItem("swaang_crew_id") || "crew_member"} 
+                userName={localStorage.getItem("swaang_crew_name") || "Crew Member"} 
+              />
+
+              <div className="flex items-center gap-4 mb-4">
                 <div className="h-10 w-3 bg-[#FF5F5F] rounded-full" />
                 <h2 className="font-cinzel text-3xl font-black uppercase tracking-tighter">The Vault</h2>
               </div>
@@ -322,7 +412,7 @@ export default function CrewPage() {
                     {vault.map((item) => (
                       <a key={item.id} href={item.link} target="_blank" rel="noreferrer" className="group flex items-center justify-between bg-white border-4 border-[#2D2D2D] p-4 rounded-xl hover:-translate-y-1 hover:shadow-[4px_4px_0px_#2D2D2D] transition-all">
                         <div className="flex items-center gap-4 overflow-hidden">
-                          <div className={`w-10 h-10 rounded-lg border-2 border-[#2D2D2D] flex items-center justify-center shrink-0 ${item.type === 'script' ? 'bg-[#FFD166]' : item.type === 'audio' ? 'bg-[#06D6A0]' : 'bg-gray-200'}`}>
+                          <div className={`w-10 h-10 rounded-lg border-2 border-[#2D2D2D] flex items-center justify-center shrink-0 ${item.type === 'script' ? 'bg-[#FFD166]' : item.type === 'audio' ? 'bg-[#06D6A0]' : 'bg-[#FF5F5F]'}`}>
                             {item.type === 'script' ? '📝' : item.type === 'audio' ? '🎵' : '📁'}
                           </div>
                           <div className="truncate pr-4">
@@ -337,6 +427,17 @@ export default function CrewPage() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* 🎞️ MEDIA STAGING */}
+              <div className="bg-[#06D6A0] border-4 border-[#FFF9F0] rounded-[2rem] p-6 shadow-[8px_8px_0px_#FFF9F0] text-[#2D2D2D]">
+                <h3 className="font-black uppercase text-xl mb-1 tracking-tighter">Media Staging</h3>
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-6">Bulk Upload Photos to Archives</p>
+                
+                <label className={`block text-center cursor-pointer bg-[#2D2D2D] text-white py-4 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_#FFF9F0] hover:translate-y-1 hover:shadow-none transition-all ${isBulkUploading ? "opacity-50 pointer-events-none" : ""}`}>
+                  {isBulkUploading ? "Staging Assets..." : "Select Multi-Photos"}
+                  <input type="file" multiple className="hidden" accept="image/*" onChange={handleBulkUpload} />
+                </label>
               </div>
               
               {/* 🏃 THE ABSENCE PING */}

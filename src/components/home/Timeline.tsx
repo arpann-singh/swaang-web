@@ -15,6 +15,9 @@ export default function Timeline({ timeline }: { timeline: any[] }) {
 
   if (!timeline || timeline.length === 0) return null;
 
+  // 🔥 ENHANCEMENT: Sort timeline so earliest year (e.g. 2014) is at the top
+  const sortedTimeline = [...timeline].sort((a, b) => parseInt(a.year) - parseInt(b.year));
+
   // 🎨 Swaang brand colors to alternate the drop shadows
   const shadowColors = ["shadow-[8px_8px_0px_#FF5F5F]", "shadow-[8px_8px_0px_#06D6A0]", "shadow-[8px_8px_0px_#FFD166]"];
 
@@ -36,7 +39,7 @@ export default function Timeline({ timeline }: { timeline: any[] }) {
         {/* The center line (Left aligned on mobile, Center on desktop) */}
         <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-1.5 md:-ml-[3px] bg-white/10 rounded-full" />
 
-        {timeline.map((item, index) => {
+        {sortedTimeline.map((item, index) => {
           const isLeft = index % 2 === 0;
           const shadowClass = shadowColors[index % shadowColors.length];
 
@@ -63,15 +66,15 @@ export default function Timeline({ timeline }: { timeline: any[] }) {
                     </span>
                   </div>
 
-                  {/* Middle: Title */}
+                  {/* Middle: Title (Using item.event to match your DB) */}
                   <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter leading-tight mb-8">
-                    {item.title || "Untitled Milestone"}
+                    {item.event || item.title || "Untitled Milestone"}
                   </h3>
 
                   {/* Bottom Right: Click to know more */}
                   <div className="mt-auto self-end">
                     <span className="bg-[#FFD166] text-[#2D2D2D] border-2 border-black px-3 py-1.5 rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_black] group-hover:bg-[#FF5F5F] group-hover:text-white transition-colors flex items-center gap-1.5">
-                      Click to know more <span className="text-base leading-none">⤾</span>
+                      Open Archive 📂 <span className="text-base leading-none">⤾</span>
                     </span>
                   </div>
                 </motion.div>
@@ -82,44 +85,51 @@ export default function Timeline({ timeline }: { timeline: any[] }) {
         })}
       </div>
 
-      {/* 🪟 THE POP-UP MODAL (Opens when a card is clicked) */}
+      {/* 🪟 THE POP-UP MODAL */}
       <AnimatePresence>
         {activeStory && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
             
-            {/* Dark Blur Backdrop (Clicking it closes the modal) */}
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setActiveStory(null)}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
             />
 
-            {/* The Modal Content Box */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-[#FFF9F0] w-full max-w-2xl max-h-[85vh] overflow-y-auto border-4 border-black p-8 md:p-12 rounded-[2rem] shadow-[16px_16px_0px_#FF5F5F] relative z-10 text-[#2D2D2D] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              className="bg-[#FFF9F0] w-full max-w-3xl max-h-[85vh] overflow-y-auto border-4 border-black p-8 md:p-12 rounded-[2rem] shadow-[16px_16px_0px_#FF5F5F] relative z-10 text-[#2D2D2D] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             >
-              {/* Close Button (X) */}
               <button 
                 onClick={() => setActiveStory(null)}
                 className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 bg-white border-4 border-black rounded-full flex items-center justify-center font-black text-xl hover:bg-[#FF5F5F] hover:text-white transition-colors shadow-[2px_2px_0px_black] hover:translate-y-0.5 hover:shadow-none"
-              >
-                X
-              </button>
+              > X </button>
 
               <span className="inline-block bg-[#06D6A0] text-black border-2 border-black px-4 py-1 font-black text-xs uppercase tracking-widest rounded-full mb-6 shadow-[2px_2px_0px_black]">
-                Year {activeStory.year}
+                Journey {activeStory.year}
               </span>
 
               <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8 leading-none">
-                {activeStory.title}
+                {activeStory.event || activeStory.title}
               </h2>
+
+              {/* 🔥 ENHANCEMENT: PHOTO GALLERY IN MODAL */}
+              {(activeStory.photo1 || activeStory.photo2) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                  {activeStory.photo1 && (
+                    <img src={activeStory.photo1} className="w-full aspect-video object-cover rounded-2xl border-4 border-black shadow-[4px_4px_0px_black]" alt="Memory 1" />
+                  )}
+                  {activeStory.photo2 && (
+                    <img src={activeStory.photo2} className="w-full aspect-video object-cover rounded-2xl border-4 border-black shadow-[4px_4px_0px_black]" alt="Memory 2" />
+                  )}
+                </div>
+              )}
 
               <div className="bg-white border-4 border-black p-6 md:p-8 rounded-2xl shadow-[6px_6px_0px_black/20]">
                 <p className="font-bold text-sm md:text-base leading-relaxed whitespace-pre-wrap opacity-90">
-                  {activeStory.description || activeStory.content || "No detailed description was provided for this milestone in the archives."}
+                  {activeStory.description || activeStory.content || "No detailed description was provided."}
                 </p>
               </div>
 

@@ -30,7 +30,7 @@ export default function Productions({ events }: { events: any[] }) {
             >
               <div className="absolute inset-0 bg-[#2D2D2D] translate-x-4 translate-y-4 rounded-[3rem]" />
               <div className="relative z-10 bg-white border-4 border-[#2D2D2D] p-6 rounded-[3rem] group-hover:-translate-y-2 transition-transform duration-500">
-                 <img src={e.image} className="w-full aspect-[4/5] object-cover rounded-[2rem] border-2 border-[#2D2D2D] mb-6 grayscale group-hover:grayscale-0 transition-all" />
+                 <img src={e.image} className="w-full aspect-[4/5] object-cover rounded-[2rem] border-2 border-[#2D2D2D] mb-6 grayscale-0 group-hover:grayscale transition-all" />
                  <h4 className="text-3xl font-black uppercase tracking-tighter">{e.title}</h4>
                  <p className="text-xs font-bold text-[#FF5F5F] mt-2 uppercase tracking-widest">{e.date} • {e.status}</p>
               </div>

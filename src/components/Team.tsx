@@ -70,7 +70,7 @@ export default function Team() {
             {/* Image Container */}
             <div className="h-80 w-full border-b-4 border-[#2D2D2D] overflow-hidden bg-gray-100 relative">
               {member.image ? (
-                <img src={member.image} alt={member.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                <img src={member.image} alt={member.name} className="w-full h-full object-cover grayscale-0 group-hover:grayscale transition-all duration-500" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-6xl opacity-10 font-black">SWAANG</div>
               )}

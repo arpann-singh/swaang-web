@@ -4,10 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
+import { motion, AnimatePresence } from "framer-motion"; // 🔥 Added for the light effect
 
 export default function Footer() {
   const pathname = usePathname();
   const [data, setData] = useState<any>({});
+  // 🔥 NEW: Ghost Light State
+  const [isGhostLightOn, setIsGhostLightOn] = useState(false);
 
   // Fetch settings from Firebase
   useEffect(() => {
@@ -17,7 +20,6 @@ export default function Footer() {
   // 🛑 THE KILL SWITCH: Hide in Admin
   if (pathname?.startsWith("/admin")) return null;
 
-  // SVG Icons combined with Firebase dynamic URLs
   const socials = [
     { 
       name: "Instagram", 
@@ -67,120 +69,148 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#1A1A1A] border-t-[8px] md:border-t-[12px] border-[#0A0A0A] pt-20 pb-10 px-6 text-[#FFF9F0] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto relative z-10">
-        
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 mb-16">
+    <>
+      {/* 🔥 THE GHOST LIGHT DIMMER EFFECT */}
+      <AnimatePresence>
+        {isGhostLightOn && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 0.7 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#050505] z-[9998] pointer-events-none mix-blend-multiply transition-all"
+          />
+        )}
+      </AnimatePresence>
+
+      <footer className="bg-[#1A1A1A] border-t-[8px] md:border-t-[12px] border-[#0A0A0A] pt-20 pb-10 px-6 text-[#FFF9F0] relative overflow-hidden">
+        {/* Background Decorative Gradient */}
+        <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[150px] transition-all duration-1000 ${isGhostLightOn ? 'bg-[#FFD166]/20' : 'bg-[#FF5F5F]/5'}`} />
+
+        <div className="max-w-7xl mx-auto relative z-10">
           
-          {/* 🎭 LEFT: COMPACT BRANDING */}
-          <div className="lg:col-span-5 space-y-8">
-            <h2 className="font-cinzel text-[10vw] lg:text-[4.5rem] font-black uppercase leading-[0.9] tracking-tighter drop-shadow-[5px_5px_0px_#FF5F5F]">
-              SWAANG <br/>
-              <span className="text-white/20 italic">THE</span> <br/>
-              DRAMATIC <br/>
-              SOCIETY.
-            </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 mb-16">
             
-            <div className="space-y-4">
-              <p className="text-xl md:text-2xl font-black uppercase italic text-[#06D6A0]">
-                Connect With The Stage
-              </p>
-              <ul className="space-y-3 border-l-4 border-[#2D2D2D] pl-4 mt-4">
-                <li className="relative group">
-                  <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#FF5F5F] opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-white/90">{data.address || "SSTC Junwani, Durg (C.G.)"}</p>
-                </li>
-                <li className="relative group">
-                  <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#06D6A0] opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-white/90">{data.phone || "+91 79877 55520"}</p>
-                </li>
-                <li className="relative group">
-                  <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#FFD166] opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-[#06D6A0] hover:text-[#FFD166] transition-colors cursor-pointer">{data.email || "swaangsstc2110@gmail.com"}</p>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* 📱 RIGHT: NAVIGATION & SOCIAL HUB */}
-          <div className="lg:col-span-7 flex flex-col justify-between">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+            {/* 🎭 LEFT: COMPACT BRANDING */}
+            <div className="lg:col-span-5 space-y-8">
+              <h2 className="font-cinzel text-[10vw] lg:text-[4.5rem] font-black uppercase leading-[0.9] tracking-tighter drop-shadow-[5px_5px_0px_#FF5F5F]">
+                SWAANG <br/>
+                <span className="text-white/20 italic">THE</span> <br/>
+                DRAMATIC <br/>
+                SOCIETY.
+              </h2>
               
-              {/* Quick Links */}
-              <div className="space-y-6">
-                <h3 className="text-[#FFD166] font-black uppercase text-xs tracking-[0.3em]">Quick Navigation</h3>
-                <div className="flex flex-col gap-4 font-black uppercase text-sm md:text-lg tracking-tighter">
-                  <Link href="/events" className="hover:translate-x-2 transition-transform hover:text-[#FFD166] flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#FFD166] rounded-full"></span> The Playbill
-                  </Link>
-                  <Link href="/team" className="hover:translate-x-2 transition-transform hover:text-[#06D6A0] flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#06D6A0] rounded-full"></span> The Ensemble
-                  </Link>
-                  <Link href="/gallery" className="hover:translate-x-2 transition-transform hover:text-[#FF5F5F] flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#FF5F5F] rounded-full"></span> The Gallery
-                  </Link>
-                  <Link href="/credits" className="hover:translate-x-2 transition-transform hover:text-[#FFF9F0] flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#FFF9F0] rounded-full"></span> The Credits
-                  </Link>
-                </div>
-              </div>
-
-              {/* Social Buttons */}
-              <div className="space-y-6">
-                <h3 className="text-[#06D6A0] font-black uppercase text-xs tracking-[0.3em]">Social Hub</h3>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                  {socials.filter(s => s.url).map((s, i) => (
-                    <a 
-                      key={i} 
-                      href={s.url} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className={`flex items-center gap-3 px-5 py-3 border-2 border-white/20 text-white/90 rounded-xl font-black uppercase text-[10px] md:text-xs tracking-widest transition-all shadow-[4px_4px_0px_rgba(255,255,255,0.05)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 group ${s.color}`}
-                    >
-                      {s.svg}
-                      {s.name}
-                    </a>
-                  ))}
-                </div>
+              <div className="space-y-4">
+                <p className="text-xl md:text-2xl font-black uppercase italic text-[#06D6A0]">
+                  Connect With The Stage
+                </p>
+                <ul className="space-y-3 border-l-4 border-[#2D2D2D] pl-4 mt-4">
+                  <li className="relative group">
+                    <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#FF5F5F] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-white/90">{data.address || "SSTC Junwani, Durg (C.G.)"}</p>
+                  </li>
+                  <li className="relative group">
+                    <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#06D6A0] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-white/90">{data.phone || "+91 79877 55520"}</p>
+                  </li>
+                  <li className="relative group">
+                    <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#FFD166] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-[#06D6A0] hover:text-[#FFD166] transition-colors cursor-pointer">{data.email || "swaangsstc2110@gmail.com"}</p>
+                  </li>
+                </ul>
               </div>
             </div>
 
-            {/* Accent Line */}
-            <div className="mt-16 h-1 w-full bg-[#FF5F5F]/20 rounded-full" />
+            {/* 📱 RIGHT: NAVIGATION & SOCIAL HUB */}
+            <div className="lg:col-span-7 flex flex-col justify-between">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+                
+                {/* Quick Links */}
+                <div className="space-y-6">
+                  <h3 className="text-[#FFD166] font-black uppercase text-xs tracking-[0.3em]">Quick Navigation</h3>
+                  <div className="flex flex-col gap-4 font-black uppercase text-sm md:text-lg tracking-tighter">
+                    <Link href="/events" className="hover:translate-x-2 transition-transform hover:text-[#FFD166] flex items-center gap-3">
+                      <span className="w-2 h-2 bg-[#FFD166] rounded-full"></span> The Playbill
+                    </Link>
+                    <Link href="/team" className="hover:translate-x-2 transition-transform hover:text-[#06D6A0] flex items-center gap-3">
+                      <span className="w-2 h-2 bg-[#06D6A0] rounded-full"></span> The Ensemble
+                    </Link>
+                    <Link href="/gallery" className="hover:translate-x-2 transition-transform hover:text-[#FF5F5F] flex items-center gap-3">
+                      <span className="w-2 h-2 bg-[#FF5F5F] rounded-full"></span> The Gallery
+                    </Link>
+                    <Link href="/credits" className="hover:translate-x-2 transition-transform hover:text-[#FFF9F0] flex items-center gap-3">
+                      <span className="w-2 h-2 bg-[#FFF9F0] rounded-full"></span> The Credits
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Social Buttons */}
+                <div className="space-y-6">
+                  <h3 className="text-[#06D6A0] font-black uppercase text-xs tracking-[0.3em]">Social Hub</h3>
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                    {socials.filter(s => s.url).map((s, i) => (
+                      <a 
+                        key={i} 
+                        href={s.url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className={`flex items-center gap-3 px-5 py-3 border-2 border-white/20 text-white/90 rounded-xl font-black uppercase text-[10px] md:text-xs tracking-widest transition-all shadow-[4px_4px_0px_rgba(255,255,255,0.05)] hover:shadow-none hover:translate-y-1 hover:translate-x-1 group ${s.color}`}
+                      >
+                        {s.svg}
+                        {s.name}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Accent Line */}
+              <div className="mt-16 h-1 w-full bg-[#FF5F5F]/20 rounded-full" />
+            </div>
+          </div>
+
+          {/* 📜 BOTTOM BAR */}
+          <div className="pt-8 border-t-2 border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            
+            <div className="text-center md:text-left">
+              <p className="font-bold text-xs uppercase tracking-widest text-white/30 mb-2 md:mb-0">
+                © {new Date().getFullYear()} Swaang Drama Club • SSTC Bhilai
+              </p>
+            </div>
+
+            {/* 🔥 NEW: BACKSTAGE CONTROLS & GHOST LIGHT */}
+            <div className="flex items-center gap-4 bg-[#0A0A0A] p-2 rounded-2xl border-2 border-white/5">
+              <button 
+                onClick={() => setIsGhostLightOn(!isGhostLightOn)}
+                className={`w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center ${isGhostLightOn ? 'bg-[#FFD166] border-[#2D2D2D] text-[#2D2D2D] shadow-[inset_0px_0px_10px_rgba(0,0,0,0.2)]' : 'bg-transparent border-white/10 text-white/40 hover:border-white/20'}`}
+                title="Toggle Ghost Light"
+              >
+                <span className="text-sm">{isGhostLightOn ? '💡' : '🕯️'}</span>
+              </button>
+
+              <div className="h-6 w-[2px] bg-white/10" />
+
+              <div className="flex items-center gap-6 px-2">
+                <Link href="/crew" className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#FF5F5F] transition-colors flex items-center gap-2">
+                  <span className="opacity-50">🔒</span> Stage Door
+                </Link>
+                <Link href="/admin/" className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#06D6A0] transition-colors flex items-center gap-2">
+                  <span className="opacity-50">⚙️</span> Admin
+                </Link>
+              </div>
+            </div>
+            
+            <div className="text-center md:text-right group cursor-default">
+              <p className="font-black text-[8px] uppercase tracking-[0.4em] text-white/50 mb-1 group-hover:text-white transition-colors">
+                Developed By
+              </p>
+              <p className="font-black text-sm uppercase tracking-widest text-[#06D6A0] group-hover:text-[#FFD166] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-colors">
+                {data.curatorName || "Arpan Singh"}
+              </p>
+            </div>
+
           </div>
         </div>
-
-        {/* 📜 BOTTOM BAR */}
-        <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          
-          <div className="text-center md:text-left">
-            <p className="font-bold text-xs uppercase tracking-widest text-white/60 mb-2 md:mb-0">
-              © {new Date().getFullYear()} Swaang Drama Club • SSTC Bhilai
-            </p>
-          </div>
-
-          {/* 🔥 NEW: The Secret Backstage & Admin Links */}
-          <div className="flex items-center gap-6">
-            <Link href="/crew" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#FF5F5F] transition-colors flex items-center gap-2">
-              <span className="text-[10px]">🔒</span> Stage Door
-            </Link>
-            <span className="text-white/10">|</span>
-            <Link href="/admin/" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-[#06D6A0] transition-colors flex items-center gap-2">
-              <span className="text-[10px]">⚙️</span> Directorate
-            </Link>
-          </div>
-          
-          <div className="text-center md:text-right group cursor-default">
-            <p className="font-black text-[8px] uppercase tracking-[0.4em] text-white/50 mb-1 group-hover:text-white transition-colors">
-              Developed By
-            </p>
-            <p className="font-black text-sm uppercase tracking-widest text-[#06D6A0] group-hover:text-[#FFD166] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-colors">
-              {data.curatorName || "Arpan Singh"}
-            </p>
-          </div>
-
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }
