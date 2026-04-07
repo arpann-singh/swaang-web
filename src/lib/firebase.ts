@@ -1,7 +1,10 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getAuth } from "firebase/auth";
+import { 
+  getAuth, 
+  GoogleAuthProvider // 🔥 NEW: Added for Google Login
+} from "firebase/auth";
 // 🔥 NEW: Import Firebase Cloud Messaging
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 
@@ -20,6 +23,10 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
+
+// 🔥 NEW: Google Auth Provider
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 // 🔥 NEW: Messaging Setup & Token Generator
 export const messaging = async () => {

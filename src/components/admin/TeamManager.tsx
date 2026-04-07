@@ -23,6 +23,7 @@ export default function TeamManager() {
 
   const initialForm = {
     name: "",
+    email: "", // 🔥 NEW: Added email field for individual logins
     role: "",
     description: "",
     branch: "",       
@@ -217,6 +218,12 @@ export default function TeamManager() {
             
             <input required type="text" placeholder="Full Name" value={formData.name || ""} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
             
+            {/* 🔥 NEW: Email input field added for Auth mapping */}
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase opacity-40 ml-2">Official Email (For Crew Login)</label>
+              <input required type="email" placeholder="email@example.com" value={formData.email || ""} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <select value={formData.category || "active"} onChange={e => setFormData({...formData, category: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-black text-[10px] uppercase bg-white">
                 <option value="active">Active Member</option>
@@ -286,6 +293,8 @@ export default function TeamManager() {
                         <h4 className="font-black uppercase text-sm leading-none">{m.name}</h4>
                         <span className="text-[8px] font-black bg-gray-100 px-1.5 py-0.5 rounded border border-black/10">Est. {m.joiningYear || '—'}</span>
                       </div>
+                      {/* 🔥 Visual indicator for email */}
+                      <p className="text-[8px] font-mono text-black/40 italic">{m.email || "No Email Bound"}</p>
                       <p className="text-[10px] font-bold text-[#FF5F5F] uppercase mt-1">{m.role} {m.branch && `• ${m.branch} ${m.year}`}</p>
                       
                       <div className="flex flex-wrap gap-2 mt-2">
