@@ -12,7 +12,7 @@ export default function FounderNote({ data }: { data: any }) {
         <div className={`absolute inset-0 ${color} translate-x-4 translate-y-4 rounded-[2rem] border-4 border-black`} />
         <div className="relative h-full w-full border-4 border-black rounded-[2rem] overflow-hidden bg-gray-200">
            {img ? (
-             <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+             <img src={img} className="w-full h-full object-cover grayscale-0 group-hover:grayscale transition-all duration-500" />
            ) : (
              <div className="h-full w-full flex items-center justify-center font-black opacity-20 text-4xl uppercase -rotate-12">No Photo</div>
            )}
