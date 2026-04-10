@@ -12,6 +12,7 @@ const EventsManager = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState(""); // 🔥 NEW: Search state
   
   const initialForm = {
     title: "",
@@ -36,6 +37,13 @@ const EventsManager = () => {
     });
     return () => unsub();
   }, []);
+
+  // 🔥 NEW: Filter logic for live search
+  const filteredEvents = events.filter(ev => 
+    ev.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ev.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ev.date?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -104,14 +112,27 @@ const EventsManager = () => {
 
   return (
     <div className="space-y-12 bg-[#FFF9F0] p-4 md:p-8 min-h-screen">
-      <div className="border-b-8 border-[#2D2D2D] pb-6">
-        <h1 className="text-5xl font-black uppercase text-[#2D2D2D]">Playbill Desk</h1>
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5F5F] mt-2">Manage the Stage Legacy</p>
+      <div className="border-b-8 border-[#2D2D2D] pb-6 flex flex-col md:flex-row justify-between items-end gap-4">
+        <div>
+          <h1 className="text-5xl font-black uppercase text-[#2D2D2D]">Playbill Desk</h1>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5F5F] mt-2 text-left">Manage the Stage Legacy</p>
+        </div>
+
+        {/* 🔥 NEW: SEARCH BAR */}
+        <div className="w-full md:w-80 relative">
+          <input 
+            type="text" 
+            placeholder="Search Play Title or Status..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white border-4 border-[#2D2D2D] p-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_#2D2D2D] outline-none focus:translate-y-1 focus:shadow-none transition-all"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
         <div className="xl:col-span-4">
-          <form onSubmit={handleSubmit} className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[12px_12px_0px_#2D2D2D] space-y-4 sticky top-10">
+          <form onSubmit={handleSubmit} className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[12px_12px_0px_#2D2D2D] space-y-4 sticky top-10 text-left">
             <h2 className="font-black uppercase text-[#FF5F5F] text-xs">{editingId ? "Edit Play" : "Register Play"}</h2>
             <input required type="text" placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
             <textarea required placeholder="Synopsis" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl h-24 font-medium" />
@@ -141,7 +162,6 @@ const EventsManager = () => {
               </select>
             </div>
 
-            {/* 🔥 RESTORED: Show on Homepage Checkbox */}
             <div className="flex items-center gap-3 p-3 bg-gray-50 border-2 border-[#2D2D2D] rounded-xl">
               <input type="checkbox" checked={formData.showOnHome} onChange={e => setFormData({...formData, showOnHome: e.target.checked})} className="w-5 h-5 accent-[#06D6A0]" />
               <label className="text-[10px] font-black uppercase tracking-widest">Show on Homepage</label>
@@ -150,29 +170,34 @@ const EventsManager = () => {
             <button type="submit" disabled={uploading} className="w-full bg-[#FF5F5F] text-white border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 transition-all mt-4">
               {editingId ? "Save Changes" : "Publish Play"}
             </button>
+            {editingId && <button type="button" onClick={() => {setEditingId(null); setFormData(initialForm)}} className="w-full text-[10px] font-black uppercase opacity-40 mt-2">Cancel Edit</button>}
           </form>
         </div>
 
         <div className="xl:col-span-8 space-y-4">
-          {events.map((ev) => (
+          {filteredEvents.map((ev) => (
             <div key={ev.id} className={`bg-white border-4 border-[#2D2D2D] p-4 rounded-[2rem] flex items-center gap-6 shadow-[6px_6px_0px_#2D2D2D] ${ev.isSpotlight ? 'ring-4 ring-[#FFD166]' : ''}`}>
               <img src={ev.image} className="w-16 h-24 object-cover rounded-xl border-2 border-[#2D2D2D]" />
-              <div className="flex-1">
+              <div className="flex-1 text-left">
                 <h3 className="font-black text-xl uppercase">{ev.title}</h3>
                 <div className="flex gap-2 mt-1">
                     <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border border-black uppercase ${ev.status === "Upcoming" ? "bg-[#06D6A0]" : "bg-gray-200"}`}>{ev.status}</span>
                     {ev.fullVideoUrl && <span className="text-[8px] font-black px-2 py-0.5 rounded-full border border-black uppercase bg-[#FF5F5F] text-white">Full Show</span>}
-                    {/* 🔥 VISUAL BADGE: Shows if it's currently on the homepage */}
                     {ev.showOnHome && <span className="text-[8px] font-black px-2 py-0.5 rounded-full border border-black uppercase bg-[#2D2D2D] text-white">★ On Home</span>}
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 shrink-0">
                 <button onClick={() => toggleSpotlight(ev.id, ev.isSpotlight)} className={`px-4 py-2 border-2 border-[#2D2D2D] rounded-xl font-black text-[9px] ${ev.isSpotlight ? 'bg-[#FFD166]' : 'bg-white'}`}>Spotlight</button>
                 <button onClick={() => handleEdit(ev)} className="px-4 py-2 border-2 border-[#2D2D2D] rounded-xl font-black text-[9px] bg-white">Edit</button>
-                <button onClick={() => deleteDoc(doc(db, "events", ev.id))} className="p-2 border-2 border-red-500 rounded-xl text-red-500">🗑️</button>
+                <button onClick={() => { if(confirm('Delete this event?')) deleteDoc(doc(db, "events", ev.id)) }} className="p-2 border-2 border-red-500 rounded-xl text-red-500 hover:bg-red-50 transition-colors">🗑️</button>
               </div>
             </div>
           ))}
+          {filteredEvents.length === 0 && (
+            <div className="p-20 border-4 border-dashed border-[#2D2D2D]/20 rounded-[3rem] text-center opacity-40 font-black uppercase italic tracking-widest">
+              No Plays Found Matching "{searchTerm}"
+            </div>
+          )}
         </div>
       </div>
     </div>

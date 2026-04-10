@@ -12,6 +12,7 @@ export default function TeamManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState(""); // 🔥 NEW: Search state
   
   const [graduatingId, setGraduatingId] = useState<string | null>(null);
   const [gradData, setGradData] = useState({ passoutYear: "", tenure: "" });
@@ -63,6 +64,14 @@ export default function TeamManager() {
       unsubFaculty();
     };
   }, []);
+
+  // 🔥 NEW: Filter logic
+  const filteredTeam = team.filter(m => 
+    m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.branch?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // 🔥 Faculty Save Logic
   const handleFacultySave = async () => {
@@ -135,7 +144,7 @@ export default function TeamManager() {
     <div className="p-4 md:p-8 bg-[#FFF9F0] min-h-screen">
       
       {/* 🔥 NEW: FACULTY BLUEPRINT SETTINGS SECTION */}
-      <div className="mb-20 bg-[#2D2D2D] p-8 md:p-12 rounded-[3.5rem] shadow-[15px_15px_0px_#FFD166] text-white relative overflow-hidden">
+      <div className="mb-20 bg-[#2D2D2D] p-8 md:p-12 rounded-[3.5rem] shadow-[15px_15px_0px_#FFD166] text-white relative overflow-hidden text-left">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF5F5F] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         
         <div className="relative z-10">
@@ -156,7 +165,7 @@ export default function TeamManager() {
 
             <div className="space-y-6">
               <div className="space-y-4">
-                <p className="font-black text-[10px] uppercase opacity-40 tracking-widest">Blueprint Impact Stats (%)</p>
+                <p className="font-black text-[10px] uppercase opacity-40 tracking-widest text-left">Blueprint Impact Stats (%)</p>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-[9px] font-black uppercase text-[#FFD166]">
@@ -187,7 +196,7 @@ export default function TeamManager() {
                  <div className="w-20 h-20 bg-white/10 rounded-2xl overflow-hidden shrink-0 border-2 border-white/20">
                     {facultyForm.image ? <img src={facultyForm.image} className="w-full h-full object-cover" /> : <span className="flex items-center justify-center h-full opacity-20 text-[8px] font-black uppercase">No Data</span>}
                  </div>
-                 <div className="space-y-2">
+                 <div className="space-y-2 text-left">
                    <p className="text-[9px] font-black uppercase opacity-40">System Image</p>
                    <label className="inline-block bg-[#FFF] text-[#2D2D2D] px-4 py-2 rounded-lg font-black uppercase text-[10px] cursor-pointer hover:bg-[#FFD166] transition-colors">
                      {uploading ? "Uploading..." : "Replace Visual"}
@@ -205,12 +214,25 @@ export default function TeamManager() {
       </div>
 
       {/* --- ORIGINAL PERSONNEL DESK HEADER --- */}
-      <div className="mb-12 border-b-8 border-[#2D2D2D] pb-6">
-        <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-[#2D2D2D]">Personnel Desk</h2>
-        <p className="font-black uppercase tracking-[0.3em] text-[#FF5F5F] text-[10px] mt-2">Manage Swaang Talent</p>
+      <div className="mb-12 border-b-8 border-[#2D2D2D] pb-6 flex flex-col md:flex-row justify-between items-end gap-4 text-left">
+        <div>
+          <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-[#2D2D2D]">Personnel Desk</h2>
+          <p className="font-black uppercase tracking-[0.3em] text-[#FF5F5F] text-[10px] mt-2">Manage Swaang Talent</p>
+        </div>
+
+        {/* 🔥 NEW: SEARCH BAR */}
+        <div className="w-full md:w-80 relative">
+          <input 
+            type="text" 
+            placeholder="Search Name, Role, or Branch..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white border-4 border-[#2D2D2D] p-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_#2D2D2D] outline-none focus:translate-y-1 focus:shadow-none transition-all"
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 text-left">
         {/* --- FORM SECTION --- */}
         <div className="xl:col-span-4">
           <form onSubmit={handleSubmit} className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[12px_12px_0px_#2D2D2D] space-y-4 sticky top-10">
@@ -262,7 +284,7 @@ export default function TeamManager() {
 
             <div className="flex items-center gap-4 bg-gray-100 p-3 rounded-xl border-2 border-[#2D2D2D]">
               <div className="w-12 h-12 bg-white border-2 border-[#2D2D2D] rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
-                {formData.image ? <img src={formData.image} className="w-full h-full object-cover" /> : <span className="text-xl opacity-20">🎭</span>}
+                {formData.image ? <img src={formData.image} alt="Profile" className="w-full h-full object-cover" /> : <span className="text-xl opacity-20">🎭</span>}
               </div>
               <label className="flex-1 cursor-pointer bg-white border-2 border-[#2D2D2D] p-2 rounded-lg text-center font-black uppercase text-[10px]">
                 {uploading ? "..." : "Upload Photo"}
@@ -283,12 +305,13 @@ export default function TeamManager() {
             <div key={cat} className="space-y-4">
               <h3 className="font-black text-2xl uppercase tracking-tighter border-l-8 border-[#2D2D2D] pl-4">{cat}s</h3>
               <div className="grid grid-cols-1 gap-4">
-                {team.filter(m => (m.category || 'active') === cat).map(m => (
+                {/* 🔥 Filtered List mapping */}
+                {filteredTeam.filter(m => (m.category || 'active') === cat).map(m => (
                   <div key={m.id} className={`bg-white border-4 border-[#2D2D2D] p-4 rounded-2xl flex items-center gap-4 shadow-[6px_6px_0px_#2D2D2D] ${m.isSpotlight ? 'ring-4 ring-[#FFD166]' : ''}`}>
                     <div className="w-16 h-16 rounded-xl border-2 border-[#2D2D2D] overflow-hidden shrink-0">
-                      {m.image ? <img src={m.image} className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center text-xl opacity-20 bg-gray-100 italic">?</span>}
+                      {m.image ? <img src={m.image} alt={m.name} className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center text-xl opacity-20 bg-gray-100 italic">?</span>}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 text-left">
                       <div className="flex items-center gap-2">
                         <h4 className="font-black uppercase text-sm leading-none">{m.name}</h4>
                         <span className="text-[8px] font-black bg-gray-100 px-1.5 py-0.5 rounded border border-black/10">Est. {m.joiningYear || '—'}</span>
