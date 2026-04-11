@@ -1,130 +1,193 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy, updateDoc } from "firebase/firestore";
+import { 
+  collection, onSnapshot, addDoc, deleteDoc, 
+  doc, updateDoc, serverTimestamp, query, orderBy 
+} from "firebase/firestore";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Trash2, Edit3, Camera, History, Tag, Star, Film, GraduationCap, Archive } from "lucide-react";
 
-const TimelineManager = () => {
-  const [milestones, setMilestones] = useState<any[]>([]);
-  const [isUploading, setIsUploading] = useState({ photo1: false, photo2: false });
-  // 🔥 ENHANCEMENT: State to track if we are editing
-  const [editId, setEditId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ year: "", event: "", description: "", photo1: "", photo2: "" });
+export default function TimelineManager() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const IMGBB_KEY = "098e6a70fbe6f7594e40f4641a1998b0"; 
+  // 🔥 Categories Config: Icons & Colors for the tags
+  const categories = [
+    { id: 'milestone', label: 'Milestone', icon: Star, color: 'bg-[#FFD166]' },
+    { id: 'play', label: 'Production/Play', icon: Film, color: 'bg-[#FF5F5F]' },
+    { id: 'workshop', label: 'Workshop', icon: GraduationCap, color: 'bg-[#06D6A0]' },
+    { id: 'achievement', label: 'Achievement', icon: Archive, color: 'bg-[#2D2D2D] text-white' }
+  ];
+
+  const initialForm = {
+    year: new Date().getFullYear().toString(),
+    date: "",
+    event: "",
+    description: "",
+    photo1: "",
+    photo2: "",
+    category: "milestone" 
+  };
+
+  const [formData, setFormData] = useState(initialForm);
+  const IMGBB_API_KEY = "098e6a70fbe6f7594e40f4641a1998b0";
 
   useEffect(() => {
-    // We sort by year descending here just for the admin list view
     const q = query(collection(db, "timeline"), orderBy("year", "desc"));
-    return onSnapshot(q, (snap) => setMilestones(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsub = onSnapshot(q, (snap) => {
+      setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
+    });
+    return () => unsub();
   }, []);
 
-  const handleUpload = async (e: any, key: 'photo1' | 'photo2') => {
-    const file = e.target.files[0];
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'photo1' | 'photo2') => {
+    const file = e.target.files?.[0];
     if (!file) return;
-    setIsUploading(prev => ({ ...prev, [key]: true }));
-    const body = new FormData();
-    body.append("image", file);
-
+    setUploading(true);
+    const data = new FormData();
+    data.append("image", file);
     try {
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body });
-      const resData = await res.json();
-      if (resData.success) {
-        setFormData(prev => ({ ...prev, [key]: resData.data.url }));
-      } else {
-        alert("Upload Error");
-      }
-    } catch (err) {
-      alert("Network Error");
-    } finally {
-      setIsUploading(prev => ({ ...prev, [key]: false }));
-    }
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST", body: data,
+      });
+      const json = await res.json();
+      if (json.success) setFormData(prev => ({ ...prev, [field]: json.data.url }));
+    } catch (err) { alert("Upload error."); } finally { setUploading(false); }
   };
 
-  // 🔥 ENHANCEMENT: Populate form with existing data to Edit
-  const startEdit = (m: any) => {
-    setEditId(m.id);
-    setFormData({
-      year: m.year,
-      event: m.event,
-      description: m.description || "",
-      photo1: m.photo1 || "",
-      photo2: m.photo2 || ""
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.year || !formData.event) return alert("Year and Event are required!");
-
     try {
-      if (editId) {
-        // 🔥 ENHANCEMENT: Update existing doc instead of adding a new one
-        await updateDoc(doc(db, "timeline", editId), formData);
-        alert("Milestone Updated! ✨");
+      if (editingId) {
+        await updateDoc(doc(db, "timeline", editingId), { ...formData, updatedAt: serverTimestamp() });
+        setEditingId(null);
       } else {
-        await addDoc(collection(db, "timeline"), formData);
-        alert("Milestone Published! 🎞️");
+        await addDoc(collection(db, "timeline"), { ...formData, createdAt: Date.now() });
       }
-      setFormData({ year: "", event: "", description: "", photo1: "", photo2: "" });
-      setEditId(null);
-    } catch (err) {
-      alert("Operation failed");
-    }
+      setFormData(initialForm);
+      alert("Legacy Updated! 🏛️");
+    } catch (err) { alert("Save error."); }
   };
+
+  if (loading) return <div className="p-10 font-black opacity-20">Opening Archives...</div>;
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D]">
-        <h2 className="font-black uppercase mb-6 text-xl tracking-tighter">
-          {editId ? "🛠️ Edit Journey Record" : "➕ Add Memory to Journey"}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <input required type="text" placeholder="Year" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold bg-[#FFF9F0]" />
-            <input required type="text" placeholder="Event Name" value={formData.event} onChange={e => setFormData({...formData, event: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold bg-[#FFF9F0]" />
-          </div>
-          
-          <textarea placeholder="Tell the story..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 rounded-xl h-32 font-medium" />
-          
-          <div className="grid grid-cols-2 gap-6">
-            <div className="relative group h-32 bg-gray-50 border-4 border-dashed border-[#2D2D2D] rounded-2xl flex flex-col items-center justify-center overflow-hidden transition-all hover:bg-white">
-               {isUploading.photo1 ? <span>⏳ Syncing...</span> : formData.photo1 ? <img src={formData.photo1} className="w-full h-full object-cover" /> : <p className="text-[9px] font-black uppercase">Photo 1</p>}
-               <input type="file" onChange={(e) => handleUpload(e, 'photo1')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
-            </div>
-            <div className="relative group h-32 bg-gray-50 border-4 border-dashed border-[#2D2D2D] rounded-2xl flex flex-col items-center justify-center overflow-hidden transition-all hover:bg-white">
-               {isUploading.photo2 ? <span>⏳ Syncing...</span> : formData.photo2 ? <img src={formData.photo2} className="w-full h-full object-cover" /> : <p className="text-[9px] font-black uppercase">Photo 2</p>}
-               <input type="file" onChange={(e) => handleUpload(e, 'photo2')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button type="submit" className="flex-1 bg-[#06D6A0] border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase shadow-[6px_6px_0px_#2D2D2D]">
-              {editId ? "Save Changes" : "Publish Milestone"}
-            </button>
-            {editId && (
-              <button type="button" onClick={() => {setEditId(null); setFormData({year:"",event:"",description:"",photo1:"",photo2:""})}} className="bg-red-500 text-white px-6 rounded-2xl border-4 border-[#2D2D2D] font-black uppercase">Cancel</button>
-            )}
-          </div>
-        </form>
+    <div className="p-4 md:p-8 bg-[#FFF9F0] min-h-screen text-left">
+      <div className="mb-12 border-b-8 border-[#2D2D2D] pb-6">
+        <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-[#2D2D2D]">Chronicle Manager</h2>
+        <p className="font-black uppercase tracking-[0.3em] text-[#FF5F5F] text-[10px] mt-2 italic">Curate Swaang's Historical Timeline</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {milestones.map(m => (
-          <div key={m.id} className="bg-white border-4 border-[#2D2D2D] p-4 rounded-2xl flex justify-between items-center shadow-[4px_4px_0px_#2D2D2D]">
-            <div className="flex-1">
-              <p className="font-black text-[#FF5F5F] text-xs">{m.year}</p>
-              <p className="font-bold uppercase text-[10px] truncate">{m.event}</p>
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
+        {/* --- ADD/EDIT FORM --- */}
+        <div className="xl:col-span-5">
+          <form onSubmit={handleSubmit} className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[12px_12px_0px_#2D2D2D] space-y-6 sticky top-10">
+            
+            {/* Category Dropdown */}
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase opacity-40 ml-2 flex items-center gap-1">
+                <Tag size={10} /> Event Category
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setFormData({...formData, category: cat.id})}
+                    className={`flex items-center gap-2 p-3 rounded-xl border-2 border-black transition-all ${
+                      formData.category === cat.id ? `${cat.color} -translate-y-1 shadow-[4px_4px_0px_black]` : 'bg-gray-50 opacity-50'
+                    }`}
+                  >
+                    <cat.icon size={14} />
+                    <span className="text-[9px] font-black uppercase tracking-tighter">{cat.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-2">
-                {/* 🔥 ENHANCEMENT: Edit Button */}
-                <button onClick={() => startEdit(m)} className="bg-blue-50 text-blue-600 p-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all">✏️</button>
-                <button onClick={() => deleteDoc(doc(db, "timeline", m.id))} className="bg-red-50 text-red-500 p-2 rounded-lg hover:bg-red-500 hover:text-white transition-all">🗑️</button>
+
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t-2 border-dashed border-black/5">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase opacity-40 ml-2">Legacy Year</label>
+                <input required type="text" placeholder="e.g. 2024" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="w-full border-2 border-black p-3 rounded-xl font-bold" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase opacity-40 ml-2">Specific Date</label>
+                <input type="text" placeholder="e.g. 15th Aug" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full border-2 border-black p-3 rounded-xl font-bold" />
+              </div>
             </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase opacity-40 ml-2">Event Title</label>
+              <input required type="text" placeholder="e.g. Samvid 2024 Launch" value={formData.event} onChange={e => setFormData({...formData, event: e.target.value})} className="w-full border-2 border-black p-3 rounded-xl font-bold" />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase opacity-40 ml-2">Story/Content</label>
+              <textarea required placeholder="Describe the milestone..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full border-2 border-black p-4 rounded-xl font-bold h-32 resize-none text-sm" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <p className="text-[9px] font-black uppercase opacity-40 ml-2">Memory 01</p>
+                <label className="block aspect-video bg-gray-100 border-4 border-dashed border-[#2D2D2D]/10 rounded-2xl overflow-hidden cursor-pointer">
+                  {formData.photo1 ? <img src={formData.photo1} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center opacity-20"><Camera /></div>}
+                  <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, 'photo1')} />
+                </label>
+              </div>
+              <div className="space-y-2">
+                <p className="text-[9px] font-black uppercase opacity-40 ml-2">Memory 02</p>
+                <label className="block aspect-video bg-gray-100 border-4 border-dashed border-[#2D2D2D]/10 rounded-2xl overflow-hidden cursor-pointer">
+                  {formData.photo2 ? <img src={formData.photo2} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center opacity-20"><Camera /></div>}
+                  <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, 'photo2')} />
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" disabled={uploading} className="w-full bg-[#2D2D2D] text-white border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#FF5F5F] hover:translate-y-1 transition-all">
+              {editingId ? "Update History" : "Add to Chronicle"}
+            </button>
+          </form>
+        </div>
+
+        {/* --- LIST VIEW --- */}
+        <div className="xl:col-span-7 space-y-6">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-8 w-2 bg-[#FFD166] rounded-full" />
+            <h3 className="text-2xl font-black uppercase tracking-tighter italic">Live Archives</h3>
           </div>
-        ))}
+
+          <div className="space-y-4">
+            {events.map((ev) => {
+              const catObj = categories.find(c => c.id === ev.category) || categories[0];
+              return (
+                <div key={ev.id} className="bg-white border-4 border-[#2D2D2D] p-5 rounded-3xl shadow-[6px_6px_0px_#2D2D2D] flex items-center gap-6 group">
+                  <div className="w-20 h-20 rounded-2xl bg-[#2D2D2D] shrink-0 overflow-hidden flex items-center justify-center border-2 border-black relative">
+                     {ev.photo1 ? <img src={ev.photo1} className="w-full h-full object-cover opacity-80" /> : <span className="text-white/20 font-black italic">{ev.year}</span>}
+                     <div className={`absolute top-0 left-0 p-1 ${catObj.color} rounded-br-lg border-r-2 border-b-2 border-black`}>
+                       <catObj.icon size={8} />
+                     </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[8px] font-black px-2 py-0.5 bg-[#FF5F5F] text-white rounded shadow-[2px_2px_0px_black]">{ev.year}</span>
+                      <h4 className="font-black uppercase text-sm truncate">{ev.event}</h4>
+                    </div>
+                    <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">{catObj.label}</p>
+                  </div>
+                  <div className="flex gap-2">
+                     <button onClick={() => { setEditingId(ev.id); setFormData(ev); window.scrollTo({top: 0, behavior: 'smooth'}) }} className="p-3 border-2 border-black rounded-xl hover:bg-[#FFD166] transition-colors"><Edit3 size={16} /></button>
+                     <button onClick={async () => { if(confirm('Erase this event?')) await deleteDoc(doc(db, "timeline", ev.id)) }} className="p-3 border-2 border-red-500 rounded-xl hover:bg-red-50 text-red-500 transition-colors"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-export default TimelineManager;
+}

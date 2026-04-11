@@ -56,6 +56,31 @@ export default function CrewPage() {
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const IMGBB_API_KEY = "098e6a70fbe6f7594e40f4641a1998b0";
 
+  // 🔥 1. SINGLE ACTION PRIORITY LOGIC
+  // Logic to determine if a Call Sheet is the current absolute priority
+  const getLayoutPriority = () => {
+    if (!crewSettings.callDate) return "DEFAULT";
+    
+    const today = new Date().toLocaleDateString('en-GB'); // Matches DD/MM/YYYY
+    const isToday = crewSettings.callDate.includes(today) || notices.some(n => n.priority === 'urgent');
+    
+    return isToday ? "HIGH_ALERT" : "DEFAULT";
+  };
+
+  const priorityMode = getLayoutPriority();
+
+  // 🔥 2. SMART LOCKER SORTING
+  // Filters vault items based on the logged-in user's role
+  const filteredVault = vault.filter((item) => {
+    // If no tags are set or tagged 'all', show to everyone
+    if (!item.tags || item.tags.length === 0 || item.tags.includes("all")) return true;
+    
+    const userRole = memberData?.role?.toLowerCase() || "";
+    
+    // Check if the user's role matches any of the tags
+    return item.tags.some((tag: string) => userRole.includes(tag.toLowerCase()));
+  });
+
   useEffect(() => {
     // 🔥 UPDATED: Strict Auth State Listener with Authorization Check
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
@@ -347,26 +372,38 @@ export default function CrewPage() {
             </div>
           </div>
 
-          {/* 📅 CALL SHEET */}
+          {/* 📅 CALL SHEET - PRIORITY 1: TODAY'S FOCUS */}
           {(crewSettings.callDate || crewSettings.callTime) && (
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#FFD166] text-[#2D2D2D] border-4 border-[#FFF9F0] rounded-[2rem] p-8 mb-12 shadow-[8px_8px_0px_#FFF9F0] text-left">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                  <h2 className="font-black uppercase text-[10px] tracking-[0.3em] opacity-60 mb-1">Daily Call Sheet</h2>
-                  <p className="font-cinzel text-3xl md:text-5xl font-black tracking-tighter leading-none">{crewSettings.callDate || "TBD"}</p>
+            <motion.div 
+              layout 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              className={`bg-[#FFD166] text-[#2D2D2D] border-4 border-[#FFF9F0] rounded-[2rem] mb-12 shadow-[12px_12px_0px_#FFF9F0] text-left overflow-hidden relative ${priorityMode === 'HIGH_ALERT' ? 'ring-8 ring-[#FF5F5F] ring-offset-4 ring-offset-[#2D2D2D]' : ''}`}
+            >
+              {priorityMode === 'HIGH_ALERT' && (
+                <div className="absolute top-0 right-0 bg-[#FF5F5F] text-white px-6 py-2 font-black uppercase text-[10px] tracking-widest rounded-bl-3xl">
+                  Live: Report to Stage
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-12 w-full md:w-auto">
+              )}
+              <div className="p-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Call Time</p>
-                    <p className="font-black text-xl uppercase tracking-tighter">{crewSettings.callTime || "TBD"}</p>
+                    <h2 className="font-black uppercase text-[10px] tracking-[0.3em] opacity-60 mb-1">Daily Call Sheet</h2>
+                    <p className="font-cinzel text-3xl md:text-6xl font-black tracking-tighter leading-none">{crewSettings.callDate || "TBD"}</p>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Location</p>
-                    <p className="font-black text-xl uppercase tracking-tighter">{crewSettings.callLocation || "TBD"}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Who's Called</p>
-                    <p className="font-black text-xl uppercase tracking-tighter">{crewSettings.callWho || "Everyone"}</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-12 w-full md:w-auto">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Call Time</p>
+                      <p className="font-black text-2xl uppercase tracking-tighter">{crewSettings.callTime || "TBD"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Location</p>
+                      <p className="font-black text-2xl uppercase tracking-tighter">{crewSettings.callLocation || "TBD"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Who's Called</p>
+                      <p className="font-black text-2xl uppercase tracking-tighter">{crewSettings.callWho || "Everyone"}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -384,7 +421,6 @@ export default function CrewPage() {
               <div className="bg-[#FFF9F0] text-[#2D2D2D] border-4 border-[#2D2D2D] rounded-[2rem] p-8 shadow-[8px_8px_0px_#FFD166]">
                 <form onSubmit={syncProfile} className="space-y-6">
                    <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-                      {/* Photo Upload Section */}
                       <div className="space-y-3 text-center">
                         <div className="w-32 h-32 rounded-3xl border-4 border-black overflow-hidden bg-gray-200">
                           {memberData?.image ? <img src={memberData.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center italic opacity-30 text-xs">No Photo</div>}
@@ -395,7 +431,6 @@ export default function CrewPage() {
                         </label>
                       </div>
 
-                      {/* Main Info */}
                       <div className="flex-1 w-full space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div className="space-y-1">
@@ -414,7 +449,6 @@ export default function CrewPage() {
                       </div>
                    </div>
 
-                   {/* Social Links */}
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t-2 border-black/10 pt-6">
                       <div className="space-y-1">
                         <label className="text-[9px] font-black uppercase opacity-40 ml-2">Instagram</label>
@@ -474,20 +508,36 @@ export default function CrewPage() {
               </div>
               <AvailabilityGrid userId={memberData?.id || "guest"} userName={memberData?.name || "Crew"} />
 
+              {/* --- THE VAULT: PRIORITY 2 SMART LOCKER SORTING --- */}
               <div className="bg-[#FFF9F0] border-4 border-[#2D2D2D] rounded-[2rem] p-6 shadow-[8px_8px_0px_#06D6A0]">
-                <h3 className="font-black uppercase text-xl text-black mb-4">The Vault</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-black uppercase text-xl text-black">The Vault</h3>
+                  <span className="text-[9px] font-black uppercase px-2 py-1 bg-black text-white rounded-md tracking-widest">{memberData?.role || "CREW"} STORAGE</span>
+                </div>
+                
                 <div className="space-y-4">
-                  {vault.map((item) => (
-                    <a key={item.id} href={item.link} target="_blank" rel="noreferrer" className="flex items-center justify-between bg-white border-4 border-[#2D2D2D] p-4 rounded-xl hover:-translate-y-1 transition-all">
-                      <div className="flex items-center gap-4 truncate">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border-2 border-black ${item.type === 'script' ? 'bg-[#FFD166]' : 'bg-[#06D6A0]'}`}>
-                          {item.type === 'script' ? '📝' : '🎵'}
+                  {filteredVault.length === 0 ? (
+                    <p className="text-[10px] font-black uppercase opacity-40 py-4 text-center border-2 border-dashed border-black/10 rounded-xl">No specific files for your role yet.</p>
+                  ) : (
+                    filteredVault.map((item) => (
+                      <a key={item.id} href={item.link} target="_blank" rel="noreferrer" className="flex items-center justify-between bg-white border-4 border-[#2D2D2D] p-4 rounded-xl hover:-translate-y-1 transition-all">
+                        <div className="flex items-center gap-4 truncate">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border-2 border-black ${item.type === 'script' ? 'bg-[#FFD166]' : 'bg-[#06D6A0]'}`}>
+                            {item.type === 'script' ? '📝' : '🎵'}
+                          </div>
+                          <div>
+                            <h4 className="font-black text-[#2D2D2D] uppercase text-sm truncate">{item.title}</h4>
+                            <div className="flex gap-1 mt-1">
+                              {item.tags?.map((t: string) => (
+                                <span key={t} className="text-[7px] font-black uppercase opacity-40">#{t}</span>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                        <h4 className="font-black text-[#2D2D2D] uppercase text-sm truncate">{item.title}</h4>
-                      </div>
-                      <div className="bg-[#2D2D2D] text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0">⤾</div>
-                    </a>
-                  ))}
+                        <div className="bg-[#2D2D2D] text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0">⤾</div>
+                      </a>
+                    ))
+                  )}
                 </div>
               </div>
 
