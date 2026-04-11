@@ -7,12 +7,17 @@ import {
 } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function TeamManager() {
+// 🔥 Added Interface for Props to resolve TypeScript errors
+interface TeamManagerProps {
+  initialSearch?: string;
+}
+
+export default function TeamManager({ initialSearch = "" }: TeamManagerProps) {
   const [team, setTeam] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState(""); // 🔥 NEW: Search state
+  const [searchTerm, setSearchTerm] = useState(initialSearch); // 🔥 Initialize with prop
   
   const [graduatingId, setGraduatingId] = useState<string | null>(null);
   const [gradData, setGradData] = useState({ passoutYear: "", tenure: "" });
@@ -45,6 +50,11 @@ export default function TeamManager() {
   const [formData, setFormData] = useState(initialForm);
   const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
+  // 🔥 NEW: Sync searchTerm state when the dashboard passes a new initialSearch (Palette Jump)
+  useEffect(() => {
+    setSearchTerm(initialSearch);
+  }, [initialSearch]);
+
   useEffect(() => {
     // 1. Sync Team Data
     const unsubTeam = onSnapshot(collection(db, "team"), (snap) => {
@@ -65,7 +75,7 @@ export default function TeamManager() {
     };
   }, []);
 
-  // 🔥 NEW: Filter logic
+  // 🔥 Filter logic
   const filteredTeam = team.filter(m => 
     m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,12 +148,12 @@ export default function TeamManager() {
     } catch (err) { alert("Save error."); }
   };
 
-  if (loading) return <div className="p-10 font-black opacity-20">Syncing Personnel Data...</div>;
+  if (loading) return <div className="p-10 font-black opacity-20 text-left">Syncing Personnel Data...</div>;
 
   return (
     <div className="p-4 md:p-8 bg-[#FFF9F0] min-h-screen">
       
-      {/* 🔥 NEW: FACULTY BLUEPRINT SETTINGS SECTION */}
+      {/* 🔥 FACULTY BLUEPRINT SETTINGS SECTION */}
       <div className="mb-20 bg-[#2D2D2D] p-8 md:p-12 rounded-[3.5rem] shadow-[15px_15px_0px_#FFD166] text-white relative overflow-hidden text-left">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF5F5F] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         
@@ -155,7 +165,7 @@ export default function TeamManager() {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div className="space-y-4">
-              <div className="space-y-1">
+              <div className="space-y-1 text-left">
                 <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-2">Official Identity</label>
                 <input type="text" placeholder="Faculty Name" value={facultyForm.name} onChange={e => setFacultyForm({...facultyForm, name: e.target.value})} className="w-full bg-white/5 border-2 border-white/10 p-4 rounded-2xl font-bold text-white placeholder:text-white/20 focus:border-[#FFD166] outline-none transition-colors" />
               </div>
@@ -167,7 +177,7 @@ export default function TeamManager() {
               <div className="space-y-4">
                 <p className="font-black text-[10px] uppercase opacity-40 tracking-widest text-left">Blueprint Impact Stats (%)</p>
                 
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                   <div className="flex justify-between text-[9px] font-black uppercase text-[#FFD166]">
                     <span>Strategic Support</span>
                     <span>{facultyForm.stat1}%</span>
@@ -175,7 +185,7 @@ export default function TeamManager() {
                   <input type="range" min="0" max="100" value={facultyForm.stat1} onChange={e => setFacultyForm({...facultyForm, stat1: parseInt(e.target.value)})} className="w-full accent-[#FFD166]" />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                   <div className="flex justify-between text-[9px] font-black uppercase text-[#06D6A0]">
                     <span>Creative Freedom</span>
                     <span>{facultyForm.stat2}%</span>
@@ -183,7 +193,7 @@ export default function TeamManager() {
                   <input type="range" min="0" max="100" value={facultyForm.stat2} onChange={e => setFacultyForm({...facultyForm, stat2: parseInt(e.target.value)})} className="w-full accent-[#06D6A0]" />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                   <div className="flex justify-between text-[9px] font-black uppercase text-[#FF5F5F]">
                     <span>Institutional Synergy</span>
                     <span>{facultyForm.stat3}%</span>
@@ -213,14 +223,14 @@ export default function TeamManager() {
         </div>
       </div>
 
-      {/* --- ORIGINAL PERSONNEL DESK HEADER --- */}
+      {/* --- PERSONNEL DESK HEADER --- */}
       <div className="mb-12 border-b-8 border-[#2D2D2D] pb-6 flex flex-col md:flex-row justify-between items-end gap-4 text-left">
         <div>
           <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-[#2D2D2D]">Personnel Desk</h2>
           <p className="font-black uppercase tracking-[0.3em] text-[#FF5F5F] text-[10px] mt-2">Manage Swaang Talent</p>
         </div>
 
-        {/* 🔥 NEW: SEARCH BAR */}
+        {/* SEARCH BAR (Prop-Synced) */}
         <div className="w-full md:w-80 relative">
           <input 
             type="text" 
@@ -233,15 +243,13 @@ export default function TeamManager() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 text-left">
-        {/* --- FORM SECTION --- */}
         <div className="xl:col-span-4">
-          <form onSubmit={handleSubmit} className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[12px_12px_0px_#2D2D2D] space-y-4 sticky top-10">
+          <form onSubmit={handleSubmit} className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[12px_12px_0px_#2D2D2D] space-y-4 sticky top-10 text-left">
             <h3 className="font-black uppercase text-xs text-[#FF5F5F]">{editingId ? "Edit Profile" : "Join Ensemble"}</h3>
             
             <input required type="text" placeholder="Full Name" value={formData.name || ""} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
             
-            {/* 🔥 NEW: Email input field added for Auth mapping */}
-            <div className="space-y-1">
+            <div className="space-y-1 text-left">
               <label className="text-[9px] font-black uppercase opacity-40 ml-2">Official Email (For Crew Login)</label>
               <input required type="email" placeholder="email@example.com" value={formData.email || ""} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
             </div>
@@ -255,7 +263,7 @@ export default function TeamManager() {
               <input required type="text" placeholder="Role (e.g. Actor)" value={formData.role || ""} onChange={e => setFormData({...formData, role: e.target.value})} className="border-2 border-[#2D2D2D] p-3 rounded-xl font-bold text-sm" />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 text-left">
               <label className="text-[9px] font-black uppercase opacity-40 ml-2">Seniority (Joining Year)</label>
               <input required type="number" placeholder="e.g. 2023" value={formData.joiningYear || ""} onChange={e => setFormData({...formData, joiningYear: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-3 rounded-xl font-bold" />
             </div>
@@ -300,12 +308,11 @@ export default function TeamManager() {
         </div>
 
         {/* --- LIST SECTION --- */}
-        <div className="xl:col-span-8 space-y-12">
+        <div className="xl:col-span-8 space-y-12 text-left">
           {['president', 'active', 'alumni'].map(cat => (
-            <div key={cat} className="space-y-4">
+            <div key={cat} className="space-y-4 text-left">
               <h3 className="font-black text-2xl uppercase tracking-tighter border-l-8 border-[#2D2D2D] pl-4">{cat}s</h3>
               <div className="grid grid-cols-1 gap-4">
-                {/* 🔥 Filtered List mapping */}
                 {filteredTeam.filter(m => (m.category || 'active') === cat).map(m => (
                   <div key={m.id} className={`bg-white border-4 border-[#2D2D2D] p-4 rounded-2xl flex items-center gap-4 shadow-[6px_6px_0px_#2D2D2D] ${m.isSpotlight ? 'ring-4 ring-[#FFD166]' : ''}`}>
                     <div className="w-16 h-16 rounded-xl border-2 border-[#2D2D2D] overflow-hidden shrink-0">
@@ -316,7 +323,6 @@ export default function TeamManager() {
                         <h4 className="font-black uppercase text-sm leading-none">{m.name}</h4>
                         <span className="text-[8px] font-black bg-gray-100 px-1.5 py-0.5 rounded border border-black/10">Est. {m.joiningYear || '—'}</span>
                       </div>
-                      {/* 🔥 Visual indicator for email */}
                       <p className="text-[8px] font-mono text-black/40 italic">{m.email || "No Email Bound"}</p>
                       <p className="text-[10px] font-bold text-[#FF5F5F] uppercase mt-1">{m.role} {m.branch && `• ${m.branch} ${m.year}`}</p>
                       
@@ -351,12 +357,12 @@ export default function TeamManager() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#2D2D2D]/80 backdrop-blur-sm">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border-8 border-[#2D2D2D] p-10 rounded-[3rem] shadow-[20px_20px_0px_#06D6A0] max-w-md w-full text-center">
                <h3 className="font-black text-3xl uppercase mb-6 italic">Graduate to Alumni? 🎓</h3>
-               <div className="space-y-4">
+               <div className="space-y-4 text-left">
                   <input type="text" placeholder="Tenure (e.g. 2022-25)" value={gradData.tenure} onChange={e => setGradData({...gradData, tenure: e.target.value})} className="w-full border-4 border-[#2D2D2D] p-3 rounded-2xl font-bold" />
                   <input type="text" placeholder="Passout Year" value={gradData.passoutYear} onChange={e => setGradData({...gradData, passoutYear: e.target.value})} className="w-full border-4 border-[#2D2D2D] p-3 rounded-2xl font-bold" />
                   <div className="flex gap-4 pt-4">
-                    <button onClick={handleGraduate} className="flex-1 bg-[#06D6A0] text-white border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase">Confirm</button>
-                    <button onClick={() => setGraduatingId(null)} className="flex-1 bg-white border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase">Cancel</button>
+                    <button onClick={handleGraduate} className="flex-1 bg-[#06D6A0] text-white border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D]">Confirm</button>
+                    <button onClick={() => setGraduatingId(null)} className="flex-1 bg-white border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D]">Cancel</button>
                   </div>
                </div>
             </motion.div>

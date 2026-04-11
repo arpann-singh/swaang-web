@@ -26,6 +26,17 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       alert("Failed to change status: " + err.message);
     }
   };
+
+  // 🔥 NEW: Update Score Logic
+  const updateScore = async (id: string, category: string, value: string) => {
+    try {
+      await updateDoc(doc(db, "auditions", id), {
+        [`scores.${category}`]: parseInt(value)
+      });
+    } catch (err) {
+      console.error("Score Update Failed:", err);
+    }
+  };
   
   const exportToCSV = () => {
     if (!auditions || auditions.length === 0) {
@@ -33,7 +44,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       return;
     }
 
-    // 🔥 NEW: Added "Photo Link" to CSV Headers
+    // 🔥 Headers kept exactly as before
     const headers = ["Name", "Email", "Phone", "Role", "Photo Link", "Experience/Portfolio", "Motivation", "Status", "Date Submitted"];
 
     const rows = auditions.map(a => {
@@ -43,7 +54,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
         `"${(a.email || "").replace(/"/g, '""')}"`,
         `"${(a.phone || "").replace(/"/g, '""')}"`,
         `"${(a.role || "").replace(/"/g, '""')}"`,
-        `"${(a.photoLink || "None").replace(/"/g, '""')}"`, // 🔥 NEW: Adding photo data to CSV
+        `"${(a.photoLink || "None").replace(/"/g, '""')}"`,
         `"${(a.portfolio || a.experience || "None").replace(/"/g, '""')}"`,
         `"${(a.motivation || a.message || "").replace(/"/g, '""')}"`,
         `"${(a.status || "pending").replace(/"/g, '""')}"`,
@@ -84,8 +95,8 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
     <div className="p-4 md:p-8">
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-8 border-b-8 border-[#2D2D2D] pb-4 gap-6">
         <div>
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Cast Desk</h2>
-          <p className="font-black uppercase tracking-[0.3em] text-[#FFD166] text-[10px] mt-1">Audition Processing</p>
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-left">Cast Desk</h2>
+          <p className="font-black uppercase tracking-[0.3em] text-[#FFD166] text-[10px] mt-1 text-left">Audition Processing</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
@@ -114,14 +125,14 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {auditions.length === 0 ? (
           <div className="col-span-full py-20 text-center border-4 border-dashed border-[#2D2D2D]/20 rounded-[2rem]">
-            <p className="font-black uppercase text-gray-400 text-xl">The waiting room is empty.</p>
+            <p className="font-black uppercase text-gray-400 text-xl text-left">The waiting room is empty.</p>
           </div>
         ) : (
           auditions.map((a) => (
-            <div key={a.id} className="bg-white border-4 border-[#2D2D2D] rounded-[2rem] p-6 shadow-[8px_8px_0px_#2D2D2D] flex flex-col h-full">
+            <div key={a.id} className="bg-white border-4 border-[#2D2D2D] rounded-[2rem] p-6 shadow-[8px_8px_0px_#2D2D2D] flex flex-col h-full text-left">
               
               <div className="flex justify-between items-start mb-6">
-                <div>
+                <div className="text-left">
                   <h3 className="font-black text-xl uppercase leading-tight">{a.name}</h3>
                   <span className="inline-block bg-[#2D2D2D] text-white px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-full mt-2">
                     {a.role || "General"}
@@ -134,6 +145,29 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                 }`}>
                   {a.status || 'Pending'}
                 </span>
+              </div>
+
+              {/* 🔥 NEW: Audition Scoring Section */}
+              <div className="mb-6 p-4 bg-[#FFF9F0] border-2 border-[#2D2D2D] rounded-2xl space-y-3 shadow-[4px_4px_0px_rgba(0,0,0,0.05)]">
+                <p className="font-black uppercase text-[10px] opacity-40 mb-2 italic">Performance Metrics</p>
+                {[
+                  { id: 'confidence', label: 'Confidence' },
+                  { id: 'voice', label: 'Voice Projection' },
+                  { id: 'expression', label: 'Expression' }
+                ].map(metric => (
+                  <div key={metric.id} className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-black uppercase">{metric.label}</span>
+                      <span className="font-black text-[10px] text-[#FF5F5F]">{a.scores?.[metric.id] || 0}/10</span>
+                    </div>
+                    <input 
+                      type="range" min="0" max="10" step="1"
+                      value={a.scores?.[metric.id] || 0}
+                      onChange={(e) => updateScore(a.id, metric.id, e.target.value)}
+                      className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#2D2D2D]"
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="flex flex-col gap-3 mb-6">
@@ -151,7 +185,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                   </a>
                 )}
 
-                {/* 🔥 NEW: The Photo Link Button */}
                 {a.photoLink && (
                   <a href={a.photoLink} target="_blank" rel="noreferrer" className="flex items-center justify-between w-full bg-pink-100 border-2 border-[#2D2D2D] py-2 px-3 rounded-lg hover:bg-pink-200 transition-colors shadow-[2px_2px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none group">
                     <span className="font-black text-[10px] uppercase flex items-center gap-2 text-[#2D2D2D]">📸 Photo</span>
