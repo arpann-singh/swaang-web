@@ -27,7 +27,7 @@ export default function FounderNote({ data }: { data: any }) {
                {img ? (
                  <img 
                    src={img} 
-                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100" 
+                   className="w-full h-full object-cover grayscale-0 group-hover:grayscale transition-all duration-700 scale-105 group-hover:scale-100" 
                    alt={name}
                  />
                ) : (
