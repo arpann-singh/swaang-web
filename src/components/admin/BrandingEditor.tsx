@@ -189,6 +189,19 @@ export default function BrandingEditor() {
           </div>
           <input className="w-full border-2 border-black p-3 md:p-4 font-bold rounded-xl text-sm" placeholder="Director Name" value={data[`${activeTab}Name`] || ""} onChange={e => setData({...data, [`${activeTab}Name`]: e.target.value})} />
           <textarea className="w-full border-2 border-black p-3 md:p-4 font-bold rounded-xl h-24 md:h-32 text-sm" placeholder="Director Message" value={data[`${activeTab}Note`] || ""} onChange={e => setData({...data, [`${activeTab}Note`]: e.target.value})} />
+          
+          {/* 🔥 ADDED: DIRECTOR SOCIALS - This makes the buttons work */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+             <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase opacity-40 ml-2">Instagram URL</label>
+                <input className="w-full border-2 border-black p-3 font-mono text-[10px] rounded-xl" placeholder="https://instagram.com/..." value={data[`${activeTab}Instagram`] || ""} onChange={e => setData({...data, [`${activeTab}Instagram`]: e.target.value})} />
+             </div>
+             <div className="space-y-1">
+                <label className="text-[8px] font-black uppercase opacity-40 ml-2">LinkedIn URL</label>
+                <input className="w-full border-2 border-black p-3 font-mono text-[10px] rounded-xl" placeholder="https://linkedin.com/in/..." value={data[`${activeTab}Linkedin`] || ""} onChange={e => setData({...data, [`${activeTab}Linkedin`]: e.target.value})} />
+             </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border-2 border-black w-full overflow-hidden">
              <Preview url={data[`${activeTab}Image`]} loading={uploading === `${activeTab}Image`} />
              <div className="flex flex-col gap-1 w-full">
