@@ -43,12 +43,12 @@ export default function FacultyBlueprint() {
                 <img 
                   src="/faculty-backbone.jpg" // 📸 REPLACE WITH ACTUAL IMAGE
                   alt="Faculty Backbone" 
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  className="w-full h-full object-cover grayscale-0 hover:grayscale transition-all duration-700"
                 />
                 
                 {/* ID Overlay (Pillar of Swaang) */}
                 <div className="absolute bottom-4 right-4 bg-[#2D2D2D] text-white px-3 py-1 font-mono text-[10px] uppercase tracking-tighter">
-                  LOC: SSTC_BHILAI // CHIEF_MENTOR
+                  LOC: BackBone of SWAANG
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function FacultyBlueprint() {
                 whileInView={{ opacity: 1, y: 0 }}
                 className="text-3xl md:text-4xl font-black uppercase tracking-widest text-[#2D2D2D] mt-8 leading-tight relative"
               >
-                Prof. Name Here
+                Prof. Namrata Bhargava
                 <span className="font-playfair text-xl italic font-light text-[#FFD166]/40 absolute top-4 -left-4 z-0">Founder's Vision</span>
               </motion.h4>
               <p className="font-mono text-[11px] font-black uppercase tracking-[0.2em] text-[#FF5F5F]">Chief Mentor & Faculty Coordinator</p>
@@ -94,7 +94,7 @@ export default function FacultyBlueprint() {
 
             {/* 🔥 NEW: PURE TRIBUTE QUOTE (Stats removed) */}
             <p className="text-2xl md:text-3xl font-bold text-[#2D2D2D]/90 leading-relaxed italic border-l-8 border-[#06D6A0] pl-6 max-w-2xl">
-              "Every standing ovation is a testament to the structure that holds the stage. Swaang exists because of their unwavering support, strategic institutional synergy, and timeless mentorship."
+              "Every standing ovation is a testament to the structure that holds the stage. Swaang exists because of your unwavering support, your strategic vision, and your timeless mentorship. You believed in us before the curtain rose — and that belief made all the difference."
             </p>
 
             {/* AUTHORIZATION CREDENTIAL */}
