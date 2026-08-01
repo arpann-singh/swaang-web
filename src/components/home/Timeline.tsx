@@ -7,7 +7,9 @@ import Link from "next/link";
 export default function Timeline({ timeline = [] }: { timeline: any[] }) {
   // 🧠 State to track which card is currently "Open"
   const [activeStory, setActiveStory] = useState<any | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // 🃏 State for Flashcard Deck physics
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
 
   // 🔥 Map Categories to Icons & Colors (Matches your updated Admin Panel)
   const categoryMap: any = {
@@ -43,13 +45,10 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
   const years = Object.keys(groupedEvents).sort((a, b) => b.localeCompare(a));
   const [activeYear, setActiveYear] = useState(years[0] || "");
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-    }
-  };
+  // Reset deck when switching years
+  useEffect(() => {
+    setActiveCardIndex(0);
+  }, [activeYear]);
 
   if (!timeline || timeline.length === 0) return null;
 
@@ -86,7 +85,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
           <motion.span 
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            className="bg-[#FFD166] text-[#2D2D2D] px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-[0.3em] shadow-[4px_4px_0px_#FFF9F0]"
+            className="bg-[#FFD166] text-[var(--text-primary)] px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-[0.3em] shadow-[4px_4px_0px_#FFF9F0]"
           >
             Our Legacy
           </motion.span>
@@ -103,7 +102,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
               onClick={() => setActiveYear(year)}
               className={`px-8 py-3 rounded-2xl border-4 font-black uppercase transition-all duration-300 ${
                 activeYear === year 
-                ? "bg-[#06D6A0] text-[#2D2D2D] border-[#FFF9F0] -translate-y-2 shadow-[6px_6px_0px_#FFF9F0]" 
+                ? "bg-[#06D6A0] text-[var(--text-primary)] border-[#FFF9F0] -translate-y-2 shadow-[6px_6px_0px_#FFF9F0]" 
                 : "bg-transparent border-[#FFF9F0]/20 text-[#FFF9F0]/40 hover:border-[#FFF9F0]/60"
               }`}
             >
@@ -112,94 +111,112 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
           ))}
         </div>
 
-        {/* 3. 🔥 DYNAMIC EVENT CAROUSEL */}
-        <div className="group relative">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeYear}
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -50, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 120 }}
-              ref={scrollRef}
-              /* 🔥 Custom Scrollbar Utility Applied */
-              className="flex gap-8 overflow-x-auto pb-12 snap-x scroll-smooth swaang-scrollbar"
-            >
-              {groupedEvents[activeYear]?.map((item: any, index: number) => {
-                // Determine Category Icon and Color
+        {/* 3. 🔥 THE FLASHCARD DECK */}
+        <div className="relative min-h-[500px] md:min-h-[600px] w-full max-w-lg mx-auto py-8">
+          {groupedEvents[activeYear]?.length > 0 ? (
+            <AnimatePresence>
+              {groupedEvents[activeYear].map((item: any, index: number) => {
+                const isPast = index < activeCardIndex;
+                const offsetIndex = index - activeCardIndex;
+                
+                // For extreme performance, only render the top 3 cards visually
+                if (isPast || offsetIndex > 2) return null;
+
                 const cat = categoryMap[item.category] || categoryMap.milestone;
                 const CatIcon = cat.icon;
+                
+                // Stack physics calculations (Z-depth, shrinking, offset)
+                const zIndex = 40 - offsetIndex;
+                const scale = 1 - (offsetIndex * 0.05); // e.g. 1, 0.95, 0.90
+                const yOffset = offsetIndex * 24; // Pushes lower cards further down to "peek" out
+                
+                // Deterministic pseudo-random rotation between -3 and +3 degrees
+                const rotations = [-3, 2, -1, 3, -2, 1];
+                const baseRotation = rotations[index % rotations.length];
 
                 return (
-                  <div 
+                  <motion.div 
                     key={item.id || index} 
-                    className="min-w-[320px] md:min-w-[450px] snap-center"
+                    initial={{ opacity: 0, y: yOffset + 100, scale: 0.8 }}
+                    animate={{ opacity: 1, y: yOffset, scale: scale, zIndex: zIndex, rotate: baseRotation }}
+                    exit={{ opacity: 0, x: "120%", rotate: 25, transition: { duration: 0.5, ease: "easeIn" } }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className="absolute top-8 left-4 right-4 md:left-0 md:right-0 bg-[#FFF9F0] text-[var(--text-primary)] border-4 md:border-8 border-black p-6 md:p-8 shadow-[8px_8px_0px_#FF5F5F] md:shadow-[12px_12px_0px_#FF5F5F] flex flex-col justify-between h-[420px] md:h-[480px] group"
+                    style={{ transformOrigin: "bottom center" }}
                   >
-                    <motion.div
-                      whileHover={{ rotate: 1 }}
-                      onClick={() => setActiveStory(item)}
-                      className="bg-[#FFF9F0] text-[#2D2D2D] border-8 border-black p-10 rounded-[3.5rem] shadow-[15px_15px_0px_#FF5F5F] h-[500px] flex flex-col justify-between cursor-pointer transition-transform relative"
-                    >
-                      {/* 🔥 NEW: Floating Category Badge */}
-                      <div className={`absolute top-8 right-8 p-3 rounded-2xl border-4 border-black ${cat.color} shadow-[4px_4px_0px_black] rotate-6 group-hover:rotate-0 transition-transform`}>
-                        <CatIcon size={20} strokeWidth={3} />
-                      </div>
+                    {/* 📌 The "Masking Tape" */}
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-8 bg-white/70 border border-black/10 shadow-sm rotate-2 mix-blend-overlay z-20 pointer-events-none" />
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-8 bg-[#FFD166]/30 border border-black/5 -rotate-1 mix-blend-multiply z-20 pointer-events-none" />
 
-                      <div className="text-left">
-                        <div className="flex justify-between items-start">
-                          <span className="bg-[#2D2D2D] text-white px-4 py-1 rounded-xl font-black text-[10px] tracking-widest">
-                            {item.date || item.year || activeYear}
-                          </span>
-                        </div>
-                        <h3 className="text-3xl md:text-4xl font-black uppercase mt-8 leading-tight tracking-tighter">
-                          {item.event || item.title || "Untitled Milestone"}
-                        </h3>
-                        <p className="mt-4 font-bold opacity-60 text-sm leading-relaxed line-clamp-4">
-                          {item.description || item.content || "A milestone event in Swaang's history, showcasing theatrical innovation and ensemble storytelling."}
-                        </p>
+                    {/* 🔥 Floating Category Badge */}
+                    <div className={`absolute -right-4 -top-4 p-3 rounded-full border-4 border-black ${cat.color} shadow-[4px_4px_0px_black] rotate-12 transition-transform z-20`}>
+                      <CatIcon size={24} strokeWidth={3} className={cat.color.includes('text-white') ? 'text-white' : 'text-black'} />
+                    </div>
+
+                    <div className="text-left mt-2 relative z-10 h-full flex flex-col">
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="bg-[#2D2D2D] text-white px-4 py-1.5 border-2 border-black rounded-lg font-black text-[10px] md:text-xs tracking-widest shadow-[2px_2px_0px_black] -rotate-2">
+                          {item.date || item.year || activeYear}
+                        </span>
                       </div>
                       
-                      <div className="w-full bg-[#FFD166] border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase text-[10px] shadow-[5px_5px_0px_#2D2D2D] group-hover:bg-[#FF5F5F] group-hover:text-white transition-all flex items-center justify-center gap-2">
-                        Open Archive 📂 <span className="text-lg leading-none">⤾</span>
+                      <h3 className="text-3xl md:text-4xl font-black uppercase leading-tight tracking-tighter line-clamp-2">
+                        {item.event || item.title || "Untitled Milestone"}
+                      </h3>
+                      
+                      <div className="w-16 h-2 bg-[#06D6A0] my-4 border-2 border-black" />
+                      
+                      <p className="font-bold opacity-70 text-xs md:text-sm leading-relaxed line-clamp-3 bg-black/5 p-4 border-l-4 border-black rounded-r-lg">
+                        {item.description || item.content || "A milestone event in Swaang's history."}
+                      </p>
+                      
+                      {/* Interaction Controls (Only clickable if it is the Top Card) */}
+                      <div className="mt-auto flex gap-3 pt-4">
+                        <button 
+                          disabled={offsetIndex !== 0}
+                          onClick={() => setActiveStory(item)}
+                          className={`flex-1 bg-[#2D2D2D] text-white border-4 border-black py-3 md:py-4 rounded-xl font-black uppercase text-[10px] md:text-xs shadow-[4px_4px_0px_black] transition-all flex items-center justify-center gap-2 ${offsetIndex === 0 ? 'hover:bg-[#FFD166] hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none active:scale-95 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'}`}
+                        >
+                          Read
+                        </button>
+                        
+                        <button 
+                          disabled={offsetIndex !== 0}
+                          onClick={(e) => { e.stopPropagation(); setActiveCardIndex(prev => prev + 1); }}
+                          className={`flex-1 bg-[#06D6A0] text-black border-4 border-black py-3 md:py-4 rounded-xl font-black uppercase text-[10px] md:text-xs shadow-[4px_4px_0px_black] transition-all flex items-center justify-center gap-2 ${offsetIndex === 0 ? 'hover:bg-[#FF5F5F] hover:text-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none active:scale-95 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'}`}
+                        >
+                          Next ➔
+                        </button>
                       </div>
-                    </motion.div>
-                  </div>
+                    </div>
+                  </motion.div>
                 );
               })}
+            </AnimatePresence>
+          ) : null}
 
-              {/* END CARD: JUMP TO FULL ARCHIVE PAGE */}
-              <div className="min-w-[300px] flex flex-col items-center justify-center snap-center p-8 text-center">
-                <Link href="/journey" className="group flex flex-col items-center gap-6">
-                  <motion.div 
-                    whileHover={{ scale: 1.1, rotate: 90 }}
-                    className="w-24 h-24 rounded-full border-4 border-dashed border-[#FFF9F0]/30 flex items-center justify-center group-hover:border-[#06D6A0] transition-all"
-                  >
-                    <ChevronRight className="text-[#FFF9F0] group-hover:text-[#06D6A0]" size={32} />
-                  </motion.div>
-                  <div className="space-y-1">
-                    <p className="font-black uppercase text-[11px] tracking-widest text-[#FFF9F0]">Full Archive</p>
-                    <p className="font-bold uppercase text-[8px] opacity-30 tracking-[0.2em]">View all {timeline.length} events</p>
-                  </div>
-                </Link>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Desktop Controls */}
-          <div className="hidden md:flex gap-4 mt-8 justify-end">
-            <button 
-              onClick={() => scroll('left')} 
-              className="p-4 border-4 border-[#FFF9F0]/20 rounded-full hover:bg-[#FFF9F0] hover:text-[#2D2D2D] transition-all active:scale-90"
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button 
-              onClick={() => scroll('right')} 
-              className="p-4 border-4 border-[#FFF9F0]/20 rounded-full hover:bg-[#FFF9F0] hover:text-[#2D2D2D] transition-all active:scale-90"
-            >
-              <ChevronRight size={24} />
-            </button>
-          </div>
+          {/* Deck Empty State / Reset */}
+          {activeCardIndex >= (groupedEvents[activeYear]?.length || 0) && groupedEvents[activeYear]?.length > 0 && (
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="absolute top-8 left-4 right-4 md:left-0 md:right-0 bg-black text-[#FFF9F0] text-center border-4 md:border-8 border-dashed border-[#FFF9F0]/30 p-8 flex flex-col items-center justify-center h-[420px] md:h-[480px] z-10"
+             >
+               <h3 className="text-3xl font-black uppercase mb-2">End of {activeYear}</h3>
+               <p className="font-bold text-xs opacity-50 uppercase tracking-widest mb-8">All events reviewed.</p>
+               
+               <button 
+                 onClick={() => setActiveCardIndex(0)}
+                 className="bg-[#2D2D2D] text-white border-4 border-[#FFF9F0]/30 px-8 py-4 rounded-xl font-black uppercase tracking-widest shadow-[4px_4px_0px_#FFF9F0]/30 hover:bg-[#FFD166] hover:text-black hover:border-black hover:shadow-[4px_4px_0px_black] hover:-translate-y-1 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+               >
+                 Restack Deck ↺
+               </button>
+               
+               <Link href="/journey" className="mt-8 font-bold uppercase text-xs tracking-widest text-[#06D6A0] hover:underline flex items-center gap-2">
+                  View Full Archive <ChevronRight size={16}/>
+               </Link>
+             </motion.div>
+          )}
         </div>
 
         {/* Faded Background Decal */}
@@ -224,7 +241,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
               initial={{ opacity: 0, scale: 0.9, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.9, y: 20 }} 
-              className="bg-[#FFF9F0] w-full max-w-3xl max-h-[85vh] overflow-y-auto border-4 border-black p-8 md:p-12 rounded-[2rem] shadow-[16px_16px_0px_#FF5F5F] relative z-10 text-[#2D2D2D] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              className="bg-[var(--bg-primary)] w-full max-w-3xl max-h-[85vh] overflow-y-auto border-4 border-black p-8 md:p-12 rounded-[2rem] shadow-[16px_16px_0px_#FF5F5F] relative z-10 text-[var(--text-primary)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             >
               <button 
                 onClick={() => setActiveStory(null)} 

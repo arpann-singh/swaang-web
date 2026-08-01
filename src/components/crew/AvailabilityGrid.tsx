@@ -35,7 +35,7 @@ export default function AvailabilityGrid({ userId, userName }: { userId: string,
   };
 
   return (
-    <div className="bg-white border-4 border-black p-6 rounded-[2.5rem] shadow-[8px_8px_0px_#2D2D2D] text-black">
+    <div className="bg-white border-4 border-black p-6 rounded-[2.5rem] shadow-[8px_8px_0px_var(--border-primary)] text-black">
       <h3 className="font-black uppercase text-[10px] mb-4 text-[#FF5F5F] tracking-widest">
         Mark Your Busy Hours (Classes/Labs)
       </h3>

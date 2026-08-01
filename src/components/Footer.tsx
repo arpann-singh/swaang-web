@@ -27,7 +27,7 @@ export default function Footer() {
               Connect With The Stage
             </h3>
 
-            <ul className="space-y-3 border-l-4 border-[#2D2D2D] pl-4">
+            <ul className="space-y-3 border-l-4 border-[var(--border-primary)] pl-4">
               <li className="relative group">
                 <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#FF5F5F] opacity-0 group-hover:opacity-100 transition-opacity" />
                 <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-white">Shri Shankaracharya Technical Campus</p>
@@ -92,7 +92,7 @@ export default function Footer() {
         </div>
 
         {/* 🎬 BOTTOM STAGE LINE */}
-        <div className="border-t-2 border-[#2D2D2D] pt-8 flex flex-col lg:flex-row justify-between items-center gap-6">
+        <div className="border-t-2 border-[var(--border-primary)] pt-8 flex flex-col lg:flex-row justify-between items-center gap-6">
           
           <div className="text-center lg:text-left">
             <p className="font-bold text-xs uppercase tracking-widest text-white/60 mb-2">

@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="bg-[#FFF9F0] text-[#2D2D2D] antialiased overflow-x-hidden font-inter">
+      <body className="bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased overflow-x-hidden max-w-[100vw] font-inter">
           <Header />
           <GlobalTicker />
           

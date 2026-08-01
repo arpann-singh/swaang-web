@@ -60,7 +60,7 @@ export default function FounderNote({ data }: { data: any }) {
   };
 
   return (
-    <section className="py-24 md:py-40 px-6 bg-[#FFF9F0] border-b-[12px] border-black relative overflow-hidden">
+    <section className="py-24 md:py-40 px-6 bg-[var(--bg-primary)] border-b-[12px] border-black relative overflow-hidden">
       {/* 🏙️ Decal Background Text */}
       <div className="absolute -top-10 -right-20 text-[250px] font-black opacity-[0.02] pointer-events-none select-none italic uppercase leading-none text-[#1A1A1A]">
         Swaang
@@ -68,11 +68,12 @@ export default function FounderNote({ data }: { data: any }) {
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="max-w-2xl">
+          <div className="max-w-3xl">
             <span className="bg-[#06D6A0] text-[#1A1A1A] px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-[0.3em] shadow-[4px_4px_0px_black] mb-6 inline-block">
               Executive Board
             </span>
-            <h2 className="text-6xl md:text-9xl font-black uppercase tracking-tighter text-[#1A1A1A] leading-[0.85]">
+            {/* 🔥 FIXED: Removed break-words and adjusted scaling so it fits perfectly on all screens without wrapping individual letters */}
+            <h2 className="text-[11vw] sm:text-7xl md:text-[6rem] lg:text-[7.5rem] font-black uppercase tracking-tighter text-[#1A1A1A] leading-[0.85] whitespace-nowrap">
               The <br /> <span className="text-transparent" style={{ WebkitTextStroke: '2px #1A1A1A' }}>Founders</span>
             </h2>
           </div>

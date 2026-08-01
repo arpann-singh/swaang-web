@@ -103,7 +103,7 @@ export default function Footer() {
                 <p className="text-xl md:text-2xl font-black uppercase italic text-[#06D6A0]">
                   Connect With The Stage
                 </p>
-                <ul className="space-y-3 border-l-4 border-[#2D2D2D] pl-4 mt-4">
+                <ul className="space-y-3 border-l-4 border-[var(--border-primary)] pl-4 mt-4">
                   <li className="relative group">
                     <span className="absolute -left-[1.15rem] top-1/2 -translate-y-1/2 w-1 h-full bg-[#FF5F5F] opacity-0 group-hover:opacity-100 transition-opacity" />
                     <p className="font-bold text-xs md:text-sm tracking-widest uppercase text-white/90">{data.address || "SSTC Junwani, Durg (C.G.)"}</p>
@@ -138,7 +138,7 @@ export default function Footer() {
                       <span className="w-2 h-2 bg-[#FF5F5F] rounded-full"></span> The Gallery
                     </Link>
                     <Link href="/credits" className="hover:translate-x-2 transition-transform hover:text-[#FFF9F0] flex items-center gap-3">
-                      <span className="w-2 h-2 bg-[#FFF9F0] rounded-full"></span> The Credits
+                      <span className="w-2 h-2 bg-[var(--bg-primary)] rounded-full"></span> The Credits
                     </Link>
                   </div>
                 </div>
@@ -181,7 +181,7 @@ export default function Footer() {
             <div className="flex items-center gap-4 bg-[#0A0A0A] p-2 rounded-2xl border-2 border-white/5">
               <button 
                 onClick={() => setIsGhostLightOn(!isGhostLightOn)}
-                className={`w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center ${isGhostLightOn ? 'bg-[#FFD166] border-[#2D2D2D] text-[#2D2D2D] shadow-[inset_0px_0px_10px_rgba(0,0,0,0.2)]' : 'bg-transparent border-white/10 text-white/40 hover:border-white/20'}`}
+                className={`w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center ${isGhostLightOn ? 'bg-[#FFD166] border-[var(--border-primary)] text-[var(--text-primary)] shadow-[inset_0px_0px_10px_rgba(0,0,0,0.2)]' : 'bg-transparent border-white/10 text-white/40 hover:border-white/20'}`}
                 title="Toggle Ghost Light"
               >
                 <span className="text-sm">{isGhostLightOn ? '💡' : '🕯️'}</span>

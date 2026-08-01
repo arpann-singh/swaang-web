@@ -14,6 +14,7 @@ import AuditionsManager from "@/components/admin/AuditionsManager";
 import EventsManager from "@/components/admin/EventsManager";
 import TeamManager from "@/components/admin/TeamManager";
 import GalleryManager from "@/components/admin/GalleryManager";
+import RsvpsManager from "@/components/admin/RsvpsManager";
 import AOTMManager from "@/components/admin/AOTMManager";
 import TimelineManager from "@/components/admin/TimelineManager";
 import CreditsEditor from "@/components/admin/CreditsEditor";
@@ -26,6 +27,8 @@ import ConflictMapper from "@/components/admin/ConflictMapper";
 import ProductionCalendar from "@/components/admin/ProductionCalendar";
 import CommandCenter from "@/components/admin/CommandCenter"; 
 import CommandPalette from "@/components/admin/CommandPalette"; 
+import AlumniManager from "@/components/admin/AlumniManager";
+import BlogManager from "@/components/admin/BlogManager";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard"); 
@@ -99,7 +102,10 @@ export default function AdminDashboard() {
     { id: "inbox", label: "Inbox", color: "bg-[#FF5F5F]" },
     { id: "auditions", label: "Auditions", color: "bg-[#FFD166]" },
     { id: "events", label: "Events", color: "bg-[#06D6A0]" },
-    { id: "team", label: "Team", color: "bg-[#FF5F5F]" },
+    { id: "rsvps", label: "Guest List", color: "bg-[#FF5F5F]" },
+    { id: "team", label: "Team", color: "bg-[#FFD166]" },
+    { id: "alumni", label: "Alumni", color: "bg-[#06D6A0]" },
+    { id: "blog", label: "Blog", color: "bg-[#FF5F5F]" },
     { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
     { id: "letters", label: "Letters", color: "bg-[#FF5F5F]" },
     { id: "conflicts", label: "Conflicts", color: "bg-[#06D6A0]" },
@@ -111,7 +117,7 @@ export default function AdminDashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#FFF9F0] flex flex-col items-center justify-center font-black uppercase tracking-widest text-[#2D2D2D]">
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center font-black uppercase tracking-widest text-[var(--text-primary)]">
         <div className="w-12 h-12 border-8 border-black border-t-[#06D6A0] rounded-full animate-spin mb-4" />
         Verifying Session...
       </div>
@@ -120,7 +126,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFF9F0] flex flex-col items-center justify-center font-black uppercase tracking-widest text-[#2D2D2D]">
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center font-black uppercase tracking-widest text-[var(--text-primary)]">
         <div className="w-12 h-12 border-8 border-black border-t-[#FF5F5F] rounded-full animate-spin mb-4" />
         Syncing Dashboard...
       </div>
@@ -129,7 +135,7 @@ export default function AdminDashboard() {
 
   return (
     /* 🔥 CHANGE: flex-col for mobile, flex-row for desktop */
-    <div className="flex flex-col xl:flex-row h-screen w-full bg-[#FFF9F0] overflow-hidden font-sans text-[#2D2D2D]">
+    <div className="flex flex-col xl:flex-row h-screen w-full bg-[var(--bg-primary)] overflow-hidden font-sans text-[var(--text-primary)]">
       
       <CommandPalette 
         onJump={handleJump} 
@@ -141,7 +147,7 @@ export default function AdminDashboard() {
 
       {/* 📱💻 FIXED SIDEBAR / HEADER */}
       {/* 🔥 CHANGE: h-auto on mobile, h-full on desktop */}
-      <aside className="w-full xl:w-72 bg-white border-b-4 xl:border-b-0 xl:border-r-4 border-[#2D2D2D] flex flex-col shrink-0 h-auto xl:h-full relative z-50 shadow-[4px_0px_0px_rgba(0,0,0,0.05)] text-left">
+      <aside className="w-full xl:w-72 bg-white border-b-4 xl:border-b-0 xl:border-r-4 border-[var(--border-primary)] flex flex-col shrink-0 h-auto xl:h-full relative z-50 shadow-[4px_0px_0px_rgba(0,0,0,0.05)] text-left">
         
         <div className="p-4 xl:p-8 pb-3 xl:pb-0 flex justify-between items-center xl:items-start xl:flex-col">
           <div className="flex flex-col text-left">
@@ -153,12 +159,12 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-3 xl:hidden">
             <button 
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-              className="p-3 border-4 border-[#2D2D2D] rounded-xl bg-[#FFD166] shadow-[2px_2px_0px_#2D2D2D] active:translate-y-0.5 active:shadow-none transition-all"
+              className="p-3 border-4 border-[var(--border-primary)] rounded-xl bg-[#FFD166] shadow-[2px_2px_0px_var(--border-primary)] active:translate-y-0.5 active:shadow-none transition-all"
               aria-label="Open Terminal"
             >
               <Search size={18} strokeWidth={3} />
             </button>
-            <button onClick={() => signOut(auth)} className="px-4 py-2.5 border-4 border-[#2D2D2D] rounded-xl font-black uppercase text-[10px] bg-red-100 text-red-600 shadow-[2px_2px_0px_#2D2D2D] active:translate-y-0.5 active:shadow-none transition-all">
+            <button onClick={() => signOut(auth)} className="px-4 py-2.5 border-4 border-[var(--border-primary)] rounded-xl font-black uppercase text-[10px] bg-red-100 text-red-600 shadow-[2px_2px_0px_var(--border-primary)] active:translate-y-0.5 active:shadow-none transition-all">
               Sign Out
             </button>
           </div>
@@ -169,10 +175,10 @@ export default function AdminDashboard() {
             <button
               key={tab.id}
               onClick={() => handleJump(tab.id)}
-              className={`shrink-0 px-4 py-2.5 xl:p-4 rounded-xl xl:rounded-2xl border-2 xl:border-4 border-[#2D2D2D] font-black uppercase text-[10px] xl:text-[11px] transition-all duration-200 ${
+              className={`shrink-0 px-4 py-2.5 xl:p-4 rounded-xl xl:rounded-2xl border-2 xl:border-4 border-[var(--border-primary)] font-black uppercase text-[10px] xl:text-[11px] transition-all duration-200 ${
                 activeTab === tab.id 
-                ? `${tab.color} text-white shadow-[3px_3px_0px_#2D2D2D] xl:shadow-[6px_6px_0px_#2D2D2D] -translate-y-0.5 xl:-translate-y-1` 
-                : "bg-white shadow-[2px_2px_0px_#2D2D2D] xl:shadow-[4px_4px_0px_#2D2D2D] hover:bg-gray-50"
+                ? `${tab.color} text-white shadow-[3px_3px_0px_var(--border-primary)] xl:shadow-[6px_6px_0px_var(--border-primary)] -translate-y-0.5 xl:-translate-y-1` 
+                : "bg-white shadow-[2px_2px_0px_var(--border-primary)] xl:shadow-[4px_4px_0px_var(--border-primary)] hover:bg-gray-50"
               }`}
             >
               {tab.label}
@@ -182,16 +188,16 @@ export default function AdminDashboard() {
           ))}
         </nav>
         
-        <div className="p-8 mt-auto hidden xl:block border-t-4 border-[#2D2D2D]/5">
-            <button onClick={() => signOut(auth)} className="w-full p-4 border-4 border-[#2D2D2D] rounded-xl font-black uppercase text-[9px] bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-all shadow-[4px_4px_0px_#2D2D2D] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
+        <div className="p-8 mt-auto hidden xl:block border-t-4 border-[var(--border-primary)]/5">
+            <button onClick={() => signOut(auth)} className="w-full p-4 border-4 border-[var(--border-primary)] rounded-xl font-black uppercase text-[9px] bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-all shadow-[4px_4px_0px_var(--border-primary)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
             Secure Sign Out
             </button>
         </div>
       </aside>
 
       {/* 🚀 MAIN CONTENT AREA */}
-      {/* 🔥 CHANGE: Added bg-[#FFF9F0] and ensured vertical height behaves correctly */}
-      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-12 custom-scrollbar bg-[#FFF9F0]">
+      {/* 🔥 CHANGE: Added bg-[var(--bg-primary)] and ensured vertical height behaves correctly */}
+      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-12 custom-scrollbar bg-[var(--bg-primary)]">
         <AnimatePresence mode="wait">
           <motion.div 
             key={activeTab} 
@@ -208,9 +214,12 @@ export default function AdminDashboard() {
             {activeTab === "inbox" && <InboxManager messages={messages} />}
             {activeTab === "auditions" && <AuditionsManager auditions={auditions} />} 
             {activeTab === "events" && <EventsManager />}
-            {activeTab === "team" && <TeamManager initialSearch={searchQuery} />}
-            {activeTab === "gallery" && <GalleryManager />}
-            {activeTab === "schedule" && <ProductionCalendar />}
+            { activeTab === "rsvps" && <RsvpsManager /> }
+            { activeTab === "team" && <TeamManager initialSearch={searchQuery} /> }
+            { activeTab === "alumni" && <AlumniManager /> }
+            { activeTab === "blog" && <BlogManager /> }
+            { activeTab === "gallery" && <GalleryManager /> }
+            { activeTab === "schedule" && <ProductionCalendar /> }
             {activeTab === "letters" && <LetterGenerator />} 
             {activeTab === "conflicts" && <ConflictMapper />}
             {activeTab === "notices" && <NoticesManager />}

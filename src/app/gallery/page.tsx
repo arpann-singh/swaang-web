@@ -20,19 +20,19 @@ const GalleryCard = ({ photo, index, layoutClass, colorTheme }: { photo: any, in
       <div className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
         
         {/* 📸 FRONT SIDE */}
-        <div className="absolute inset-0 [backface-visibility:hidden] border-4 border-[#2D2D2D] rounded-[2rem] overflow-hidden shadow-[8px_8px_0px_#2D2D2D] bg-gray-200">
+        <div className="absolute inset-0 [backface-visibility:hidden] border-4 border-[var(--border-primary)] rounded-[2rem] overflow-hidden shadow-[8px_8px_0px_var(--border-primary)] bg-gray-200">
           <img 
             src={photo.url} 
             alt={photo.title} 
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
           />
-          <div className={`absolute bg-[#FFD166] text-[#2D2D2D] border-2 border-[#2D2D2D] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 ${isSmall ? 'bottom-2 right-2 px-2 py-1.5 rounded-lg' : 'bottom-4 right-4 px-4 py-2 rounded-xl shadow-[4px_4px_0px_#2D2D2D]'}`}>
+          <div className={`absolute bg-[#FFD166] text-[var(--text-primary)] border-2 border-[var(--border-primary)] opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 ${isSmall ? 'bottom-2 right-2 px-2 py-1.5 rounded-lg' : 'bottom-4 right-4 px-4 py-2 rounded-xl shadow-[4px_4px_0px_var(--border-primary)]'}`}>
             <span className="font-black uppercase tracking-widest text-[10px] flex items-center gap-2">Flip ⤾</span>
           </div>
         </div>
 
         {/* 📝 BACK SIDE */}
-        <div className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] ${colorTheme} border-4 border-[#2D2D2D] rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D] ${isSmall ? 'p-5' : 'p-8'} flex flex-col items-center justify-center text-center overflow-y-auto scrollbar-hide`}>
+        <div className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] ${colorTheme} border-4 border-[var(--border-primary)] rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)] ${isSmall ? 'p-5' : 'p-8'} flex flex-col items-center justify-center text-center overflow-y-auto scrollbar-hide`}>
           <h3 className={`${isSmall ? 'text-xl' : 'text-3xl'} font-black uppercase tracking-tighter mb-4 border-b-4 border-current/20 pb-4 w-full`}>
             {photo.title}
           </h3>
@@ -65,10 +65,10 @@ export default function GalleryPage() {
     return pattern[index % 6];
   };
 
-  const backColors = ["bg-[#FFD166] text-[#2D2D2D]", "bg-[#06D6A0] text-[#2D2D2D]", "bg-[#FF5F5F] text-white", "bg-[#2D2D2D] text-white"];
+  const backColors = ["bg-[#FFD166] text-[var(--text-primary)]", "bg-[#06D6A0] text-[var(--text-primary)]", "bg-[#FF5F5F] text-white", "bg-[#2D2D2D] text-white"];
 
   return (
-    <main className="min-h-screen bg-[#FFF9F0] pt-32 pb-20 px-6">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-32 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
         
         <div className="text-center mb-20">

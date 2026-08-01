@@ -8,7 +8,7 @@ export default function StageNotices({ notices }: { notices: any[] }) {
   if (activeNotices.length === 0) return null;
 
   return (
-    <section className="py-24 px-6 bg-[#FFF9F0] border-b-[8px] md:border-b-[12px] border-[#2D2D2D] relative overflow-hidden">
+    <section className="py-24 px-6 bg-[var(--bg-primary)] border-b-[8px] md:border-b-[12px] border-[var(--border-primary)] relative overflow-hidden">
       
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFD166] rounded-full blur-[100px] opacity-40 -z-0" />
@@ -24,10 +24,10 @@ export default function StageNotices({ notices }: { notices: any[] }) {
           className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6"
         >
           <div>
-            <div className="inline-block bg-[#FF5F5F] text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-4 shadow-[3px_3px_0px_#2D2D2D]">
+            <div className="inline-block bg-[#FF5F5F] text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-4 shadow-[3px_3px_0px_var(--border-primary)]">
               Bulletin
             </div>
-            <h2 className="font-cinzel text-4xl md:text-6xl font-black uppercase tracking-tighter text-[#2D2D2D] leading-none">
+            <h2 className="font-cinzel text-4xl md:text-6xl font-black uppercase tracking-tighter text-[var(--text-primary)] leading-none">
               The Call <br /> <span className="italic text-black/40">Board</span>
             </h2>
           </div>
@@ -42,7 +42,7 @@ export default function StageNotices({ notices }: { notices: any[] }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className={`bg-white border-4 p-8 rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D] transition-all duration-300 flex flex-col group relative ${notice.priority === 'urgent' ? 'border-[#FF5F5F] hover:translate-x-1 hover:-translate-y-1' : 'border-[#2D2D2D] hover:-translate-y-2'}`}
+              className={`bg-white border-4 p-8 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)] transition-all duration-300 flex flex-col group relative ${notice.priority === 'urgent' ? 'border-[#FF5F5F] hover:translate-x-1 hover:-translate-y-1' : 'border-[var(--border-primary)] hover:-translate-y-2'}`}
             >
               {/* Pin Decor */}
               <div className={`absolute -top-3 left-8 w-6 h-6 rounded-full flex items-center justify-center ${notice.priority === 'urgent' ? 'bg-[#FF5F5F]' : 'bg-[#2D2D2D]'}`}>
@@ -62,12 +62,12 @@ export default function StageNotices({ notices }: { notices: any[] }) {
                   </span>
                 )}
                 
-                <h3 className="text-2xl font-black uppercase tracking-tighter text-[#2D2D2D] leading-tight group-hover:text-[#FF5F5F] transition-colors">
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-[var(--text-primary)] leading-tight group-hover:text-[#FF5F5F] transition-colors">
                   {notice.title}
                 </h3>
               </div>
               
-              <p className="font-bold text-sm text-[#2D2D2D]/70 leading-relaxed mb-6 flex-1 whitespace-pre-wrap">
+              <p className="font-bold text-sm text-[var(--text-primary)]/70 leading-relaxed mb-6 flex-1 whitespace-pre-wrap">
                 {notice.content}
               </p>
               

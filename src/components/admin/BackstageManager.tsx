@@ -147,7 +147,7 @@ export default function BackstageManager() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8 border-b-8 border-[#2D2D2D] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="mb-8 border-b-8 border-[var(--border-primary)] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Backstage Control</h2>
           <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Manage Crew Resources</p>
@@ -155,10 +155,10 @@ export default function BackstageManager() {
         
         <div className="flex gap-3">
           {/* 🔥 NEW: Admin registration button */}
-          <button onClick={registerAsAdmin} className="bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] px-4 py-2 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 transition-all">
+          <button onClick={registerAsAdmin} className="bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] px-4 py-2 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
             👑 Admin Sync
           </button>
-          <button onClick={enableNotifications} className="bg-[#06D6A0] text-white border-4 border-[#2D2D2D] px-6 py-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 transition-all">
+          <button onClick={enableNotifications} className="bg-[#06D6A0] text-white border-4 border-[var(--border-primary)] px-6 py-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
             🔔 Crew Alerts
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function BackstageManager() {
             <input type="text" value={crewSettings.passcode} onChange={e => setCrewSettings({...crewSettings, passcode: e.target.value})} className="w-full bg-black/20 border-2 border-[#FF5F5F]/50 p-3 rounded-xl font-black tracking-widest text-[#FF5F5F]" />
           </div>
         </div>
-        <button onClick={saveCrewSettings} className="mt-6 w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] py-3 rounded-xl font-black uppercase shadow-[4px_4px_0px_#FFF9F0] hover:translate-y-1 transition-all">
+        <button onClick={saveCrewSettings} className="mt-6 w-full bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-3 rounded-xl font-black uppercase shadow-[4px_4px_0px_#FFF9F0] hover:translate-y-1 transition-all">
           Update Call Sheet & Passcode
         </button>
       </div>
@@ -205,14 +205,14 @@ export default function BackstageManager() {
              <h3 className="font-black text-2xl uppercase tracking-tighter">Call Board</h3>
           </div>
 
-          <div className="bg-white border-4 border-[#2D2D2D] p-6 rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D]">
+          <div className="bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)]">
             <div className="space-y-4">
-              <input placeholder="Notice Title" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
-              <textarea placeholder="Announcement..." value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl h-24 resize-none" />
+              <input placeholder="Notice Title" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
+              <textarea placeholder="Announcement..." value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl h-24 resize-none" />
               
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Author" value={noticeForm.author} onChange={e => setNoticeForm({...noticeForm, author: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl text-sm" />
-                <select value={noticeForm.priority} onChange={e => setNoticeForm({...noticeForm, priority: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl">
+                <input placeholder="Author" value={noticeForm.author} onChange={e => setNoticeForm({...noticeForm, author: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl text-sm" />
+                <select value={noticeForm.priority} onChange={e => setNoticeForm({...noticeForm, priority: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-black uppercase text-sm rounded-xl">
                   <option value="normal">🔵 Normal</option>
                   <option value="urgent">🔴 Urgent (Requires Ack)</option>
                 </select>
@@ -220,10 +220,10 @@ export default function BackstageManager() {
 
               <div className="flex items-center gap-3 p-4 bg-[#FF5F5F]/10 border-2 border-[#FF5F5F] rounded-xl">
                 <input type="checkbox" checked={noticeForm.sendPush} onChange={e => setNoticeForm({...noticeForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#FF5F5F]" />
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#2D2D2D]">Send Mobile Push Alert to Crew</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Send Mobile Push Alert to Crew</label>
               </div>
 
-              <button onClick={postNotice} className="w-full bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 transition-all">
+              <button onClick={postNotice} className="w-full bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
                 Post to Call Board
               </button>
             </div>
@@ -231,12 +231,12 @@ export default function BackstageManager() {
 
           <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 pb-10">
             {notices.map(n => (
-              <div key={n.id} className="bg-white border-4 border-[#2D2D2D] p-4 rounded-2xl flex justify-between items-start gap-4">
+              <div key={n.id} className="bg-white border-4 border-[var(--border-primary)] p-4 rounded-2xl flex justify-between items-start gap-4">
                 <div className="flex-1">
                   <h4 className="font-black uppercase text-sm leading-tight">{n.title}</h4>
                   <p className="text-[10px] font-bold opacity-60 mt-1">{n.author} • {n.priority}</p>
                 </div>
-                <button onClick={() => deleteNotice(n.id)} className="bg-red-50 text-red-500 border-2 border-[#2D2D2D] p-2 rounded-lg">🗑️</button>
+                <button onClick={() => deleteNotice(n.id)} className="bg-red-50 text-red-500 border-2 border-[var(--border-primary)] p-2 rounded-lg">🗑️</button>
               </div>
             ))}
           </div>
@@ -248,11 +248,11 @@ export default function BackstageManager() {
              <h3 className="font-black text-2xl uppercase tracking-tighter">Script Vault</h3>
           </div>
 
-          <div className="bg-white border-4 border-[#2D2D2D] p-6 rounded-[2rem] shadow-[8px_8px_0px_#2D2D2D]">
+          <div className="bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)]">
             <div className="space-y-4">
-              <input placeholder="Document Name" value={vaultForm.title} onChange={e => setVaultForm({...vaultForm, title: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
-              <input placeholder="Drive Link" type="url" value={vaultForm.link} onChange={e => setVaultForm({...vaultForm, link: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-bold rounded-xl" />
-              <select value={vaultForm.type} onChange={e => setVaultForm({...vaultForm, type: e.target.value})} className="w-full border-2 border-[#2D2D2D] p-4 font-black uppercase text-sm rounded-xl">
+              <input placeholder="Document Name" value={vaultForm.title} onChange={e => setVaultForm({...vaultForm, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
+              <input placeholder="Drive Link" type="url" value={vaultForm.link} onChange={e => setVaultForm({...vaultForm, link: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
+              <select value={vaultForm.type} onChange={e => setVaultForm({...vaultForm, type: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-black uppercase text-sm rounded-xl">
                 <option value="script">📝 Script</option>
                 <option value="audio">🎵 Audio</option>
                 <option value="document">📁 Document</option>
@@ -261,10 +261,10 @@ export default function BackstageManager() {
               {/* 🔥 NEW: Vault push checkbox */}
               <div className="flex items-center gap-3 p-4 bg-[#06D6A0]/10 border-2 border-[#06D6A0] rounded-xl">
                 <input type="checkbox" checked={vaultForm.sendPush} onChange={e => setVaultForm({...vaultForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#06D6A0]" />
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#2D2D2D]">Push Alert about this update</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Push Alert about this update</label>
               </div>
 
-              <button onClick={addToVault} className="w-full bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D]">
+              <button onClick={addToVault} className="w-full bg-[#06D6A0] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)]">
                 Upload to Vault
               </button>
             </div>
@@ -272,12 +272,12 @@ export default function BackstageManager() {
 
           <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 pb-10">
             {vault.map(v => (
-              <div key={v.id} className="bg-white border-4 border-[#2D2D2D] p-3 rounded-2xl flex justify-between items-center gap-4">
+              <div key={v.id} className="bg-white border-4 border-[var(--border-primary)] p-3 rounded-2xl flex justify-between items-center gap-4">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-8 h-8 bg-gray-100 border-2 border-[#2D2D2D] rounded-lg flex items-center justify-center shrink-0">{v.type === 'script' ? '📝' : '📁'}</div>
+                  <div className="w-8 h-8 bg-gray-100 border-2 border-[var(--border-primary)] rounded-lg flex items-center justify-center shrink-0">{v.type === 'script' ? '📝' : '📁'}</div>
                   <h4 className="font-black uppercase text-xs truncate">{v.title}</h4>
                 </div>
-                <button onClick={() => deleteFromVault(v.id)} className="bg-red-50 text-red-500 border-2 border-[#2D2D2D] p-2 rounded-lg">🗑️</button>
+                <button onClick={() => deleteFromVault(v.id)} className="bg-red-50 text-red-500 border-2 border-[var(--border-primary)] p-2 rounded-lg">🗑️</button>
               </div>
             ))}
           </div>

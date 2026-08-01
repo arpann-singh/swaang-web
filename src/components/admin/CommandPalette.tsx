@@ -178,14 +178,14 @@ export default function CommandPalette({
         initial={{ y: "100%", opacity: 0 }} 
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
-        className="w-full max-w-2xl h-full md:h-auto bg-white border-0 md:border-8 border-[#2D2D2D] rounded-none md:rounded-[3rem] shadow-none md:shadow-[30px_30px_0px_rgba(0,0,0,0.4)] overflow-hidden flex flex-col"
+        className="w-full max-w-2xl h-full md:h-auto bg-white border-0 md:border-8 border-[var(--border-primary)] rounded-none md:rounded-[3rem] shadow-none md:shadow-[30px_30px_0px_rgba(0,0,0,0.4)] overflow-hidden flex flex-col"
       >
-        <div className="relative flex items-center border-b-4 border-[#2D2D2D]/10 px-4 md:px-6 bg-gray-50 shrink-0">
-          <Search className="text-[#2D2D2D]/30" size={24} />
+        <div className="relative flex items-center border-b-4 border-[var(--border-primary)]/10 px-4 md:px-6 bg-gray-50 shrink-0">
+          <Search className="text-[var(--text-primary)]/30" size={24} />
           <input 
             autoFocus 
             placeholder="! Notice | @ People | # Logistics | + Create | > Action" 
-            className="w-full p-6 text-lg md:text-xl font-black uppercase tracking-tighter outline-none bg-transparent placeholder:text-[#2D2D2D]/20"
+            className="w-full p-6 text-lg md:text-xl font-black uppercase tracking-tighter outline-none bg-transparent placeholder:text-[var(--text-primary)]/20"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
             onKeyDown={(e) => {
@@ -208,7 +208,7 @@ export default function CommandPalette({
                   key={i}
                   onClick={() => handleAction(item)}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl border-4 transition-all ${
-                    i === selectedIndex ? "bg-[#FFD166] border-[#2D2D2D] -translate-y-1 shadow-[4px_4px_0px_#2D2D2D]" : "bg-white border-transparent hover:bg-gray-50"
+                    i === selectedIndex ? "bg-[#FFD166] border-[var(--border-primary)] -translate-y-1 shadow-[4px_4px_0px_var(--border-primary)]" : "bg-white border-transparent hover:bg-gray-50"
                   }`}
                   onMouseEnter={() => setSelectedIndex(i)}
                 >
@@ -219,7 +219,7 @@ export default function CommandPalette({
                       {item.sub && <span className="text-[8px] font-bold opacity-40">{item.sub}</span>}
                     </div>
                   </div>
-                  <span className={`text-[7px] md:text-[8px] font-black uppercase px-2 py-1 rounded-md border-2 border-[#2D2D2D] ${
+                  <span className={`text-[7px] md:text-[8px] font-black uppercase px-2 py-1 rounded-md border-2 border-[var(--border-primary)] ${
                     item.type === 'broadcast' ? 'bg-[#FF5F5F] text-white' : 
                     item.type === 'create' ? 'bg-[#06D6A0]' : 'bg-gray-100'
                   }`}>

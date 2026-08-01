@@ -47,22 +47,22 @@ export default function InboxManager({ messages: initialMessages }: { messages?:
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8 border-b-8 border-[#2D2D2D] pb-4">
+      <div className="mb-8 border-b-8 border-[var(--border-primary)] pb-4">
         <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Communications</h2>
         <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Direct Messages</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {messages.length === 0 ? (
-          <div className="col-span-full py-20 text-center border-4 border-dashed border-[#2D2D2D]/20 rounded-[2rem]">
+          <div className="col-span-full py-20 text-center border-4 border-dashed border-[var(--border-primary)]/20 rounded-[2rem]">
             <p className="font-black uppercase text-gray-400 text-xl">The inbox is empty.</p>
           </div>
         ) : (
           messages.map(msg => (
-            <div key={msg.id} className={`bg-white border-4 border-[#2D2D2D] rounded-[2rem] p-6 sm:p-8 flex flex-col transition-all duration-300 ${msg.status === 'unread' ? 'shadow-[8px_8px_0px_#FF5F5F]' : 'shadow-[8px_8px_0px_#2D2D2D] opacity-80'}`}>
+            <div key={msg.id} className={`bg-white border-4 border-[var(--border-primary)] rounded-[2rem] p-6 sm:p-8 flex flex-col transition-all duration-300 ${msg.status === 'unread' ? 'shadow-[8px_8px_0px_#FF5F5F]' : 'shadow-[8px_8px_0px_var(--border-primary)] opacity-80'}`}>
               
               {/* Header: Name, Date, Status */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b-4 border-[#2D2D2D]/10">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b-4 border-[var(--border-primary)]/10">
                 <div>
                   <div className="flex items-center gap-3">
                     <h3 className="font-black text-xl md:text-2xl uppercase tracking-tighter leading-none">{msg.name}</h3>
@@ -75,7 +75,7 @@ export default function InboxManager({ messages: initialMessages }: { messages?:
                 
                 <button 
                   onClick={() => markAsRead(msg.id, msg.status)}
-                  className={`px-4 py-2 border-2 border-[#2D2D2D] rounded-lg font-black text-[9px] uppercase tracking-widest hover:-translate-y-0.5 transition-all ${msg.status === 'unread' ? 'bg-[#FF5F5F] text-white shadow-[2px_2px_0px_#2D2D2D]' : 'bg-gray-100 hover:bg-gray-200'}`}
+                  className={`px-4 py-2 border-2 border-[var(--border-primary)] rounded-lg font-black text-[9px] uppercase tracking-widest hover:-translate-y-0.5 transition-all ${msg.status === 'unread' ? 'bg-[#FF5F5F] text-white shadow-[2px_2px_0px_var(--border-primary)]' : 'bg-gray-100 hover:bg-gray-200'}`}
                 >
                   {msg.status === 'unread' ? 'Mark as Read' : 'Mark Unread'}
                 </button>
@@ -89,14 +89,14 @@ export default function InboxManager({ messages: initialMessages }: { messages?:
               {/* 📞 CONTACT BUTTONS (Neo-Brutalist Action Blocks) */}
               <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 {/* Email is always required by the form */}
-                <a href={`mailto:${msg.email}`} className="flex-1 flex items-center justify-between bg-blue-100 border-2 border-[#2D2D2D] py-2.5 px-4 rounded-xl hover:bg-blue-200 transition-colors shadow-[2px_2px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none group overflow-hidden">
+                <a href={`mailto:${msg.email}`} className="flex-1 flex items-center justify-between bg-blue-100 border-2 border-[var(--border-primary)] py-2.5 px-4 rounded-xl hover:bg-blue-200 transition-colors shadow-[2px_2px_0px_var(--border-primary)] hover:translate-y-0.5 hover:shadow-none group overflow-hidden">
                   <span className="font-black text-[10px] uppercase flex items-center gap-2 shrink-0">✉️ Email</span>
                   <span className="font-bold text-[11px] lowercase truncate ml-2">{msg.email}</span>
                 </a>
                 
                 {/* Phone is optional, only shows if they provided it */}
                 {msg.phone && (
-                  <a href={`tel:${msg.phone}`} className="flex-1 flex items-center justify-between bg-[#FFD166] border-2 border-[#2D2D2D] py-2.5 px-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-[2px_2px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none group">
+                  <a href={`tel:${msg.phone}`} className="flex-1 flex items-center justify-between bg-[#FFD166] border-2 border-[var(--border-primary)] py-2.5 px-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-[2px_2px_0px_var(--border-primary)] hover:translate-y-0.5 hover:shadow-none group">
                     <span className="font-black text-[10px] uppercase flex items-center gap-2">📞 Call</span>
                     <span className="font-bold text-[12px] tracking-widest">{msg.phone}</span>
                   </a>
@@ -104,7 +104,7 @@ export default function InboxManager({ messages: initialMessages }: { messages?:
               </div>
 
               {/* The Message Body */}
-              <div className="bg-gray-50 p-6 rounded-2xl border-2 border-[#2D2D2D]/10 mb-6 flex-1 text-sm md:text-base font-medium leading-relaxed whitespace-pre-wrap">
+              <div className="bg-gray-50 p-6 rounded-2xl border-2 border-[var(--border-primary)]/10 mb-6 flex-1 text-sm md:text-base font-medium leading-relaxed whitespace-pre-wrap">
                 {msg.message}
               </div>
 

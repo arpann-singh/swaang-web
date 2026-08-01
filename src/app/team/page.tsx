@@ -19,7 +19,7 @@ export default function TeamPage() {
   }, []);
 
   return (
-    <main className="bg-[#FFF9F0] min-h-screen">
+    <main className="bg-[var(--bg-primary)] min-h-screen">
       <Header />
       
       {/* 🔥 NEW: Dynamic Faculty Hero at the top */}

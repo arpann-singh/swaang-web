@@ -61,8 +61,8 @@ export default function BudgetManager() {
         <div className="lg:col-span-4">
           <form onSubmit={addExpense} className="bg-white border-4 border-black p-8 rounded-[2.5rem] shadow-[10px_10px_0px_black] space-y-4 sticky top-10">
             <h3 className="font-black uppercase text-xl italic mb-4">Log Expense</h3>
-            <input required type="text" placeholder="Bill Description" value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full border-2 border-black p-4 rounded-xl font-bold bg-[#FFF9F0]" />
-            <input required type="number" placeholder="Amount (INR)" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} className="w-full border-2 border-black p-4 rounded-xl font-bold bg-[#FFF9F0]" />
+            <input required type="text" placeholder="Bill Description" value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full border-2 border-black p-4 rounded-xl font-bold bg-[var(--bg-primary)]" />
+            <input required type="number" placeholder="Amount (INR)" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} className="w-full border-2 border-black p-4 rounded-xl font-bold bg-[var(--bg-primary)]" />
             <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="w-full border-2 border-black p-4 rounded-xl font-black uppercase text-xs">
               <option>Props</option>
               <option>Costumes</option>
@@ -83,7 +83,7 @@ export default function BudgetManager() {
           </div>
           <div className="max-h-[500px] overflow-y-auto">
             {expenses.map((exp) => (
-              <div key={exp.id} className="flex items-center justify-between p-6 border-b-2 border-gray-100 hover:bg-[#FFF9F0] transition-colors">
+              <div key={exp.id} className="flex items-center justify-between p-6 border-b-2 border-gray-100 hover:bg-[var(--bg-primary)] transition-colors">
                 <div>
                   <p className="font-black uppercase text-sm">{exp.title}</p>
                   <p className="text-[9px] font-bold text-[#FF5F5F] uppercase tracking-widest">{exp.category} • {new Date(exp.createdAt).toLocaleDateString()}</p>

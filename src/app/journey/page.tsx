@@ -36,13 +36,13 @@ export default function FullJourneyArchive() {
   }, [events]);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-widest italic">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center font-black uppercase tracking-widest italic">
       Unlocking Swaang Archives...
     </div>
   );
 
   return (
-    <main className="min-h-screen bg-[#FFF9F0] pt-32 pb-20 px-6 text-[#2D2D2D]">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-32 pb-20 px-6 text-[var(--text-primary)]">
       <div className="max-w-7xl mx-auto">
         
         {/* Navigation */}
@@ -72,7 +72,7 @@ export default function FullJourneyArchive() {
             </div>
 
             <div className="flex items-center gap-6 mb-10 relative z-10">
-              <h2 className="text-5xl font-black uppercase tracking-tighter bg-[#FFD166] px-6 py-2 rounded-2xl border-4 border-[#2D2D2D] shadow-[6px_6px_0px_#2D2D2D]">
+              <h2 className="text-5xl font-black uppercase tracking-tighter bg-[#FFD166] px-6 py-2 rounded-2xl border-4 border-[var(--border-primary)] shadow-[6px_6px_0px_var(--border-primary)]">
                 {year}
               </h2>
               <div className="flex-1 h-1 bg-black/5" />
@@ -83,7 +83,7 @@ export default function FullJourneyArchive() {
                 <motion.div 
                   key={ev.id}
                   whileHover={{ y: -10 }}
-                  className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[8px_8px_0px_#2D2D2D] flex flex-col justify-between group"
+                  className="bg-white border-4 border-[var(--border-primary)] p-8 rounded-[2.5rem] shadow-[8px_8px_0px_var(--border-primary)] flex flex-col justify-between group"
                 >
                   <div className="text-left">
                     <div className="flex justify-between items-start mb-4">
@@ -130,14 +130,14 @@ export default function FullJourneyArchive() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-[#FFF9F0] w-full max-w-4xl max-h-[90vh] overflow-y-auto border-8 border-[#2D2D2D] rounded-[3rem] shadow-[20px_20px_0px_#FF5F5F] relative z-10 p-8 md:p-12 text-left"
+              className="bg-[var(--bg-primary)] w-full max-w-4xl max-h-[90vh] overflow-y-auto border-8 border-[var(--border-primary)] rounded-[3rem] shadow-[20px_20px_0px_#FF5F5F] relative z-10 p-8 md:p-12 text-left"
             >
               <button 
                 onClick={() => setSelectedMemory(null)}
-                className="absolute top-6 right-6 w-12 h-12 bg-white border-4 border-[#2D2D2D] rounded-full flex items-center justify-center font-black hover:bg-[#FF5F5F] hover:text-white transition-all shadow-[4px_4px_0px_#2D2D2D] active:translate-y-1 active:shadow-none"
+                className="absolute top-6 right-6 w-12 h-12 bg-white border-4 border-[var(--border-primary)] rounded-full flex items-center justify-center font-black hover:bg-[#FF5F5F] hover:text-white transition-all shadow-[4px_4px_0px_var(--border-primary)] active:translate-y-1 active:shadow-none"
               > <X size={24} /> </button>
 
-              <span className="inline-block bg-[#06D6A0] text-black border-4 border-[#2D2D2D] px-6 py-2 font-black text-xs uppercase tracking-widest rounded-full mb-8 shadow-[4px_4px_0px_#2D2D2D]">
+              <span className="inline-block bg-[#06D6A0] text-black border-4 border-[var(--border-primary)] px-6 py-2 font-black text-xs uppercase tracking-widest rounded-full mb-8 shadow-[4px_4px_0px_var(--border-primary)]">
                 Memory: {selectedMemory.year}
               </span>
 
@@ -148,18 +148,18 @@ export default function FullJourneyArchive() {
               {/* Photos Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
                 {selectedMemory.photo1 ? (
-                  <img src={selectedMemory.photo1} className="w-full aspect-video object-cover rounded-[2rem] border-4 border-[#2D2D2D] shadow-[8px_8px_0px_#2D2D2D]" alt="Memory 1" />
+                  <img src={selectedMemory.photo1} className="w-full aspect-video object-cover rounded-[2rem] border-4 border-[var(--border-primary)] shadow-[8px_8px_0px_var(--border-primary)]" alt="Memory 1" />
                 ) : (
                   <div className="aspect-video bg-gray-200 rounded-[2rem] border-4 border-dashed border-black/10 flex items-center justify-center font-black uppercase opacity-20">No Primary Visual</div>
                 )}
                 {selectedMemory.photo2 ? (
-                  <img src={selectedMemory.photo2} className="w-full aspect-video object-cover rounded-[2rem] border-4 border-[#2D2D2D] shadow-[8px_8px_0px_#2D2D2D]" alt="Memory 2" />
+                  <img src={selectedMemory.photo2} className="w-full aspect-video object-cover rounded-[2rem] border-4 border-[var(--border-primary)] shadow-[8px_8px_0px_var(--border-primary)]" alt="Memory 2" />
                 ) : (
                    <div className="aspect-video bg-gray-200 rounded-[2rem] border-4 border-dashed border-black/10 flex items-center justify-center font-black uppercase opacity-20">No Secondary Visual</div>
                 )}
               </div>
 
-              <div className="bg-white border-4 border-[#2D2D2D] p-8 rounded-[2rem] shadow-[8px_8px_0px_rgba(0,0,0,0.05)]">
+              <div className="bg-white border-4 border-[var(--border-primary)] p-8 rounded-[2rem] shadow-[8px_8px_0px_rgba(0,0,0,0.05)]">
                 <p className="font-bold text-base md:text-lg leading-relaxed whitespace-pre-wrap opacity-80">
                   {selectedMemory.description || selectedMemory.content || "Archival data for this milestone is currently being curated."}
                 </p>
@@ -169,7 +169,7 @@ export default function FullJourneyArchive() {
         )}
       </AnimatePresence>
 
-      <footer className="mt-20 pt-10 border-t-4 border-[#2D2D2D]/5 text-center opacity-20">
+      <footer className="mt-20 pt-10 border-t-4 border-[var(--border-primary)]/5 text-center opacity-20">
         <p className="font-black uppercase text-[10px] tracking-widest">Swaang Digital Archives • Bhilai</p>
       </footer>
     </main>

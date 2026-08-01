@@ -1,19 +1,38 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-card: var(--card-primary);
+}
+
+@layer utilities {
+  .bg-brand-bg { background-color: var(--bg-primary); }
+  .text-brand-text { color: var(--text-primary); }
+  .border-brand-border { border-color: var(--border-primary); }
+}
+
 @layer base {
+  :root {
+    --bg-primary: #FFF9F0;
+    --text-primary: #2D2D2D;
+    --border-primary: #2D2D2D;
+    --card-primary: #ffffff;
+  }
+  
+
+
   body {
-    background-color: #FFF9F0; /* Warm Cream */
-    color: #2D2D2D; /* Soft Charcoal */
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     font-family: 'Inter', sans-serif;
   }
 }
 
 /* Playful Bubbly Card */
 .bubbly-card {
-  background: #ffffff;
-  border: 3px solid #2D2D2D;
+  background: var(--card-primary);
+  border: 3px solid var(--border-primary);
   border-radius: 2rem;
-  box-shadow: 8px 8px 0px #2D2D2D;
+  box-shadow: 8px 8px 0px var(--border-primary);
   transition: all 0.2s ease;
 }
 

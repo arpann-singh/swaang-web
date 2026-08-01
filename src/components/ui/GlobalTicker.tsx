@@ -14,7 +14,7 @@ export default function GlobalTicker() {
   if (notices.length === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 w-full bg-[#FF5F5F] border-b-4 border-[#2D2D2D] z-[5000] h-10 flex items-center overflow-hidden">
+    <div className="fixed top-0 left-0 w-full bg-[#FF5F5F] border-b-4 border-[var(--border-primary)] z-[5000] h-10 flex items-center overflow-hidden">
       <style>{`
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .ticker-track { display: flex; width: max-content; animation: marquee 30s linear infinite; white-space: nowrap; }

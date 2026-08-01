@@ -64,7 +64,7 @@ export default function CreditsEditor() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {developers.map((dev, index) => (
-          <div key={index} className="bg-white border-4 border-black rounded-[2rem] p-8 shadow-[12px_12px_0px_#2D2D2D] relative group">
+          <div key={index} className="bg-white border-4 border-black rounded-[2rem] p-8 shadow-[12px_12px_0px_var(--border-primary)] relative group">
             <button onClick={() => removeDev(index)} className="absolute -top-4 -right-4 bg-[#FF5F5F] text-white w-10 h-10 rounded-full border-4 border-black font-black hover:scale-110 transition-transform z-10">X</button>
             
             <div className="space-y-4">

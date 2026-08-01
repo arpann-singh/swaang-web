@@ -54,7 +54,7 @@ export default function JourneySection({ allEvents = [] }: { allEvents: JourneyE
           <motion.span 
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            className="bg-[#FFD166] text-[#2D2D2D] px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-[0.3em] shadow-[4px_4px_0px_#FFF9F0]"
+            className="bg-[#FFD166] text-[var(--text-primary)] px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-[0.3em] shadow-[4px_4px_0px_#FFF9F0]"
           >
             Our Legacy
           </motion.span>
@@ -71,7 +71,7 @@ export default function JourneySection({ allEvents = [] }: { allEvents: JourneyE
               onClick={() => setActiveYear(year)}
               className={`px-8 py-3 rounded-2xl border-4 font-black uppercase transition-all duration-300 ${
                 activeYear === year 
-                ? "bg-[#06D6A0] text-[#2D2D2D] border-[#FFF9F0] -translate-y-2 shadow-[6px_6px_0px_#FFF9F0]" 
+                ? "bg-[#06D6A0] text-[var(--text-primary)] border-[#FFF9F0] -translate-y-2 shadow-[6px_6px_0px_#FFF9F0]" 
                 : "bg-transparent border-[#FFF9F0]/20 text-[#FFF9F0]/40 hover:border-[#FFF9F0]/60"
               }`}
             >
@@ -97,7 +97,7 @@ export default function JourneySection({ allEvents = [] }: { allEvents: JourneyE
                   key={event.id} 
                   className="min-w-[320px] md:min-w-[450px] snap-center"
                 >
-                  <div className="bg-[#FFF9F0] text-[#2D2D2D] border-8 border-[#2D2D2D] p-10 rounded-[3.5rem] shadow-[15px_15px_0px_#FF5F5F] h-[480px] flex flex-col justify-between hover:rotate-1 transition-transform cursor-default">
+                  <div className="bg-[var(--bg-primary)] text-[var(--text-primary)] border-8 border-[var(--border-primary)] p-10 rounded-[3.5rem] shadow-[15px_15px_0px_#FF5F5F] h-[480px] flex flex-col justify-between hover:rotate-1 transition-transform cursor-default">
                     <div className="text-left">
                       <div className="flex justify-between items-start">
                         <span className="bg-[#2D2D2D] text-white px-4 py-1 rounded-xl font-black text-[10px] tracking-widest">
@@ -115,7 +115,7 @@ export default function JourneySection({ allEvents = [] }: { allEvents: JourneyE
                     
                     <Link 
                       href={event.link || `/journey#${event.id}`}
-                      className="w-full bg-[#FFD166] border-4 border-[#2D2D2D] py-4 rounded-2xl font-black uppercase text-xs shadow-[5px_5px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full bg-[#FFD166] border-4 border-[var(--border-primary)] py-4 rounded-2xl font-black uppercase text-xs shadow-[5px_5px_0px_var(--border-primary)] hover:translate-y-1 hover:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
                       Open Archive 📂
                     </Link>
@@ -145,14 +145,14 @@ export default function JourneySection({ allEvents = [] }: { allEvents: JourneyE
           <div className="hidden md:flex gap-4 mt-8 justify-end">
             <button 
               onClick={() => scroll('left')} 
-              className="p-4 border-4 border-[#FFF9F0]/20 rounded-full hover:bg-[#FFF9F0] hover:text-[#2D2D2D] transition-all active:scale-90"
+              className="p-4 border-4 border-[#FFF9F0]/20 rounded-full hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-all active:scale-90"
               aria-label="Previous Events"
             >
               <ChevronLeft size={24} />
             </button>
             <button 
               onClick={() => scroll('right')} 
-              className="p-4 border-4 border-[#FFF9F0]/20 rounded-full hover:bg-[#FFF9F0] hover:text-[#2D2D2D] transition-all active:scale-90"
+              className="p-4 border-4 border-[#FFF9F0]/20 rounded-full hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-all active:scale-90"
               aria-label="Next Events"
             >
               <ChevronRight size={24} />

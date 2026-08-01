@@ -305,15 +305,15 @@ export default function CrewPage() {
       <main className="min-h-screen bg-[#2D2D2D] flex items-center justify-center p-6 text-center">
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          className="bg-[#FFF9F0] border-4 border-[#FFD166] p-12 rounded-[3rem] shadow-[20px_20px_0px_#FFD166] max-w-md w-full"
+          className="bg-[var(--bg-primary)] border-4 border-[#FFD166] p-12 rounded-[3rem] shadow-[20px_20px_0px_#FFD166] max-w-md w-full"
         >
           <div className="w-16 h-16 bg-[#2D2D2D] text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔑</div>
-          <h1 className="font-cinzel text-3xl font-black text-[#2D2D2D] mb-2 uppercase tracking-tighter">Stage Door</h1>
-          <p className="font-bold text-[#2D2D2D]/60 text-[10px] uppercase tracking-widest mb-12">Crew Identity Required</p>
+          <h1 className="font-cinzel text-3xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tighter">Stage Door</h1>
+          <p className="font-bold text-[var(--text-primary)]/60 text-[10px] uppercase tracking-widest mb-12">Crew Identity Required</p>
           
           <button 
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-4 bg-white text-[#2D2D2D] border-4 border-[#2D2D2D] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:shadow-none transition-all mb-4"
+            className="w-full flex items-center justify-center gap-4 bg-white text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 hover:shadow-none transition-all mb-4"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
             Continue with Google
@@ -321,7 +321,7 @@ export default function CrewPage() {
           
           {error && <p className="text-[#FF5F5F] font-black text-xs uppercase tracking-widest mt-4">Login failed. Try again.</p>}
           
-          <p className="text-[9px] font-bold text-[#2D2D2D]/40 uppercase tracking-[0.2em] mt-8 leading-relaxed">
+          <p className="text-[9px] font-bold text-[var(--text-primary)]/40 uppercase tracking-[0.2em] mt-8 leading-relaxed">
             Ensure you use your official email <br/> registered in the Swaang Personnel Desk.
           </p>
         </motion.div>
@@ -341,7 +341,7 @@ export default function CrewPage() {
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mb-10 overflow-hidden">
                 <div className="bg-[#FF5F5F] border-4 border-[#FFF9F0] p-6 rounded-[2.5rem] shadow-[8px_8px_0px_#FFF9F0] flex flex-col md:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 bg-[#FFF9F0] text-[#FF5F5F] rounded-full flex items-center justify-center text-3xl">🔔</div>
+                    <div className="w-16 h-16 bg-[var(--bg-primary)] text-[#FF5F5F] rounded-full flex items-center justify-center text-3xl">🔔</div>
                     <div>
                       <h4 className="font-black uppercase text-xl leading-none mb-1">Don't Miss the Call!</h4>
                       <p className="font-black uppercase tracking-widest text-[10px] opacity-90">Enable push alerts for urgent stage notices.</p>
@@ -356,7 +356,7 @@ export default function CrewPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-8 border-[#FFF9F0]/10 pb-8 gap-6 text-left">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="inline-block bg-[#06D6A0] text-[#2D2D2D] border-4 border-[#FFF9F0] px-4 py-1 rounded-full shadow-[4px_4px_0px_#FFF9F0]">
+                <div className="inline-block bg-[#06D6A0] text-[var(--text-primary)] border-4 border-[#FFF9F0] px-4 py-1 rounded-full shadow-[4px_4px_0px_#FFF9F0]">
                   <span className="font-black uppercase tracking-[0.2em] text-[10px]">Locker: {memberData?.name || "Member"}</span>
                 </div>
               </div>
@@ -378,7 +378,7 @@ export default function CrewPage() {
               layout 
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
-              className={`bg-[#FFD166] text-[#2D2D2D] border-4 border-[#FFF9F0] rounded-[2rem] mb-12 shadow-[12px_12px_0px_#FFF9F0] text-left overflow-hidden relative ${priorityMode === 'HIGH_ALERT' ? 'ring-8 ring-[#FF5F5F] ring-offset-4 ring-offset-[#2D2D2D]' : ''}`}
+              className={`bg-[#FFD166] text-[var(--text-primary)] border-4 border-[#FFF9F0] rounded-[2rem] mb-12 shadow-[12px_12px_0px_#FFF9F0] text-left overflow-hidden relative ${priorityMode === 'HIGH_ALERT' ? 'ring-8 ring-[#FF5F5F] ring-offset-4 ring-offset-[#2D2D2D]' : ''}`}
             >
               {priorityMode === 'HIGH_ALERT' && (
                 <div className="absolute top-0 right-0 bg-[#FF5F5F] text-white px-6 py-2 font-black uppercase text-[10px] tracking-widest rounded-bl-3xl">
@@ -418,7 +418,7 @@ export default function CrewPage() {
                 <div className="h-10 w-3 bg-[#FF5F5F] rounded-full" />
                 <h2 className="font-cinzel text-3xl font-black uppercase tracking-tighter">My Ensemble Profile</h2>
               </div>
-              <div className="bg-[#FFF9F0] text-[#2D2D2D] border-4 border-[#2D2D2D] rounded-[2rem] p-8 shadow-[8px_8px_0px_#FFD166]">
+              <div className="bg-[var(--bg-primary)] text-[var(--text-primary)] border-4 border-[var(--border-primary)] rounded-[2rem] p-8 shadow-[8px_8px_0px_#FFD166]">
                 <form onSubmit={syncProfile} className="space-y-6">
                    <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
                       <div className="space-y-3 text-center">
@@ -481,13 +481,13 @@ export default function CrewPage() {
                   </div>
                 ) : (
                   notices.map((notice) => (
-                    <motion.div key={notice.id} className={`bg-[#FFF9F0] text-[#2D2D2D] border-4 border-[#2D2D2D] rounded-[2rem] p-8 shadow-[8px_8px_0px_${notice.priority === 'urgent' ? '#FF5F5F' : '#06D6A0'}]`}>
-                      <div className="flex justify-between items-start mb-4 border-b-4 border-[#2D2D2D]/10 pb-4">
+                    <motion.div key={notice.id} className={`bg-[var(--bg-primary)] text-[var(--text-primary)] border-4 border-[var(--border-primary)] rounded-[2rem] p-8 shadow-[8px_8px_0px_${notice.priority === 'urgent' ? '#FF5F5F' : '#06D6A0'}]`}>
+                      <div className="flex justify-between items-start mb-4 border-b-4 border-[var(--border-primary)]/10 pb-4">
                         <h3 className="font-black text-2xl uppercase tracking-tighter leading-tight">{notice.title}</h3>
                         {notice.priority === 'urgent' && <span className="bg-[#FF5F5F] text-white px-3 py-1 rounded-lg font-black uppercase text-[10px] animate-pulse">Urgent</span>}
                       </div>
                       <p className="font-medium text-sm mb-6 whitespace-pre-wrap">{notice.message}</p>
-                      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-t-2 border-dashed border-[#2D2D2D]/20 pt-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-t-2 border-dashed border-[var(--border-primary)]/20 pt-4">
                         <div className="text-[10px] font-black uppercase opacity-60">
                           <span>{notice.author || "Directorate"}</span> • <span>{new Date(notice.createdAt).toLocaleDateString()}</span>
                         </div>
@@ -509,7 +509,7 @@ export default function CrewPage() {
               <AvailabilityGrid userId={memberData?.id || "guest"} userName={memberData?.name || "Crew"} />
 
               {/* --- THE VAULT: PRIORITY 2 SMART LOCKER SORTING --- */}
-              <div className="bg-[#FFF9F0] border-4 border-[#2D2D2D] rounded-[2rem] p-6 shadow-[8px_8px_0px_#06D6A0]">
+              <div className="bg-[var(--bg-primary)] border-4 border-[var(--border-primary)] rounded-[2rem] p-6 shadow-[8px_8px_0px_#06D6A0]">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-black uppercase text-xl text-black">The Vault</h3>
                   <span className="text-[9px] font-black uppercase px-2 py-1 bg-black text-white rounded-md tracking-widest">{memberData?.role || "CREW"} STORAGE</span>
@@ -520,13 +520,13 @@ export default function CrewPage() {
                     <p className="text-[10px] font-black uppercase opacity-40 py-4 text-center border-2 border-dashed border-black/10 rounded-xl">No specific files for your role yet.</p>
                   ) : (
                     filteredVault.map((item) => (
-                      <a key={item.id} href={item.link} target="_blank" rel="noreferrer" className="flex items-center justify-between bg-white border-4 border-[#2D2D2D] p-4 rounded-xl hover:-translate-y-1 transition-all">
+                      <a key={item.id} href={item.link} target="_blank" rel="noreferrer" className="flex items-center justify-between bg-white border-4 border-[var(--border-primary)] p-4 rounded-xl hover:-translate-y-1 transition-all">
                         <div className="flex items-center gap-4 truncate">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border-2 border-black ${item.type === 'script' ? 'bg-[#FFD166]' : 'bg-[#06D6A0]'}`}>
                             {item.type === 'script' ? '📝' : '🎵'}
                           </div>
                           <div>
-                            <h4 className="font-black text-[#2D2D2D] uppercase text-sm truncate">{item.title}</h4>
+                            <h4 className="font-black text-[var(--text-primary)] uppercase text-sm truncate">{item.title}</h4>
                             <div className="flex gap-1 mt-1">
                               {item.tags?.map((t: string) => (
                                 <span key={t} className="text-[7px] font-black uppercase opacity-40">#{t}</span>
@@ -541,7 +541,7 @@ export default function CrewPage() {
                 </div>
               </div>
 
-              <div className="bg-[#06D6A0] border-4 border-[#FFF9F0] rounded-[2rem] p-6 shadow-[8px_8px_0px_#FFF9F0] text-[#2D2D2D]">
+              <div className="bg-[#06D6A0] border-4 border-[#FFF9F0] rounded-[2rem] p-6 shadow-[8px_8px_0px_#FFF9F0] text-[var(--text-primary)]">
                 <h3 className="font-black uppercase text-xl mb-1 tracking-tighter">Media Staging</h3>
                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-6">Upload Photos to Archives</p>
                 <label className={`block text-center cursor-pointer bg-[#2D2D2D] text-white py-4 rounded-xl font-black uppercase text-xs transition-all ${isBulkUploading ? "opacity-50" : "hover:translate-y-1"}`}>
@@ -554,16 +554,16 @@ export default function CrewPage() {
                 <h3 className="font-black uppercase text-xl mb-1 tracking-tighter">Absence Ping</h3>
                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-6">Alert the Stage Manager</p>
                 {pingStatus === "sent" ? (
-                  <div className="bg-[#FFF9F0] text-[#2D2D2D] p-6 rounded-xl text-center font-black uppercase text-sm">✅ Ping Sent.</div>
+                  <div className="bg-[var(--bg-primary)] text-[var(--text-primary)] p-6 rounded-xl text-center font-black uppercase text-sm">✅ Ping Sent.</div>
                 ) : (
                   <form onSubmit={sendPing} className="space-y-3">
-                    <input required type="text" placeholder="Your Name" value={pingForm.name || memberData?.name || ""} onChange={e => setPingForm({...pingForm, name: e.target.value})} className="w-full bg-[#FFF9F0] border-2 border-black p-3 rounded-xl text-black font-bold outline-none" />
-                    <select value={pingForm.type} onChange={e => setPingForm({...pingForm, type: e.target.value})} className="w-full bg-[#FFF9F0] border-2 border-black p-3 rounded-xl text-black font-black uppercase text-xs outline-none cursor-pointer">
+                    <input required type="text" placeholder="Your Name" value={pingForm.name || memberData?.name || ""} onChange={e => setPingForm({...pingForm, name: e.target.value})} className="w-full bg-[var(--bg-primary)] border-2 border-black p-3 rounded-xl text-black font-bold outline-none" />
+                    <select value={pingForm.type} onChange={e => setPingForm({...pingForm, type: e.target.value})} className="w-full bg-[var(--bg-primary)] border-2 border-black p-3 rounded-xl text-black font-black uppercase text-xs outline-none cursor-pointer">
                       <option value="Late">Running Late</option>
                       <option value="Absent">Absent</option>
                       <option value="Emergency">Emergency</option>
                     </select>
-                    <textarea placeholder="Reason / ETA" value={pingForm.message} onChange={e => setPingForm({...pingForm, message: e.target.value})} className="w-full bg-[#FFF9F0] border-2 border-black p-3 rounded-xl text-black font-bold outline-none h-16 resize-none" />
+                    <textarea placeholder="Reason / ETA" value={pingForm.message} onChange={e => setPingForm({...pingForm, message: e.target.value})} className="w-full bg-[var(--bg-primary)] border-2 border-black p-3 rounded-xl text-black font-bold outline-none h-16 resize-none" />
                     <button disabled={pingStatus === "sending"} type="submit" className="w-full bg-[#2D2D2D] text-white py-3 rounded-xl font-black uppercase text-xs hover:bg-black transition-all">
                       {pingStatus === "sending" ? "Pinging..." : "Send Ping"}
                     </button>

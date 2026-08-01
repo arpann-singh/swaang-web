@@ -11,7 +11,7 @@ export default function SectionHeader({ title, subtitle, emoji, color = "#FF5F5F
   return (
     <div className="container mx-auto px-6 mb-16 flex flex-col items-center text-center">
       <div 
-        className="inline-block px-8 py-3 rounded-full border-4 border-[#2D2D2D] shadow-[6px_6px_0px_#2D2D2D] mb-4 bg-white"
+        className="inline-block px-8 py-3 rounded-full border-4 border-[var(--border-primary)] shadow-[6px_6px_0px_var(--border-primary)] mb-4 bg-white"
         style={{ color: color }}
       >
         <h2 className="font-cinzel text-3xl md:text-4xl font-black uppercase tracking-tighter">

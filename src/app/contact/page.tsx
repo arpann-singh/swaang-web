@@ -39,7 +39,7 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FFF9F0] pt-32 pb-20 px-6 text-[#2D2D2D] flex justify-center items-center">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-32 pb-20 px-6 text-[var(--text-primary)] flex justify-center items-center">
       <div className="max-w-2xl w-full">
         
         <motion.div 
@@ -47,7 +47,7 @@ export default function ContactPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="inline-block bg-[#FFD166] border-4 border-[#2D2D2D] px-6 py-2 rounded-full mb-6 shadow-[4px_4px_0px_#2D2D2D]">
+          <div className="inline-block bg-[#FFD166] border-4 border-[var(--border-primary)] px-6 py-2 rounded-full mb-6 shadow-[4px_4px_0px_var(--border-primary)]">
             <span className="font-black uppercase tracking-[0.2em] text-[10px]">Global Connect</span>
           </div>
           <h1 className="font-cinzel text-5xl md:text-7xl font-black uppercase tracking-tighter">
@@ -61,11 +61,11 @@ export default function ContactPage() {
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white border-4 border-[#06D6A0] rounded-3xl p-10 text-center shadow-[12px_12px_0px_#06D6A0]"
           >
-            <h2 className="text-3xl font-black uppercase text-[#2D2D2D] mb-4">Message Received! 📨</h2>
-            <p className="font-bold text-[#2D2D2D]/70 mb-8">
+            <h2 className="text-3xl font-black uppercase text-[var(--text-primary)] mb-4">Message Received! 📨</h2>
+            <p className="font-bold text-[var(--text-primary)]/70 mb-8">
               Your transmission has been safely delivered to the Master Hub. The Swaang team will reach out shortly.
             </p>
-            <Link href="/" className="inline-block bg-[#06D6A0] border-4 border-[#2D2D2D] text-[#2D2D2D] font-black uppercase px-8 py-3 rounded-full shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all">
+            <Link href="/" className="inline-block bg-[#06D6A0] border-4 border-[var(--border-primary)] text-[var(--text-primary)] font-black uppercase px-8 py-3 rounded-full shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all">
               Return to Stage
             </Link>
           </motion.div>
@@ -75,10 +75,10 @@ export default function ContactPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
             onSubmit={handleSubmit} 
-            className="bg-white border-4 border-[#2D2D2D] p-8 md:p-12 rounded-[2rem] shadow-[12px_12px_0px_#2D2D2D] space-y-6"
+            className="bg-white border-4 border-[var(--border-primary)] p-8 md:p-12 rounded-[2rem] shadow-[12px_12px_0px_var(--border-primary)] space-y-6"
           >
             {status === "error" && (
-              <div className="bg-[#FF5F5F] border-4 border-[#2D2D2D] text-white p-4 rounded-xl text-center font-black text-sm uppercase shadow-[4px_4px_0px_#2D2D2D]">
+              <div className="bg-[#FF5F5F] border-4 border-[var(--border-primary)] text-white p-4 rounded-xl text-center font-black text-sm uppercase shadow-[4px_4px_0px_var(--border-primary)]">
                 ⚠️ {errorMessage}
               </div>
             )}
@@ -87,33 +87,33 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
                 <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Full Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="Your Name" />
+                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-gray-50 border-4 border-[var(--border-primary)] rounded-xl p-4 text-[var(--text-primary)] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="Your Name" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Email</label>
-                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="you@sstc.ac.in" />
+                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-gray-50 border-4 border-[var(--border-primary)] rounded-xl p-4 text-[var(--text-primary)] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="you@sstc.ac.in" />
               </div>
               {/* 🔥 ADDED PHONE INPUT */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Phone Number (Optional)</label>
-                <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="+91 XXXXX XXXXX" />
+                <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-gray-50 border-4 border-[var(--border-primary)] rounded-xl p-4 text-[var(--text-primary)] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="+91 XXXXX XXXXX" />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Subject</label>
-              <input required type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="What is this regarding?" />
+              <input required type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} className="w-full bg-gray-50 border-4 border-[var(--border-primary)] rounded-xl p-4 text-[var(--text-primary)] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold" placeholder="What is this regarding?" />
             </div>
 
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest opacity-60">Message</label>
-              <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} className="w-full bg-gray-50 border-4 border-[#2D2D2D] rounded-xl p-4 text-[#2D2D2D] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold h-32 resize-none" placeholder="Type your message here..." />
+              <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} className="w-full bg-gray-50 border-4 border-[var(--border-primary)] rounded-xl p-4 text-[var(--text-primary)] focus:border-[#FF5F5F] focus:outline-none transition-colors font-bold h-32 resize-none" placeholder="Type your message here..." />
             </div>
 
             <button 
               type="submit" 
               disabled={status === "loading"}
-              className="w-full bg-[#FF5F5F] border-4 border-[#2D2D2D] text-white font-black uppercase tracking-widest p-5 rounded-xl shadow-[6px_6px_0px_#2D2D2D] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all disabled:opacity-50 mt-4 flex justify-center items-center"
+              className="w-full bg-[#FF5F5F] border-4 border-[var(--border-primary)] text-white font-black uppercase tracking-widest p-5 rounded-xl shadow-[6px_6px_0px_var(--border-primary)] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all disabled:opacity-50 mt-4 flex justify-center items-center"
             >
               {status === "loading" ? <span className="animate-pulse">Transmitting...</span> : "Send Message"}
             </button>

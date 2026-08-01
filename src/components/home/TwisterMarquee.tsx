@@ -12,7 +12,7 @@ const twisters = [
 
 export default function TwisterMarquee() {
   return (
-    <div className="bg-[#2D2D2D] py-4 border-y-4 border-[#2D2D2D] overflow-hidden flex whitespace-nowrap relative group">
+    <div className="bg-[#2D2D2D] py-4 border-y-4 border-[var(--border-primary)] overflow-hidden flex whitespace-nowrap relative group">
       {/* 🎭 THE SCROLLING TRACK */}
       <motion.div 
         animate={{ x: [0, -1000] }}

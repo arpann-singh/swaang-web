@@ -93,7 +93,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-8 border-b-8 border-[#2D2D2D] pb-4 gap-6">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-8 border-b-8 border-[var(--border-primary)] pb-4 gap-6">
         <div>
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-left">Cast Desk</h2>
           <p className="font-black uppercase tracking-[0.3em] text-[#FFD166] text-[10px] mt-1 text-left">Audition Processing</p>
@@ -102,15 +102,15 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           <button
             onClick={toggleFormLive}
-            className={`flex items-center gap-3 border-4 border-[#2D2D2D] px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all ${isLive ? 'bg-[#06D6A0] text-[#2D2D2D]' : 'bg-gray-200 text-gray-400'}`}
+            className={`flex items-center gap-3 border-4 border-[var(--border-primary)] px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all ${isLive ? 'bg-[#06D6A0] text-[var(--text-primary)]' : 'bg-gray-200 text-gray-400'}`}
           >
-            <div className={`w-3 h-3 rounded-full border-2 border-[#2D2D2D] ${isLive ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+            <div className={`w-3 h-3 rounded-full border-2 border-[var(--border-primary)] ${isLive ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
             {isLive ? 'Form is LIVE' : 'Form CLOSED'}
           </button>
 
           <button 
             onClick={exportToCSV}
-            className="flex items-center gap-2 bg-[#FFD166] text-[#2D2D2D] border-4 border-[#2D2D2D] px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#2D2D2D] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all"
+            className="flex items-center gap-2 bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -124,12 +124,12 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {auditions.length === 0 ? (
-          <div className="col-span-full py-20 text-center border-4 border-dashed border-[#2D2D2D]/20 rounded-[2rem]">
+          <div className="col-span-full py-20 text-center border-4 border-dashed border-[var(--border-primary)]/20 rounded-[2rem]">
             <p className="font-black uppercase text-gray-400 text-xl text-left">The waiting room is empty.</p>
           </div>
         ) : (
           auditions.map((a) => (
-            <div key={a.id} className="bg-white border-4 border-[#2D2D2D] rounded-[2rem] p-6 shadow-[8px_8px_0px_#2D2D2D] flex flex-col h-full text-left">
+            <div key={a.id} className="bg-white border-4 border-[var(--border-primary)] rounded-[2rem] p-6 shadow-[8px_8px_0px_var(--border-primary)] flex flex-col h-full text-left">
               
               <div className="flex justify-between items-start mb-6">
                 <div className="text-left">
@@ -138,7 +138,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                     {a.role || "General"}
                   </span>
                 </div>
-                <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-md border-2 border-[#2D2D2D] ${
+                <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-md border-2 border-[var(--border-primary)] ${
                   a.status === 'accepted' ? 'bg-[#06D6A0]' : 
                   a.status === 'rejected' ? 'bg-[#FF5F5F] text-white' : 
                   'bg-[#FFD166]'
@@ -148,7 +148,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
               </div>
 
               {/* 🔥 NEW: Audition Scoring Section */}
-              <div className="mb-6 p-4 bg-[#FFF9F0] border-2 border-[#2D2D2D] rounded-2xl space-y-3 shadow-[4px_4px_0px_rgba(0,0,0,0.05)]">
+              <div className="mb-6 p-4 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-2xl space-y-3 shadow-[4px_4px_0px_rgba(0,0,0,0.05)]">
                 <p className="font-black uppercase text-[10px] opacity-40 mb-2 italic">Performance Metrics</p>
                 {[
                   { id: 'confidence', label: 'Confidence' },
@@ -172,54 +172,54 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
 
               <div className="flex flex-col gap-3 mb-6">
                 {a.phone && (
-                  <a href={`tel:${a.phone}`} className="flex items-center justify-between w-full bg-[#FFD166] border-2 border-[#2D2D2D] py-2 px-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-[2px_2px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none group">
+                  <a href={`tel:${a.phone}`} className="flex items-center justify-between w-full bg-[#FFD166] border-2 border-[var(--border-primary)] py-2 px-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-[2px_2px_0px_var(--border-primary)] hover:translate-y-0.5 hover:shadow-none group">
                     <span className="font-black text-[10px] uppercase flex items-center gap-2">📞 Call</span>
                     <span className="font-bold text-[11px] tracking-widest">{a.phone}</span>
                   </a>
                 )}
                 
                 {a.email && (
-                  <a href={`mailto:${a.email}`} className="flex items-center justify-between w-full bg-blue-100 border-2 border-[#2D2D2D] py-2 px-3 rounded-lg hover:bg-blue-200 transition-colors shadow-[2px_2px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none group overflow-hidden">
+                  <a href={`mailto:${a.email}`} className="flex items-center justify-between w-full bg-blue-100 border-2 border-[var(--border-primary)] py-2 px-3 rounded-lg hover:bg-blue-200 transition-colors shadow-[2px_2px_0px_var(--border-primary)] hover:translate-y-0.5 hover:shadow-none group overflow-hidden">
                     <span className="font-black text-[10px] uppercase flex items-center gap-2 shrink-0">✉️ Email</span>
                     <span className="font-bold text-[10px] lowercase truncate ml-2">{a.email}</span>
                   </a>
                 )}
 
                 {a.photoLink && (
-                  <a href={a.photoLink} target="_blank" rel="noreferrer" className="flex items-center justify-between w-full bg-pink-100 border-2 border-[#2D2D2D] py-2 px-3 rounded-lg hover:bg-pink-200 transition-colors shadow-[2px_2px_0px_#2D2D2D] hover:translate-y-0.5 hover:shadow-none group">
-                    <span className="font-black text-[10px] uppercase flex items-center gap-2 text-[#2D2D2D]">📸 Photo</span>
+                  <a href={a.photoLink} target="_blank" rel="noreferrer" className="flex items-center justify-between w-full bg-pink-100 border-2 border-[var(--border-primary)] py-2 px-3 rounded-lg hover:bg-pink-200 transition-colors shadow-[2px_2px_0px_var(--border-primary)] hover:translate-y-0.5 hover:shadow-none group">
+                    <span className="font-black text-[10px] uppercase flex items-center gap-2 text-[var(--text-primary)]">📸 Photo</span>
                     <span className="font-bold text-[9px] text-[#FF5F5F] uppercase tracking-widest">Open Link ⤾</span>
                   </a>
                 )}
 
                 {(a.portfolio || a.experience) && (
-                  <a href={a.portfolio || a.experience} target="_blank" rel="noreferrer" className="flex items-center justify-between w-full bg-[#2D2D2D] text-white border-2 border-[#2D2D2D] py-2 px-3 rounded-lg hover:bg-black transition-colors shadow-[2px_2px_0px_#FF5F5F] hover:translate-y-0.5 hover:shadow-none group">
+                  <a href={a.portfolio || a.experience} target="_blank" rel="noreferrer" className="flex items-center justify-between w-full bg-[#2D2D2D] text-white border-2 border-[var(--border-primary)] py-2 px-3 rounded-lg hover:bg-black transition-colors shadow-[2px_2px_0px_#FF5F5F] hover:translate-y-0.5 hover:shadow-none group">
                     <span className="font-black text-[10px] uppercase flex items-center gap-2">🔗 Portfolio</span>
                     <span className="font-bold text-[9px] text-[#FF5F5F] uppercase tracking-widest">Open Link ⤾</span>
                   </a>
                 )}
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-xl border-2 border-[#2D2D2D]/10 mb-6 flex-1 overflow-y-auto max-h-32 text-sm font-medium italic opacity-80">
+              <div className="bg-gray-50 p-4 rounded-xl border-2 border-[var(--border-primary)]/10 mb-6 flex-1 overflow-y-auto max-h-32 text-sm font-medium italic opacity-80">
                 "{a.motivation || a.message || "No motivation provided."}"
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-auto">
                 <button 
                   onClick={() => updateStatus(a.id, 'accepted')}
-                  className="bg-[#06D6A0] border-2 border-[#2D2D2D] py-2 rounded-lg font-black text-[10px] uppercase hover:bg-green-400 transition-colors"
+                  className="bg-[#06D6A0] border-2 border-[var(--border-primary)] py-2 rounded-lg font-black text-[10px] uppercase hover:bg-green-400 transition-colors"
                 >
                   Accept
                 </button>
                 <button 
                   onClick={() => updateStatus(a.id, 'rejected')}
-                  className="bg-gray-200 border-2 border-[#2D2D2D] py-2 rounded-lg font-black text-[10px] uppercase hover:bg-[#FF5F5F] hover:text-white transition-colors"
+                  className="bg-gray-200 border-2 border-[var(--border-primary)] py-2 rounded-lg font-black text-[10px] uppercase hover:bg-[#FF5F5F] hover:text-white transition-colors"
                 >
                   Reject
                 </button>
                 <button 
                   onClick={() => deleteAudition(a.id)}
-                  className="col-span-2 bg-red-50 text-red-500 border-2 border-[#2D2D2D] py-2 rounded-lg font-black text-[10px] uppercase mt-2 hover:bg-red-500 hover:text-white transition-colors"
+                  className="col-span-2 bg-red-50 text-red-500 border-2 border-[var(--border-primary)] py-2 rounded-lg font-black text-[10px] uppercase mt-2 hover:bg-red-500 hover:text-white transition-colors"
                 >
                   Delete Record
                 </button>

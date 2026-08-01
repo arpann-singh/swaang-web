@@ -38,7 +38,7 @@ export default function Team() {
             <div key={cat.id} className="space-y-16">
               <div className="flex items-center gap-4">
                 <div className="w-2 h-10 rounded-full" style={{ backgroundColor: cat.accent }} />
-                <h2 className="font-black text-4xl md:text-5xl tracking-tighter uppercase text-[#2D2D2D]">
+                <h2 className="font-black text-4xl md:text-5xl tracking-tighter uppercase text-[var(--text-primary)]">
                   {cat.label}
                 </h2>
               </div>
@@ -53,7 +53,7 @@ export default function Team() {
                   >
                     <div className="relative mb-6 w-full max-w-[200px] aspect-square">
                       <div className="absolute inset-0 bg-[#06D6A0] translate-x-3 translate-y-3 rounded-[3.5rem] border-2 border-black" />
-                      <div className="relative h-full w-full rounded-[3.5rem] border-4 border-[#2D2D2D] overflow-hidden bg-white">
+                      <div className="relative h-full w-full rounded-[3.5rem] border-4 border-[var(--border-primary)] overflow-hidden bg-white">
                         <img 
                           src={m.image} 
                           alt={m.name}
@@ -62,9 +62,9 @@ export default function Team() {
                       </div>
                     </div>
 
-                    <h4 className="font-black uppercase text-xl md:text-2xl text-[#2D2D2D] tracking-tight">{m.name}</h4>
+                    <h4 className="font-black uppercase text-xl md:text-2xl text-[var(--text-primary)] tracking-tight">{m.name}</h4>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF5F5F] mt-1">{m.role}</p>
-                    {m.category !== 'alumni' && <p className="text-[9px] font-bold text-[#2D2D2D]/40 uppercase mt-1">{m.year || "SSTC Bhilai"}</p>}
+                    {m.category !== 'alumni' && <p className="text-[9px] font-bold text-[var(--text-primary)]/40 uppercase mt-1">{m.year || "SSTC Bhilai"}</p>}
                   </motion.div>
                 ))}
               </div>

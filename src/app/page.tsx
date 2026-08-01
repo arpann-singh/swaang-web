@@ -59,7 +59,7 @@ export default function Home() {
 
   const activeNoticesCount = notices.filter(n => n.isActive).length;
 
-  if (loading) return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center font-black uppercase tracking-tighter">Cleaning the Stage...</div>;
+  if (loading) return <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center font-black uppercase tracking-tighter">Cleaning the Stage...</div>;
 
   return (
     <PageTransition>
