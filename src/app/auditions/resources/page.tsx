@@ -99,7 +99,7 @@ export default function AuditionResources() {
                 </div>
                 
                 <div className="space-y-6">
-                  {monologues.map((mono, idx) => (
+                  {monologues.map((mono: any, idx: number) => (
                     <div key={idx} className="border-2 border-[var(--border-primary)]/20 p-6 rounded-3xl hover:border-[var(--border-primary)] transition-colors">
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-xl font-bold uppercase">{mono.title}</h3>
@@ -128,7 +128,7 @@ export default function AuditionResources() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {breakdowns.map((role, idx) => (
+                  {breakdowns.map((role: any, idx: number) => (
                     <div key={idx} className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] p-5 rounded-2xl shadow-[4px_4px_0px_var(--border-primary)]">
                       <h3 className="font-black uppercase text-lg mb-2">{role.role}</h3>
                       <p className="text-sm text-[var(--text-primary)]/70 font-medium">{role.desc}</p>
@@ -149,7 +149,7 @@ export default function AuditionResources() {
                   <h2 className="text-2xl font-black uppercase tracking-tighter">Director's Tips</h2>
                 </div>
                 <ul className="space-y-4">
-                  {tips.map((tip, idx) => (
+                  {tips.map((tip: string, idx: number) => (
                     <li key={idx} className="flex gap-3 text-sm font-medium">
                       <span className="text-[#FF5F5F] font-black">{'->'}</span>
                       <span className="opacity-90">{tip}</span>
