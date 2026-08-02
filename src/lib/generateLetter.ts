@@ -127,6 +127,7 @@ export const generateSwaangLetter = async (data: any) => {
   doc.text(splitText, 20, currentY, { lineHeightFactor: 1.5 });
   
   // Calculate new Y based on text height
+  // @ts-ignore
   const textDims = doc.getTextDimensions(splitText, { lineHeightFactor: 1.5 });
   currentY += textDims.h + 15;
 
