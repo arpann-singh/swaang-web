@@ -22,13 +22,8 @@ export default function TeamPage() {
     <main className="bg-[var(--bg-primary)] min-h-screen">
       <Header />
       
-      {/* 🔥 NEW: Dynamic Faculty Hero at the top */}
       <div className="pt-32 md:pt-40">
-        <FacultyHero data={facultyData} />
-      </div>
-
-      <div className="pt-10">
-        <Team />
+        <Team facultyData={facultyData} />
       </div>
     </main>
   );

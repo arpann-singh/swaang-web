@@ -1,97 +1,71 @@
 "use client";
+import BrutalistReveal from "@/components/ui/BrutalistReveal";
 import { motion } from "framer-motion";
 
 export default function FacultyHero({ data }: { data: any }) {
   if (!data) return null;
 
-  // These stats are mapped to the sliders we'll add in the admin panel
-  const stats = [
-    { label: "STRATEGIC SUPPORT", value: data.stat1 || 100, color: "#FFD166" },
-    { label: "CREATIVE FREEDOM", value: data.stat2 || 100, color: "#06D6A0" },
-    { label: "INSTITUTIONAL SYNERGY", value: data.stat3 || 85, color: "#FF5F5F" },
-  ];
-
   return (
-    <section className="py-24 px-6 bg-[var(--bg-primary)] relative overflow-hidden border-b-8 border-[var(--border-primary)]">
-      {/* 🔍 THE BLUEPRINT GRID BACKGROUND */}
-      <div 
-        className="absolute inset-0 opacity-[0.05]" 
-        style={{ 
-          backgroundImage: `radial-gradient(#2D2D2D 1px, transparent 1px)`, 
-          backgroundSize: '30px 30px' 
-        }} 
-      />
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-16">
+    <div className="w-full relative z-10 mb-16">
+      <BrutalistReveal direction="up" className="flex flex-col md:flex-row items-stretch gap-8 md:gap-12 bg-white border-8 border-black p-4 md:p-8 shadow-[12px_12px_0px_black] hover:shadow-[16px_16px_0px_#06D6A0] transition-shadow duration-300">
           
-          {/* LEFT: THE ARCHITECTURAL PHOTO */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="w-full lg:w-1/2 relative"
-          >
-            <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-[var(--border-primary)]" />
-            <div className="absolute -bottom-4 -right-4 w-8 h-8 border-b-4 border-r-4 border-[var(--border-primary)]" />
-
-            <div className="bg-white border-4 border-[var(--border-primary)] p-3 shadow-[15px_15px_0px_var(--border-primary)]">
-              <div className="relative group overflow-hidden bg-gray-100 aspect-[4/5] lg:aspect-auto lg:h-[500px]">
-                <img 
-                  src={data.image || "/faculty-placeholder.jpg"} 
-                  alt="Faculty Coordinator" 
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                />
-                <div className="absolute bottom-4 right-4 bg-[#2D2D2D] text-white px-3 py-1 font-mono text-[10px] uppercase tracking-tighter">
-                  ID: SWAANG_FACULTY_Coordinator
-                </div>
+          {/* LEFT: THE COMPACT PHOTO */}
+          <div className="w-full md:w-1/3 lg:w-1/4 shrink-0 relative group">
+            {/* Masking Tape */}
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-24 h-8 bg-white/90 border-2 border-black shadow-sm rotate-3 z-30 flex items-center justify-center">
+                <span className="font-black uppercase tracking-[0.2em] text-[8px] px-2 text-black">
+                   COORDINATOR
+                </span>
+            </div>
+            
+            <div className="relative overflow-hidden bg-gray-100 aspect-square border-4 border-black">
+              <img 
+                src={data.image || "/faculty-placeholder.jpg"} 
+                alt="Faculty Coordinator" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              
+              {/* Typewriter ID Tag */}
+              <div className="absolute -bottom-2 -right-2 bg-black text-white border-4 border-black px-3 py-1 font-mono font-black uppercase text-[9px] tracking-widest shadow-[4px_4px_0px_black] -rotate-3 group-hover:animate-glitch transition-transform cursor-crosshair">
+                ID: {data.role || "FAC_01"}
               </div>
-            </div>
-          </motion.div>
-
-          {/* RIGHT: DYNAMIC SYSTEM SPECS */}
-          <div className="w-full lg:w-1/2 space-y-8">
-            <div>
-              <span className="bg-[#FF5F5F] text-white px-4 py-1 rounded-full font-black uppercase text-[10px] tracking-widest border-2 border-[var(--border-primary)] shadow-[3px_3px_0px_var(--border-primary)]">
-                Faculty Coordinator
-              </span>
-              <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-[var(--text-primary)] leading-[0.85] mt-6 font-cinzel">
-                {data.name || "Prof. Name"}
-              </h2>
-              <p className="font-mono text-sm font-black text-[#FF5F5F] uppercase tracking-widest mt-2">
-                // {data.role || "😎"}
-              </p>
-            </div>
-
-            <p className="text-xl md:text-2xl font-bold text-[var(--text-primary)]/80 leading-tight italic border-l-8 border-[#06D6A0] pl-6">
-              "{data.citation || "Guiding the visionaries of tomorrow."}"
-            </p>
-
-            {/* DYNAMIC PROGRESS BARS */}
-            <div className="space-y-5 bg-white border-4 border-[var(--border-primary)] p-8 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)]">
-              {stats.map((stat, idx) => (
-                <div key={idx} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]/50">{stat.label}</span>
-                    <span className="font-mono text-xs font-black text-[var(--text-primary)]">{stat.value}%</span>
-                  </div>
-                  <div className="h-4 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-full overflow-hidden flex">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${stat.value}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.5, ease: "easeOut", delay: idx * 0.2 }}
-                      style={{ backgroundColor: stat.color }}
-                      className="h-full border-r-2 border-[var(--border-primary)]"
-                    />
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 
-        </div>
-      </div>
-    </section>
+          {/* RIGHT: TEXT & INFO */}
+          <div className="w-full md:w-2/3 lg:w-3/4 flex flex-col justify-center">
+            
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+               <span className="bg-[#FF5F5F] text-black px-3 py-1 border-4 border-black font-black uppercase text-[10px] tracking-[0.2em] shadow-[4px_4px_0px_black] inline-block -rotate-1">
+                 FACULTY COORDINATOR
+               </span>
+               <h4 className="font-mono font-black uppercase text-[10px] tracking-widest text-black/40">Clearance: <span className="text-black">MAXIMUM</span></h4>
+            </div>
+
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-black leading-[0.9] font-cinzel break-words group-hover:text-[#FF5F5F] transition-colors mb-6">
+              {data.name || "Prof. Name"}
+            </h2>
+
+            {/* The Quote Block */}
+            <div className="bg-[#FFD166] border-4 border-black p-4 md:p-6 shadow-[6px_6px_0px_black] relative mt-auto">
+              <div className="absolute -top-4 -left-2 text-5xl text-black font-cinzel opacity-20 rotate-12">"</div>
+              <p className="text-lg md:text-xl font-bold text-black leading-tight font-mono uppercase tracking-tight relative z-10 italic">
+                {data.citation || "Guiding the visionaries of tomorrow."}
+              </p>
+              
+              {/* APPROVED STAMP */}
+              <div className="absolute -bottom-4 -right-4 rotate-[-15deg] opacity-90 pointer-events-none z-30 mix-blend-multiply">
+                <div className="border-4 border-[#E4405F] text-[#E4405F] p-1 bg-white/50 backdrop-blur-sm">
+                  <div className="border-2 border-[#E4405F] px-2 py-1 font-black uppercase tracking-widest text-xs font-mono">
+                    APPROVED
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+      </BrutalistReveal>
+    </div>
   );
 }

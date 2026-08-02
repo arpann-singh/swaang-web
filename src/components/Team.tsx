@@ -4,8 +4,9 @@ import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
+import FacultyHero from "./team/FacultyHero";
 
-export default function Team() {
+export default function Team({ facultyData }: { facultyData?: any }) {
   const [members, setMembers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -255,6 +256,11 @@ export default function Team() {
         </div>
       </div>
 
+      {/* COMPACT FACULTY HERO EMBED */}
+      {facultyData && (
+        <FacultyHero data={facultyData} />
+      )}
+
       {/* COMPACT PREMIUM OVERLAY GRID */}
       {filteredMembers.length === 0 ? (
          <div className="w-full py-32 flex flex-col items-center justify-center border-4 border-dashed border-[var(--border-primary)]/20 bg-black/5 rounded-[3rem]">
@@ -266,81 +272,83 @@ export default function Team() {
            <AnimatePresence>
              {filteredMembers.map((member) => (
                <motion.div
-                 layout
-                 initial={{ opacity: 0, scale: 0.9 }}
-                 animate={{ opacity: 1, scale: 1 }}
-                 exit={{ opacity: 0, scale: 0.9 }}
-                 transition={{ duration: 0.3 }}
-                 key={member.id}
-                 className="group relative aspect-[3/4] bg-[#1A1A1A] border-4 border-[var(--border-primary)] shadow-[8px_8px_0px_var(--border-primary)] hover:-translate-y-2 hover:shadow-[16px_16px_0px_#FF5F5F] transition-all duration-300 rounded-[2rem] overflow-hidden cursor-pointer"
-               >
-                 {/* Background Image */}
-                 {member.image ? (
-                    <img 
-                       src={member.image} 
-                       alt={member.name}
-                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                 ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20">
-                       <span className="text-6xl mb-4">🎭</span>
-                       <span className="font-mono uppercase tracking-[0.2em] text-[10px]">No Photo</span>
-                    </div>
-                 )}
+                   layout
+                   initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                   whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                   viewport={{ once: true, margin: "-50px" }}
+                   transition={{ duration: 0.3 }}
+                   key={member.id}
+                   className={`group relative bg-[#FFF9F0] border-8 border-black p-4 md:p-5 shadow-[8px_8px_0px_black] transition-all hover:-translate-y-2 hover:shadow-[12px_12px_0px_#FF5F5F] flex flex-col h-full ${
+                     ["-rotate-1", "rotate-1", "-rotate-2", "rotate-2"][filteredMembers.indexOf(member) % 4]
+                   }`}
+                 >
+                   {/* Top Category Badge */}
+                   <div className="absolute -top-3 -right-3 z-30 flex items-center justify-center rotate-3 group-hover:rotate-6 transition-transform">
+                      <span className={`border-4 border-black px-3 py-1 font-mono font-black uppercase tracking-[0.2em] text-[10px] shadow-[4px_4px_0px_black] ${
+                         member.category === 'president' ? 'bg-[#FFD166] text-black' : 
+                         member.category === 'active' ? 'bg-[#06D6A0] text-black' : 
+                         'bg-white text-black'
+                      }`}>
+                         {member.category}
+                      </span>
+                   </div>
 
-                 {/* Top Category Badge */}
-                 <div className="absolute top-4 right-4 z-20">
-                    <span className={`px-4 py-1.5 font-black uppercase tracking-widest text-[9px] rounded-full border-2 border-[var(--border-primary)] shadow-[3px_3px_0px_rgba(0,0,0,0.5)] ${
-                       member.category === 'president' ? 'bg-[#FFD166] text-black' : 
-                       member.category === 'active' ? 'bg-[#06D6A0] text-black' : 
-                       'bg-[#94A3B8] text-white'
-                    }`}>
-                       {member.category}
-                    </span>
-                 </div>
+                   {/* POLAROID FRAME */}
+                   <div className="relative mb-4 bg-white border-4 border-black p-2 pb-8 shadow-[4px_4px_0px_black] z-20 shrink-0 transform group-hover:scale-[1.02] group-hover:rotate-1 transition-transform duration-300">
+                     <div className="relative aspect-square w-full border-4 border-black overflow-hidden bg-gray-200">
+                        {member.image ? (
+                           <img 
+                              src={member.image} 
+                              alt={member.name}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                           />
+                        ) : (
+                           <div className="absolute inset-0 flex flex-col items-center justify-center font-mono font-black text-black opacity-30 text-xl uppercase bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)]">
+                              NO ID
+                           </div>
+                        )}
+                     </div>
 
-                 {/* Bottom Overlay Info Panel */}
-                 <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end">
-                    
-                    {/* Primary Info (Always visible, shifts up slightly on hover on desktop) */}
-                    <div className="transform translate-y-0 lg:translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
-                       <h3 className="font-cinzel text-3xl font-black uppercase text-white leading-none tracking-tighter mb-2 group-hover:text-[#06D6A0] transition-colors">
-                          {member.name}
-                       </h3>
-                       <p className="font-mono uppercase tracking-[0.25em] text-white/70 font-black text-[9px] line-clamp-1">
-                          {member.role || 'Ensemble'} {member.branch && <span className="text-white/30">| {member.branch}</span>}
-                       </p>
-                    </div>
+                     {/* Role Tag (Typewriter Tape) */}
+                     <div className="absolute -bottom-4 -left-3 bg-black text-white border-4 border-black px-3 py-1 font-mono font-black uppercase text-[9px] tracking-widest shadow-[4px_4px_0px_black] z-40 -rotate-3 group-hover:-rotate-6 transition-transform">
+                       {member.role || 'ENSEMBLE'}
+                     </div>
+                   </div>
 
-                    {/* Secondary Info (Always visible on mobile, slides in on hover on desktop) */}
-                    <div className="opacity-100 max-h-[50px] lg:opacity-0 lg:max-h-0 group-hover:max-h-[50px] group-hover:opacity-100 transition-all duration-300 ease-in-out mt-3 border-t-2 border-white/10 pt-3 flex justify-between items-center">
-                       
-                       {/* Timeline */}
-                       <div className="flex gap-2">
-                          {member.joiningYear && (
-                             <span className="text-[9px] font-black uppercase text-white/90 bg-white/10 px-2 py-1 rounded backdrop-blur-md">IN: {member.joiningYear}</span>
-                          )}
-                          {member.passoutYear && (
-                             <span className="text-[9px] font-black uppercase text-white/50 bg-white/5 px-2 py-1 rounded backdrop-blur-md">OUT: {member.passoutYear}</span>
-                          )}
-                       </div>
+                   {/* INFO SECTION */}
+                   <div className="flex flex-col flex-1 bg-white border-4 border-black p-3 md:p-4 shadow-[4px_4px_0px_black] relative z-10 mt-1">
+                     <h3 className="font-cinzel text-base md:text-lg xl:text-xl font-black uppercase text-black leading-[1.1] tracking-tighter mb-3 border-b-4 border-black pb-3 group-hover:text-[#FF5F5F] transition-colors break-words">
+                        {member.name}
+                     </h3>
+                     
+                     <div className="flex flex-wrap items-end gap-2 mt-auto pt-1 pb-1">
+                        {member.branch && (
+                           <span className="bg-[#FFF9F0] text-black border-2 border-black px-2 py-1 font-mono font-black text-[9px] md:text-[10px] uppercase shadow-[2px_2px_0px_black]">
+                              {member.branch}
+                           </span>
+                        )}
+                        <span className="bg-[#06D6A0] text-black border-2 border-black px-2 py-1 font-mono font-black text-[9px] md:text-[10px] uppercase shadow-[2px_2px_0px_black]">
+                           {member.joiningYear ? `IN: ${member.joiningYear}` : 'UNKNOWN YR'}
+                        </span>
+                     </div>
+                   </div>
 
-                       {/* Socials */}
-                       <div className="flex gap-3">
-                          {member.instagram && (
-                             <a href={member.instagram} target="_blank" className="text-white hover:text-[#E4405F] hover:scale-110 transition-transform">
-                               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                             </a>
-                          )}
-                          {member.linkedin && (
-                             <a href={member.linkedin} target="_blank" className="text-white hover:text-[#0077B5] hover:scale-110 transition-transform">
-                                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                             </a>
-                          )}
-                       </div>
-                    </div>
-                 </div>
-               </motion.div>
+                   {/* SOCIALS STAMP */}
+                   {(member.instagram || member.linkedin) && (
+                     <div className="absolute -right-4 -bottom-4 bg-[#FFD166] border-4 border-black p-2 flex gap-2 shadow-[4px_4px_0px_black] rotate-3 z-30 group-hover:rotate-6 transition-transform">
+                        {member.instagram && (
+                           <a href={member.instagram} target="_blank" className="bg-white border-2 border-black p-1 text-black hover:bg-[#E4405F] hover:text-white shadow-[2px_2px_0px_black] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                           </a>
+                        )}
+                        {member.linkedin && (
+                           <a href={member.linkedin} target="_blank" className="bg-white border-2 border-black p-1 text-black hover:bg-[#0077B5] hover:text-white shadow-[2px_2px_0px_black] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                           </a>
+                        )}
+                     </div>
+                   )}
+                 </motion.div>
              ))}
            </AnimatePresence>
          </div>
