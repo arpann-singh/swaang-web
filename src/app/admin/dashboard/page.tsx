@@ -117,25 +117,25 @@ export default function AdminDashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center font-black uppercase tracking-widest text-[var(--text-primary)]">
-        <div className="w-12 h-12 border-8 border-black border-t-[#06D6A0] rounded-full animate-spin mb-4" />
-        Verifying Session...
+      <div className="min-h-screen bg-[#2D2D2D] flex flex-col items-center justify-center font-mono font-black uppercase tracking-widest text-[#FFF9F0]">
+        <div className="text-[#FF5F5F] text-4xl mb-4 animate-pulse">🔒</div>
+        // SYS.AUTH.VERIFYING... //
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center font-black uppercase tracking-widest text-[var(--text-primary)]">
-        <div className="w-12 h-12 border-8 border-black border-t-[#FF5F5F] rounded-full animate-spin mb-4" />
-        Syncing Dashboard...
+      <div className="min-h-screen bg-[#2D2D2D] flex flex-col items-center justify-center font-mono font-black uppercase tracking-widest text-[#FFF9F0]">
+        <div className="w-12 h-12 border-8 border-black border-t-[#06D6A0] animate-spin mb-4 shadow-[4px_4px_0px_black]" />
+        // SYS.SYNCING.DASHBOARD... //
       </div>
     );
   }
 
   return (
     /* 🔥 CHANGE: flex-col for mobile, flex-row for desktop */
-    <div className="flex flex-col xl:flex-row h-screen w-full bg-[var(--bg-primary)] overflow-hidden font-sans text-[var(--text-primary)]">
+    <div className="flex flex-col xl:flex-row h-screen w-full bg-[#2D2D2D] overflow-hidden font-sans text-white">
       
       <CommandPalette 
         onJump={handleJump} 
@@ -146,39 +146,39 @@ export default function AdminDashboard() {
       />
 
       {/* 📱💻 FIXED SIDEBAR / HEADER */}
-      {/* 🔥 CHANGE: h-auto on mobile, h-full on desktop */}
-      <aside className="w-full xl:w-72 bg-white border-b-4 xl:border-b-0 xl:border-r-4 border-[var(--border-primary)] flex flex-col shrink-0 h-auto xl:h-full relative z-50 shadow-[4px_0px_0px_rgba(0,0,0,0.05)] text-left">
+      {/* 🔥 NEO-BRUTALIST SIDEBAR */}
+      <aside className="w-full xl:w-72 bg-[#FFD166] border-b-8 xl:border-b-0 xl:border-r-8 border-black flex flex-col shrink-0 h-auto xl:h-full relative z-50 text-black shadow-[8px_0px_0px_black] xl:shadow-[16px_0px_0px_black]">
         
-        <div className="p-4 xl:p-8 pb-3 xl:pb-0 flex justify-between items-center xl:items-start xl:flex-col">
+        <div className="p-4 xl:p-8 pb-3 xl:pb-0 flex justify-between items-center xl:items-start xl:flex-col border-b-4 xl:border-b-0 border-black xl:mb-6">
           <div className="flex flex-col text-left">
-            <h2 className="font-cinzel text-2xl xl:text-4xl font-black tracking-tighter uppercase leading-none">SWAANG</h2>
-            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-[#FF5F5F] mt-1">Admin Control</p>
+            <h2 className="font-cinzel text-3xl xl:text-5xl font-black tracking-tighter uppercase leading-none" style={{ WebkitTextStroke: '1px black' }}>SWAANG</h2>
+            <p className="text-[10px] font-mono font-black uppercase tracking-[0.2em] bg-black text-[#06D6A0] inline-block px-2 py-1 mt-2 border-2 border-black border-dashed">SYS.ADMIN</p>
           </div>
 
           {/* 🔥 Mobile Controls: Added Terminal Trigger Icon */}
           <div className="flex items-center gap-3 xl:hidden">
             <button 
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-              className="p-3 border-4 border-[var(--border-primary)] rounded-xl bg-[#FFD166] shadow-[2px_2px_0px_var(--border-primary)] active:translate-y-0.5 active:shadow-none transition-all"
+              className="p-3 border-4 border-black bg-white shadow-[4px_4px_0px_black] active:translate-y-1 active:shadow-[2px_2px_0px_black] transition-all"
               aria-label="Open Terminal"
             >
-              <Search size={18} strokeWidth={3} />
+              <Search size={18} strokeWidth={4} />
             </button>
-            <button onClick={() => signOut(auth)} className="px-4 py-2.5 border-4 border-[var(--border-primary)] rounded-xl font-black uppercase text-[10px] bg-red-100 text-red-600 shadow-[2px_2px_0px_var(--border-primary)] active:translate-y-0.5 active:shadow-none transition-all">
-              Sign Out
+            <button onClick={() => signOut(auth)} className="px-4 py-2 border-4 border-black font-black uppercase text-[10px] bg-[#FF5F5F] text-white shadow-[4px_4px_0px_black] active:translate-y-1 active:shadow-[2px_2px_0px_black] transition-all">
+              Log Out
             </button>
           </div>
         </div>
 
-        <nav className="flex flex-row xl:flex-col gap-2 xl:gap-3 px-4 xl:px-8 pb-4 xl:pb-6 mt-6 xl:mt-10 overflow-x-auto xl:overflow-y-auto no-scrollbar items-center xl:items-stretch whitespace-nowrap w-full flex-1">
+        <nav className="flex flex-row xl:flex-col gap-3 px-4 xl:px-6 pb-4 xl:pb-6 mt-4 xl:mt-0 overflow-x-auto xl:overflow-y-auto no-scrollbar items-center xl:items-stretch whitespace-nowrap w-full flex-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleJump(tab.id)}
-              className={`shrink-0 px-4 py-2.5 xl:p-4 rounded-xl xl:rounded-2xl border-2 xl:border-4 border-[var(--border-primary)] font-black uppercase text-[10px] xl:text-[11px] transition-all duration-200 ${
+              className={`shrink-0 px-4 py-3 xl:p-4 border-4 border-black font-black uppercase text-[10px] xl:text-xs transition-all duration-200 ${
                 activeTab === tab.id 
-                ? `${tab.color} text-white shadow-[3px_3px_0px_var(--border-primary)] xl:shadow-[6px_6px_0px_var(--border-primary)] -translate-y-0.5 xl:-translate-y-1` 
-                : "bg-white shadow-[2px_2px_0px_var(--border-primary)] xl:shadow-[4px_4px_0px_var(--border-primary)] hover:bg-gray-50"
+                ? `${tab.color} text-black shadow-none translate-y-1` 
+                : "bg-white shadow-[6px_6px_0px_black] hover:bg-gray-100 hover:translate-y-1 hover:shadow-[2px_2px_0px_black]"
               }`}
             >
               {tab.label}
@@ -188,16 +188,15 @@ export default function AdminDashboard() {
           ))}
         </nav>
         
-        <div className="p-8 mt-auto hidden xl:block border-t-4 border-[var(--border-primary)]/5">
-            <button onClick={() => signOut(auth)} className="w-full p-4 border-4 border-[var(--border-primary)] rounded-xl font-black uppercase text-[9px] bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-all shadow-[4px_4px_0px_var(--border-primary)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
-            Secure Sign Out
+        <div className="p-8 mt-auto hidden xl:block border-t-8 border-black">
+            <button onClick={() => signOut(auth)} className="w-full p-4 border-4 border-black font-black uppercase text-xs bg-white text-black hover:bg-[#FF5F5F] hover:text-white transition-all shadow-[6px_6px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-1 hover:translate-y-1">
+            SECURE SIGN OUT
             </button>
         </div>
       </aside>
 
       {/* 🚀 MAIN CONTENT AREA */}
-      {/* 🔥 CHANGE: Added bg-[var(--bg-primary)] and ensured vertical height behaves correctly */}
-      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-12 custom-scrollbar bg-[var(--bg-primary)]">
+      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-12 custom-scrollbar bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] text-black">
         <AnimatePresence mode="wait">
           <motion.div 
             key={activeTab} 

@@ -51,7 +51,8 @@ export default function Header() {
         }}
         animate="visible"
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-2 md:top-6 left-0 right-0 z-[100] px-3 md:px-8 pointer-events-none"
+        className="fixed top-2 md:top-6 left-0 right-0 z-[100] px-3 md:px-8 pointer-events-none transition-all duration-300"
+        style={{ marginTop: 'var(--ticker-height, 0px)' }}
       >
         <div className="w-full max-w-[98%] md:max-w-[95%] xl:max-w-7xl mx-auto flex flex-col items-center pointer-events-auto">
           

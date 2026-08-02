@@ -70,3 +70,45 @@
   align-items: center;
 }
 
+/* ------------------------------------- */
+/* 🔳 GLOBAL NEO-BRUTALIST SCROLLBARS    */
+/* ------------------------------------- */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FFF9F0;
+  border-left: 4px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FF5F5F;
+  border: 4px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #06D6A0;
+}
+
+/* Specific scoping for containers asking for it explicitly */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #FFF9F0;
+  border-left: 4px solid #000;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #06D6A0;
+  border: 4px solid #000;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #FF5F5F;
+}
+

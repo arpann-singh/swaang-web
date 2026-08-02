@@ -5,22 +5,12 @@ export default function FacultyBlueprint() {
   return (
     <section className="py-28 px-6 bg-[var(--bg-primary)] relative overflow-hidden border-y-8 border-[var(--border-primary)]">
       
-      {/* 🎭 THE PREMIUM TEXTURE & OVERLAYS */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/linen.png')]" />
-      
-      {/* 🏛️ BACKGROUND KINETIC TEXT (Authorize the Stage) */}
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap opacity-[0.02] select-none pointer-events-none">
-        <motion.h2 
-          animate={{ x: [0, -1000] }}
-          transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
-          className="text-[25vw] font-black uppercase leading-none"
-        >
-          FOUNDING_MENTOR • FOUNDER'S_VISION • PILLAR • FOUNDING_MENTOR •
-        </motion.h2>
+      {/* 🏛️ BACKGROUND KINETIC TEXT -> HARSH RED STAMP */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden opacity-[0.03] z-0">
+        <h2 className="text-[20vw] font-black uppercase leading-none whitespace-nowrap text-[#FF5F5F] border-[2vw] border-[#FF5F5F] p-8 -rotate-12">
+          APPROVED
+        </h2>
       </div>
-
-      {/* Dynamic Lighting effect from the top left (Spotlight Lens) */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_15%_15%,_rgba(255,255,255,0.4)_0%,_transparent_70%)] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
@@ -32,23 +22,25 @@ export default function FacultyBlueprint() {
             viewport={{ once: true }}
             className="w-full lg:w-5/12 relative"
           >
-            {/* Architectural Blueprint Markers */}
-            <div className="absolute -top-4 -left-4 w-10 h-10 border-t-4 border-l-4 border-[var(--border-primary)]" />
-            <div className="absolute -top-4 -right-4 w-10 h-10 border-t-4 border-r-4 border-[var(--border-primary)]" />
-            <div className="absolute -bottom-4 -left-4 w-10 h-10 border-b-4 border-l-4 border-[var(--border-primary)]" />
-            <div className="absolute -bottom-4 -right-4 w-10 h-10 border-b-4 border-r-4 border-[var(--border-primary)]" />
+            {/* Architectural Blueprint Markers -> Brutalist Crosshairs */}
+            <div className="absolute -top-8 -left-8 w-16 h-16 border-t-8 border-l-8 border-black z-20" />
+            <div className="absolute -bottom-8 -right-8 w-16 h-16 border-b-8 border-r-8 border-black z-20" />
 
-            <div className="bg-white border-4 md:border-8 border-[var(--border-primary)] p-2 md:p-3 shadow-[8px_8px_0px_var(--border-primary)] md:shadow-[20px_20px_0px_var(--border-primary)]">
-              <div className="relative group overflow-hidden h-[380px] md:h-[550px]">
+            <div className="bg-white border-8 border-black p-4 md:p-6 shadow-[16px_16px_0px_black] relative">
+              {/* CSS Masking Tape */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-10 bg-[#FFF9F0] border-4 border-black/10 shadow-[2px_2px_0px_rgba(0,0,0,0.1)] -rotate-3 z-30 opacity-90 mix-blend-multiply" />
+              <div className="absolute -bottom-4 right-10 w-24 h-10 bg-[#FFF9F0] border-4 border-black/10 shadow-[2px_2px_0px_rgba(0,0,0,0.1)] rotate-6 z-30 opacity-90 mix-blend-multiply" />
+
+              <div className="relative group overflow-hidden h-[380px] md:h-[550px] border-4 border-black bg-gray-100">
                 <img 
                   src="/faculty-backbone.jpg" // 📸 REPLACE WITH ACTUAL IMAGE
                   alt="Faculty Backbone" 
-                  className="w-full h-full object-cover grayscale-0 hover:grayscale transition-all duration-700"
+                  className="w-full h-full object-cover grayscale-0 group-hover:grayscale transition-all duration-700"
                 />
                 
                 {/* ID Overlay (Pillar of Swaang) */}
-                <div className="absolute bottom-4 right-4 bg-[#2D2D2D] text-white px-3 py-1 font-mono text-[10px] uppercase tracking-tighter shadow-sm">
-                  LOC: BackBone of SWAANG
+                <div className="absolute bottom-4 right-4 bg-black text-[#06D6A0] border-4 border-black px-4 py-2 font-mono font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#06D6A0]">
+                  LOC: CHIEF_MENTOR
                 </div>
               </div>
             </div>
@@ -71,35 +63,41 @@ export default function FacultyBlueprint() {
           {/* RIGHT SIDE: THE EXECUTIVE SPECIFICATIONS */}
           <div className="w-full lg:w-7/12 space-y-10">
             <div>
-              <p className="font-mono text-[#FF5F5F] font-black uppercase tracking-[0.3em] text-xs mb-2">
-                // EXECUTIVE_FOUNDATION // SINCE_2014
+              <p className="bg-[#FF5F5F] text-black border-4 border-black font-mono font-black uppercase tracking-[0.3em] text-xs px-4 py-1.5 shadow-[4px_4px_0px_black] inline-block mb-6">
+                // EXECUTIVE_FOUNDATION //
               </p>
               
-              <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-[var(--text-primary)] leading-[0.85]">
-                The <br />
-                <span className="underline decoration-[#FF5F5F] decoration-8 underline-offset-4">Backbone</span>
+              <h2 className="text-7xl md:text-8xl font-black uppercase tracking-tighter text-black leading-[0.85]">
+                THE <br />
+                <span className="text-[#06D6A0]" style={{ WebkitTextStroke: '3px black' }}>BACKBONE</span>
               </h2>
 
               {/* 🔥 NEW: LARGE, READABLE AUTHORITATIVE NAME (The main update) */}
               <motion.h4 
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                className="text-3xl md:text-4xl font-black uppercase tracking-widest text-[var(--text-primary)] mt-8 leading-tight relative"
+                className="text-3xl md:text-4xl font-mono font-black uppercase tracking-widest text-black mt-10 leading-tight relative bg-[#FFD166] border-4 border-black p-4 shadow-[8px_8px_0px_black] inline-block w-full max-w-xl"
               >
-                Prof. Namrata Bhargava
-                <span className="font-playfair text-xl italic font-light text-[#FFD166]/40 absolute top-4 -left-4 z-0">Founder's Vision</span>
+                PROF. NAMRATA BHARGAVA
+                <span className="font-black text-sm block mt-2 text-[#FF5F5F]">FOUNDER'S VISION</span>
               </motion.h4>
-              <p className="font-mono text-[11px] font-black uppercase tracking-[0.2em] text-[#FF5F5F]">Chief Mentor & Faculty Coordinator</p>
             </div>
 
             {/* 🔥 NEW: PURE TRIBUTE QUOTE (Stats removed) */}
-            <p className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]/90 leading-relaxed italic border-l-8 border-[#06D6A0] pl-6 max-w-2xl">
-              "Every standing ovation is a testament to the structure that holds the stage. Swaang exists because of your unwavering support, your strategic vision, and your timeless mentorship. You believed in us before the curtain rose — and that belief made all the difference."
-            </p>
+            <div className="relative bg-white border-8 border-black p-8 shadow-[12px_12px_0px_black] mt-12 max-w-2xl">
+              <div className="absolute -top-6 -left-6 bg-[#FF5F5F] border-4 border-black w-12 h-12 flex items-center justify-center shadow-[4px_4px_0px_black]">
+                <span className="font-mono font-black text-2xl text-white">"</span>
+              </div>
+              <p className="text-lg md:text-xl font-mono font-bold text-black leading-relaxed">
+                EVERY STANDING OVATION IS A TESTAMENT TO THE STRUCTURE THAT HOLDS THE STAGE. SWAANG EXISTS BECAUSE OF YOUR UNWAVERING SUPPORT, YOUR STRATEGIC VISION, AND YOUR TIMELESS MENTORSHIP. YOU BELIEVED IN US BEFORE THE CURTAIN ROSE — AND THAT BELIEF MADE ALL THE DIFFERENCE.
+              </p>
+            </div>
 
             {/* AUTHORIZATION CREDENTIAL */}
-            <div className="pt-8 flex items-center gap-6 border-t-4 border-dashed border-[var(--border-primary)]/10 text-center">
-                 <p className="font-black text-[10px] uppercase tracking-widest opacity-40">With deepest gratitude for engineering the stage.</p>
+            <div className="pt-8 flex items-center gap-6 border-t-8 border-black text-center mt-12">
+                 <p className="font-mono font-black text-xs uppercase tracking-widest text-black bg-[#06D6A0] border-4 border-black px-4 py-2 shadow-[4px_4px_0px_black]">
+                   WITH DEEPEST GRATITUDE FOR ENGINEERING THE STAGE.
+                 </p>
             </div>
           </div>
 

@@ -5,30 +5,30 @@ export default function Spotlight({ aotm }: { aotm: any }) {
   if (!aotm) return null;
 
   return (
-    <section className="py-24 md:py-40 px-6 bg-[#FFD166] border-b-[12px] border-[var(--border-primary)] relative overflow-hidden flex flex-col justify-center min-h-screen">
+    <section className="py-24 md:py-40 px-6 bg-transparent border-b-8 border-black relative overflow-hidden flex flex-col justify-center min-h-screen">
       
       {/* 🌪️ MULTI-ROW KINETIC MARQUEE BACKGROUND */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-12 opacity-[0.04] select-none pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 flex flex-col justify-center gap-16 opacity-[0.03] select-none pointer-events-none overflow-hidden">
         <motion.h2 
           animate={{ x: [0, -2000] }}
           transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="text-[20vw] font-black uppercase leading-none whitespace-nowrap"
+          className="text-[15vw] font-black font-mono uppercase leading-none whitespace-nowrap"
         >
-          {aotm.name} • {aotm.name} • {aotm.name} • {aotm.name} • {aotm.name}
+          PROTAGONIST // PROTAGONIST // PROTAGONIST // PROTAGONIST
         </motion.h2>
         <motion.h2 
           animate={{ x: [-2000, 0] }}
           transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-          className="text-[20vw] font-black uppercase leading-none whitespace-nowrap"
+          className="text-[15vw] font-black font-mono uppercase leading-none whitespace-nowrap"
         >
-          {aotm.name} • {aotm.name} • {aotm.name} • {aotm.name} • {aotm.name}
+          LEAD // LEAD // LEAD // LEAD // LEAD // LEAD
         </motion.h2>
         <motion.h2 
           animate={{ x: [0, -2000] }}
           transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
-          className="text-[20vw] font-black uppercase leading-none whitespace-nowrap"
+          className="text-[15vw] font-black font-mono uppercase leading-none whitespace-nowrap"
         >
-          {aotm.name} • {aotm.name} • {aotm.name} • {aotm.name} • {aotm.name}
+          PROTAGONIST // PROTAGONIST // PROTAGONIST // PROTAGONIST
         </motion.h2>
       </div>
 
@@ -68,48 +68,48 @@ export default function Spotlight({ aotm }: { aotm: any }) {
           viewport={{ once: true }}
           className="w-full lg:w-8/12 relative z-20 lg:-ml-20 lg:mt-32"
         >
-          <div className="bg-[#2D2D2D] text-[#FFF9F0] border-4 md:border-8 border-black p-8 md:p-12 shadow-[8px_8px_0px_#06D6A0] md:shadow-[16px_16px_0px_#06D6A0]">
+          <div className="bg-white text-black border-8 border-black p-8 md:p-12 shadow-[16px_16px_0px_#06D6A0] font-mono">
             
-            <div className="flex items-center justify-between mb-8 border-b-4 border-dashed border-[#FFF9F0]/20 pb-6">
-              <span className="bg-[#FF5F5F] text-white px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.4em] border-2 border-black shadow-[2px_2px_0px_black]">
-                Hall of Fame
+            <div className="flex items-center justify-between mb-8 border-b-4 border-dashed border-black pb-6">
+              <span className="bg-black text-[#06D6A0] px-4 py-2 text-xs font-black uppercase tracking-[0.4em]">
+                STAGE_MANAGER // SYS.PROFILE.LOADED
               </span>
-              <span className="font-mono text-xs opacity-50 uppercase tracking-widest hidden sm:inline-block">
-                // SYS.PROFILE.LOADED
+              <span className="font-mono font-bold text-xs uppercase tracking-widest hidden sm:inline-block animate-pulse text-[#FF5F5F]">
+                [ RECORDING ]
               </span>
             </div>
 
             {/* The Name */}
-            <h2 className="text-5xl sm:text-6xl md:text-[5.5rem] font-black uppercase leading-[0.85] tracking-tighter mb-8 break-words">
+            <h2 className="text-5xl sm:text-6xl md:text-[5.5rem] font-black uppercase leading-[0.85] tracking-tighter mb-8 break-words text-black">
               {aotm.name.split(' ')[0]} <br />
-              <span className="text-transparent" style={{ WebkitTextStroke: '2px #FFF9F0' }}>
+              <span className="text-[#FF5F5F] underline decoration-8 underline-offset-8 decoration-black">
                  {aotm.name.split(' ').slice(1).join(' ')}
               </span>
             </h2>
 
             {/* The Quote */}
             <div className="relative pl-6 border-l-8 border-[#06D6A0] mb-12">
-              <p className="text-xl md:text-3xl italic font-bold leading-tight tracking-tight text-[#FFF9F0]/90">
+              <p className="text-xl md:text-3xl font-bold leading-tight tracking-tight text-black">
                 "{aotm.citation || "Defining the future of theater."}"
               </p>
             </div>
 
             {/* The Stats Grid (Monospace Terminal Look) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t-4 border-[#FFF9F0]/10 font-mono">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t-4 border-black border-dashed">
               <div className="space-y-3">
-                <h4 className="font-black uppercase text-[10px] text-[#FF5F5F] tracking-widest">
+                <h4 className="font-black uppercase text-xs text-white tracking-widest bg-black px-2 py-1 inline-block border-2 border-black">
                   &gt; KEY_ACHIEVEMENT
                 </h4>
-                <p className="font-bold text-sm md:text-base leading-relaxed text-[#FFF9F0]/80">
+                <p className="font-bold text-sm md:text-base leading-relaxed text-black">
                   {aotm.achievement || "N/A"}
                 </p>
               </div>
               
               <div className="space-y-3">
-                <h4 className="font-black uppercase text-[10px] text-[#06D6A0] tracking-widest">
+                <h4 className="font-black uppercase text-xs text-black tracking-widest bg-[#FFD166] px-2 py-1 inline-block border-2 border-black shadow-[2px_2px_0px_black]">
                   &gt; CORE_IMPACT
                 </h4>
-                <p className="font-bold text-sm md:text-base leading-relaxed text-[#FFF9F0]/80">
+                <p className="font-bold text-sm md:text-base leading-relaxed text-black">
                   {aotm.impact || "N/A"}
                 </p>
               </div>
@@ -119,9 +119,9 @@ export default function Spotlight({ aotm }: { aotm: any }) {
             <div className="pt-12 flex flex-col sm:flex-row gap-4">
                <a 
                  href={aotm.link || "#"} 
-                 className="flex-1 bg-[#FFF9F0] text-black border-4 border-black px-8 py-4 text-center font-black uppercase text-xs md:text-sm tracking-widest hover:bg-[#FFD166] hover:-translate-y-1 hover:shadow-[6px_6px_0px_black] active:translate-y-0 active:shadow-none transition-all"
+                 className="flex-1 bg-black text-white border-4 border-black px-8 py-4 text-center font-black uppercase text-sm tracking-widest hover:bg-[#FFD166] hover:text-black hover:shadow-[4px_4px_0px_black] transition-all"
                >
-                 View Full Archive →
+                 [ VIEW_FULL_ARCHIVE ]
                </a>
             </div>
 

@@ -8,6 +8,7 @@ import { collection, query, where, onSnapshot, doc } from "firebase/firestore";
 export default function Hero({ data, activeNoticesCount = 0 }: { data: any, activeNoticesCount?: number }) {
   const [activeNotice, setActiveNotice] = useState<any>(null);
   const [isAuditionLive, setIsAuditionLive] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
     // Listen for active notices
@@ -39,106 +40,139 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
   const tagline = data?.headerTagline || "We tell stories that matter. Join the revolution of art and expression at SSTC.";
 
   return (
-    <section className="relative min-h-[100dvh] w-full bg-brand-bg flex flex-col items-center justify-center overflow-hidden z-40 selection:bg-[#FF5F5F] selection:text-white pt-24 pb-12 px-4 md:px-8">
+    <section 
+      className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center overflow-hidden z-40 selection:bg-[#FF5F5F] selection:text-white pt-32 md:pt-40 pb-12 px-4 md:px-8 bg-transparent"
+      onMouseMove={(e) => {
+        const { currentTarget, clientX, clientY } = e;
+        const { left, top, width, height } = currentTarget.getBoundingClientRect();
+        const x = ((clientX - left) / width) * 100;
+        const y = ((clientY - top) / height) * 100;
+        setMousePos({ x, y });
+      }}
+    >
+      
+      {/* 🔦 STAGE SPOTLIGHT MASK */}
+      <div 
+        className="absolute inset-0 z-50 pointer-events-none mix-blend-overlay transition-opacity duration-300 hidden md:block"
+        style={{
+          background: `radial-gradient(circle 400px at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.15) 0%, transparent 80%)`
+        }}
+      />
       
       {/* NEO-BRUTALIST GRID CONTAINER */}
       <motion.div 
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full max-w-7xl mx-auto border-[3px] border-brand-border bg-brand-bg shadow-[6px_6px_0px_#2D2D2D] md:shadow-[12px_12px_0px_#2D2D2D] rounded-3xl flex flex-col mt-12 md:mt-8"
+        className="w-full max-w-7xl mx-auto border-8 border-black shadow-[12px_12px_0px_#2D2D2D] flex flex-col mt-12 md:mt-8 bg-transparent"
       >
         
         {/* TOP BAR / ALERTS */}
-        <div className="w-full border-b-[3px] border-brand-border flex items-center justify-between px-6 py-4 bg-white rounded-t-[1.3rem]">
-          <div className="flex items-center gap-3">
-             <div className="w-4 h-4 bg-[#FF5F5F] rounded-full border-[2px] border-brand-border animate-pulse" />
-             <span className="font-black uppercase tracking-widest text-[10px] md:text-xs text-brand-text">
-               {activeNoticesCount > 0 ? getNoticeText() : "ALL SYSTEMS NOMINAL"}
-             </span>
+        <div className="w-full border-b-8 border-black flex items-center justify-between px-6 py-4 bg-white overflow-hidden">
+          <div className="flex items-center gap-4 whitespace-nowrap overflow-hidden relative w-full md:w-auto">
+             <div className="w-6 h-6 bg-[#FF5F5F] border-4 border-black shadow-[2px_2px_0px_black] animate-pulse flex items-center justify-center font-black text-[10px] text-white shrink-0 z-10">!</div>
+             
+             {activeNoticesCount > 0 ? (
+               <span className="font-mono font-black uppercase tracking-[0.2em] text-xs md:text-sm text-black">
+                 {getNoticeText()}
+               </span>
+             ) : (
+               <div className="flex w-full overflow-hidden" style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}>
+                 <motion.div 
+                   animate={{ x: ["0%", "-50%"] }}
+                   transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                   className="flex font-mono font-black uppercase tracking-[0.2em] text-xs md:text-sm text-black whitespace-nowrap"
+                 >
+                   <span className="pr-4">ALL SYSTEMS NOMINAL // PREPARING FOR ACT I // STANDBY //</span>
+                   <span className="pr-4">ALL SYSTEMS NOMINAL // PREPARING FOR ACT I // STANDBY //</span>
+                 </motion.div>
+               </div>
+             )}
           </div>
-          <div className="hidden md:block font-bold text-xs uppercase tracking-widest text-brand-text">
+          <div className="hidden md:block font-mono font-black text-xs uppercase tracking-widest text-black">
             EST. 2014 // SSTC
           </div>
         </div>
 
         {/* MAIN TITLE AREA */}
-        <div className="w-full py-16 md:py-24 px-4 flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div className="w-full py-16 md:py-24 px-4 flex flex-col items-center justify-center text-center relative overflow-hidden bg-[#FFF9F0]">
           
-          {/* THEATER MASKS PATTERN BACKGROUND */}
-          <div className="absolute inset-0 z-0 opacity-[0.06] pointer-events-none">
-            <svg width="100%" height="100%">
-              <defs>
-                <pattern id="theater-pattern" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
-                  {/* Comedy Mask (Happy) */}
-                  <g transform="translate(20, 20) scale(2) rotate(-15 12 12)" fill="none" stroke="#2D2D2D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 12c0 5.5 4.5 10 10 10s10-4.5 10-10S17.5 2 12 2 2 6.5 2 12Z"/>
-                    <path d="M8 11h.01"/><path d="M16 11h.01"/><path d="M9 16a5 5 0 0 0 6 0"/>
-                  </g>
-                  {/* Tragedy Mask (Sad) */}
-                  <g transform="translate(80, 80) scale(2) rotate(15 12 12)" fill="none" stroke="#2D2D2D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 12c0 5.5 4.5 10 10 10s10-4.5 10-10S17.5 2 12 2 2 6.5 2 12Z"/>
-                    <path d="M8 11h.01"/><path d="M16 11h.01"/><path d="M9 16a5 5 0 0 1 6 0"/>
-                  </g>
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#theater-pattern)" />
-            </svg>
+          {/* THEATRICAL MARQUEE WATERMARK */}
+          <div className="absolute inset-0 z-0 pointer-events-none flex flex-col justify-center gap-8 opacity-[0.03] overflow-hidden -rotate-6 scale-110">
+            <h1 className="text-[12vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter">
+              HOUSE OPEN // CURTAIN RAISES // HOUSE OPEN // CURTAIN RAISES
+            </h1>
+            <h1 className="text-[12vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter -ml-32">
+              QUIET ON SET // ACTION // QUIET ON SET // ACTION
+            </h1>
           </div>
           
-          <motion.h1 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
-            className="font-black text-[16vw] md:text-[14rem] leading-[0.8] tracking-tighter text-brand-text uppercase relative z-10"
-          >
-            SWAANG
-          </motion.h1>
+          <div className="flex z-10">
+            {"SWAANG".split("").map((char, index) => (
+              <motion.h1 
+                key={index}
+                initial={{ opacity: 0, y: -100, rotateX: 90 }}
+                animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                transition={{ 
+                  delay: 0.2 + (index * 0.1), 
+                  type: "spring", 
+                  stiffness: 150, 
+                  damping: 10,
+                  mass: 2
+                }}
+                className="font-black text-[16vw] md:text-[14rem] leading-[0.8] tracking-tighter text-brand-text uppercase origin-bottom"
+              >
+                {char}
+              </motion.h1>
+            ))}
+          </div>
           
           <motion.div 
             initial={{ opacity: 0, rotate: -10, scale: 0.5 }}
             animate={{ opacity: 1, rotate: -2, scale: 1 }}
             transition={{ delay: 0.5, type: "spring", stiffness: 200, damping: 12 }}
-            className="mt-6 md:mt-8 px-6 md:px-10 py-2 md:py-3 bg-[#FF5F5F] border-[3px] border-brand-border rounded-full transform -rotate-2 shadow-[6px_6px_0px_#2D2D2D] relative z-20"
+            className="mt-6 md:mt-8 px-8 py-3 bg-[#FF5F5F] border-8 border-black transform -rotate-2 shadow-[8px_8px_0px_black] relative z-20"
           >
-            <span className="font-black text-xl md:text-4xl uppercase tracking-widest text-white drop-shadow-[2px_2px_0px_#2D2D2D]">
-              The Drama Club
+            <span className="font-mono font-black text-xl md:text-3xl uppercase tracking-widest text-black">
+              THE DRAMA CLUB
             </span>
           </motion.div>
         </div>
 
         {/* BOTTOM ACTION ROW */}
-        <div className="w-full border-t-[3px] border-brand-border grid grid-cols-1 md:grid-cols-3 rounded-b-[1.3rem] overflow-hidden">
+        <div className="w-full border-t-8 border-black grid grid-cols-1 md:grid-cols-3 overflow-hidden">
           
           {/* Tagline */}
-          <div className="p-6 md:p-8 border-b-[3px] md:border-b-0 md:border-r-[3px] border-brand-border flex items-center justify-center md:justify-start bg-white relative z-20">
-            <p className="font-bold text-xs md:text-sm leading-relaxed uppercase text-brand-text text-center md:text-left">
+          <div className="p-6 md:p-8 border-b-8 md:border-b-0 md:border-r-8 border-black flex items-center justify-center md:justify-start bg-white relative z-20">
+            <p className="font-mono font-bold text-xs md:text-sm leading-relaxed uppercase text-black text-center md:text-left">
               {tagline}
             </p>
           </div>
 
           {/* Spacer / Graphic */}
-          <div className="hidden md:flex border-r-[3px] border-brand-border items-center justify-center bg-[#FF5F5F] overflow-hidden relative z-20">
+          <div className="hidden md:flex border-r-8 border-black items-center justify-center bg-[#FFD166] overflow-hidden relative z-20 shadow-[inset_8px_8px_0px_rgba(0,0,0,0.1)]">
              <motion.div 
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="text-8xl drop-shadow-[4px_4px_0px_#2D2D2D]"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="text-black drop-shadow-[4px_4px_0px_rgba(0,0,0,0.2)]"
              >
-               🎭
+                <svg width="80" height="80" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M50 0 L55 40 L95 20 L65 50 L95 80 L55 60 L50 100 L45 60 L5 80 L35 50 L5 20 L45 40 Z" />
+                </svg>
              </motion.div>
           </div>
 
           {/* DYNAMIC Call to Action */}
-          <div className="p-6 md:p-8 flex items-center justify-center bg-brand-bg relative z-20">
+          <div className="p-6 md:p-8 flex items-center justify-center bg-[#06D6A0] relative z-20">
              <Link 
                href={isAuditionLive ? "/auditions" : "/events"}
-               className={`group flex items-center gap-4 ${isAuditionLive ? 'bg-white' : 'bg-[#2D2D2D]'} border-[3px] border-brand-border px-8 py-4 rounded-full shadow-[6px_6px_0px_#2D2D2D] hover:shadow-[2px_2px_0px_#2D2D2D] hover:translate-y-1 hover:translate-x-1 transition-all active:shadow-none active:translate-y-2 active:translate-x-2`}
+               className={`group flex items-center justify-between w-full max-w-[280px] bg-black border-4 border-black px-6 py-4 shadow-[8px_8px_0px_white] hover:translate-y-1 hover:translate-x-1 transition-all active:shadow-none active:translate-y-2 active:translate-x-2`}
              >
-               <span className={`font-black text-lg md:text-xl uppercase tracking-widest ${isAuditionLive ? 'text-brand-text' : 'text-white'}`}>
-                 {isAuditionLive ? "Join Us" : "Explore"}
+               <span className={`font-mono font-black text-lg md:text-xl uppercase tracking-widest text-[#06D6A0]`}>
+                 {isAuditionLive ? "JOIN US" : "EXPLORE"}
                </span>
-               <div className={`w-10 h-10 rounded-full ${isAuditionLive ? 'bg-[#FF5F5F]' : 'bg-brand-bg'} border-[3px] border-brand-border flex items-center justify-center group-hover:rotate-45 transition-transform`}>
-                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D2D2D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+               <div className={`w-10 h-10 bg-[#FF5F5F] border-4 border-black flex items-center justify-center group-hover:rotate-45 transition-transform shadow-[4px_4px_0px_white]`}>
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                </div>
              </Link>
           </div>

@@ -7,6 +7,7 @@ import { getDeviceToken } from "@/lib/firebase";
 export default function BackstageManager() {
   const [notices, setNotices] = useState<any[]>([]);
   const [vault, setVault] = useState<any[]>([]);
+  const [rehearsalReports, setRehearsalReports] = useState<any[]>([]);
   
   const [crewSettings, setCrewSettings] = useState({
     passcode: "SWAANG26",
@@ -16,9 +17,15 @@ export default function BackstageManager() {
     callWho: "Full Cast & Crew"
   });
 
+  const [liveCue, setLiveCue] = useState({
+    state: "IDLE", // IDLE, STANDBY, GO
+    message: "",
+    timestamp: 0
+  });
+
   const [noticeForm, setNoticeForm] = useState({ title: "", message: "", priority: "normal", author: "Directorate", sendPush: false });
-  // 🔥 UPDATED: Added sendPush to Vault form state
   const [vaultForm, setVaultForm] = useState({ title: "", link: "", type: "script", sendPush: false });
+  const [reportForm, setReportForm] = useState({ title: "", notes: "", nextCall: "", author: "Stage Manager" });
 
   useEffect(() => {
     const noticeSub = onSnapshot(collection(db, "callboard"), (snap) => {
@@ -33,13 +40,25 @@ export default function BackstageManager() {
       setVault(fetched);
     });
 
+    const reportSub = onSnapshot(collection(db, "rehearsal_reports"), (snap) => {
+      let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+      fetched.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setRehearsalReports(fetched);
+    });
+
     const settingsSub = onSnapshot(doc(db, "settings", "crew"), (docSnap) => {
       if (docSnap.exists()) {
         setCrewSettings(prev => ({ ...prev, ...docSnap.data() }));
       }
     });
 
-    return () => { noticeSub(); vaultSub(); settingsSub(); };
+    const liveCueSub = onSnapshot(doc(db, "settings", "live_cue"), (docSnap) => {
+      if (docSnap.exists()) {
+        setLiveCue(docSnap.data() as any);
+      }
+    });
+
+    return () => { noticeSub(); vaultSub(); reportSub(); settingsSub(); liveCueSub(); };
   }, []);
 
   const saveCrewSettings = async () => {
@@ -49,7 +68,17 @@ export default function BackstageManager() {
     } catch (err) { alert("Failed to save settings."); }
   };
 
-  // 🔥 NEW: Register this specific device as an ADMIN
+  const setLiveCueState = async (state: "IDLE" | "STANDBY" | "GO") => {
+    try {
+      const msg = state === "STANDBY" ? "STANDBY: PLACES PLEASE" : state === "GO" ? "GO! GO! GO!" : "";
+      await setDoc(doc(db, "settings", "live_cue"), {
+        state,
+        message: msg,
+        timestamp: Date.now()
+      }, { merge: true });
+    } catch (err) { alert("Failed to update Live Cue."); }
+  };
+
   const registerAsAdmin = async () => {
     try {
       const permission = await Notification.requestPermission();
@@ -57,7 +86,6 @@ export default function BackstageManager() {
 
       const token = await getDeviceToken();
       if (token) {
-        // Save token with 'admin' role so you receive Absence/Audition alerts
         await setDoc(doc(db, "fcm_tokens", token), { 
           token, 
           role: "admin", 
@@ -113,7 +141,26 @@ export default function BackstageManager() {
     if (confirm("Delete this notice?")) await deleteDoc(doc(db, "callboard", id));
   };
 
-  // 🔥 UPDATED: Vault Upload with Push Logic
+  const postReport = async () => {
+    if (!reportForm.title || !reportForm.notes) return alert("Title and Notes required!");
+    try {
+      await addDoc(collection(db, "rehearsal_reports"), { 
+        title: reportForm.title,
+        notes: reportForm.notes,
+        nextCall: reportForm.nextCall,
+        author: reportForm.author,
+        createdAt: Date.now()
+      });
+
+      setReportForm({ title: "", notes: "", nextCall: "", author: "Stage Manager" });
+      alert("Rehearsal Report Logged!");
+    } catch (err) { alert("Failed."); }
+  };
+
+  const deleteReport = async (id: string) => {
+    if (confirm("Delete this report?")) await deleteDoc(doc(db, "rehearsal_reports", id));
+  };
+
   const addToVault = async () => {
     if (!vaultForm.title || !vaultForm.link) return alert("Title and Link required!");
     try {
@@ -154,13 +201,38 @@ export default function BackstageManager() {
         </div>
         
         <div className="flex gap-3">
-          {/* 🔥 NEW: Admin registration button */}
           <button onClick={registerAsAdmin} className="bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] px-4 py-2 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
             👑 Admin Sync
           </button>
           <button onClick={enableNotifications} className="bg-[#06D6A0] text-white border-4 border-[var(--border-primary)] px-6 py-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
             🔔 Crew Alerts
           </button>
+        </div>
+      </div>
+
+      {/* 🔥 NEW: LIVE CUE CONTROLLER */}
+      <div className="bg-[#2D2D2D] border-4 border-black p-6 rounded-[2rem] shadow-[8px_8px_0px_black] mb-12 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px] pointer-events-none opacity-20" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-2 bg-white rounded-full" />
+              <h3 className="font-black text-3xl uppercase tracking-tighter">LIVE CUE SYSTEM</h3>
+            </div>
+            <span className="font-mono text-xs uppercase tracking-widest bg-black px-3 py-1 border-2 border-white">OVERRIDE ACTIVE</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button onClick={() => setLiveCueState("IDLE")} className={`py-6 border-4 border-black font-black uppercase text-xl shadow-[6px_6px_0px_black] transition-all ${liveCue.state === 'IDLE' ? 'bg-black text-white translate-y-1 shadow-none' : 'bg-gray-400 text-black hover:bg-gray-300'}`}>
+              IDLE (OFF)
+            </button>
+            <button onClick={() => setLiveCueState("STANDBY")} className={`py-6 border-4 border-black font-black uppercase text-xl shadow-[6px_6px_0px_black] transition-all ${liveCue.state === 'STANDBY' ? 'bg-[#FFD166] text-black translate-y-1 shadow-none animate-pulse' : 'bg-[#FFD166]/50 text-black hover:bg-[#FFD166]'}`}>
+              STANDBY
+            </button>
+            <button onClick={() => setLiveCueState("GO")} className={`py-6 border-4 border-black font-black uppercase text-xl shadow-[6px_6px_0px_black] transition-all ${liveCue.state === 'GO' ? 'bg-[#06D6A0] text-black translate-y-1 shadow-none animate-pulse' : 'bg-[#06D6A0]/50 text-black hover:bg-[#06D6A0]'}`}>
+              GO!
+            </button>
+          </div>
         </div>
       </div>
 
@@ -197,8 +269,9 @@ export default function BackstageManager() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
+        {/* CALL BOARD */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
              <div className="h-8 w-2 bg-[#FFD166] rounded-full" />
@@ -220,11 +293,11 @@ export default function BackstageManager() {
 
               <div className="flex items-center gap-3 p-4 bg-[#FF5F5F]/10 border-2 border-[#FF5F5F] rounded-xl">
                 <input type="checkbox" checked={noticeForm.sendPush} onChange={e => setNoticeForm({...noticeForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#FF5F5F]" />
-                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Send Mobile Push Alert to Crew</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Push Alert to Crew</label>
               </div>
 
               <button onClick={postNotice} className="w-full bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
-                Post to Call Board
+                Post Notice
               </button>
             </div>
           </div>
@@ -242,6 +315,40 @@ export default function BackstageManager() {
           </div>
         </div>
 
+        {/* REHEARSAL REPORTS */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+             <div className="h-8 w-2 bg-[#FF5F5F] rounded-full" />
+             <h3 className="font-black text-2xl uppercase tracking-tighter">Rehearsal Reports</h3>
+          </div>
+
+          <div className="bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)]">
+            <div className="space-y-4">
+              <input placeholder="Report Title (e.g. Run Through Notes)" value={reportForm.title} onChange={e => setReportForm({...reportForm, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
+              <textarea placeholder="Detailed Notes for Cast & Crew..." value={reportForm.notes} onChange={e => setReportForm({...reportForm, notes: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl h-24 resize-none" />
+              <input placeholder="Next Call Instructions" value={reportForm.nextCall} onChange={e => setReportForm({...reportForm, nextCall: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
+              <input placeholder="Author" value={reportForm.author} onChange={e => setReportForm({...reportForm, author: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
+              
+              <button onClick={postReport} className="w-full bg-[#FF5F5F] text-white border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
+                Log Report
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 pb-10">
+            {rehearsalReports.map(r => (
+              <div key={r.id} className="bg-white border-4 border-[var(--border-primary)] p-4 rounded-2xl flex justify-between items-start gap-4">
+                <div className="flex-1">
+                  <h4 className="font-black uppercase text-sm leading-tight">{r.title}</h4>
+                  <p className="text-[10px] font-bold opacity-60 mt-1">{r.author} • {new Date(r.createdAt).toLocaleDateString()}</p>
+                </div>
+                <button onClick={() => deleteReport(r.id)} className="bg-red-50 text-red-500 border-2 border-[var(--border-primary)] p-2 rounded-lg">🗑️</button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* VAULT */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
              <div className="h-8 w-2 bg-[#06D6A0] rounded-full" />
@@ -258,13 +365,12 @@ export default function BackstageManager() {
                 <option value="document">📁 Document</option>
               </select>
 
-              {/* 🔥 NEW: Vault push checkbox */}
               <div className="flex items-center gap-3 p-4 bg-[#06D6A0]/10 border-2 border-[#06D6A0] rounded-xl">
                 <input type="checkbox" checked={vaultForm.sendPush} onChange={e => setVaultForm({...vaultForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#06D6A0]" />
-                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Push Alert about this update</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Push Alert about update</label>
               </div>
 
-              <button onClick={addToVault} className="w-full bg-[#06D6A0] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)]">
+              <button onClick={addToVault} className="w-full bg-[#06D6A0] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
                 Upload to Vault
               </button>
             </div>

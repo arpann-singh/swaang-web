@@ -12,7 +12,7 @@ const twisters = [
 
 export default function TwisterMarquee() {
   return (
-    <div className="bg-[#2D2D2D] py-4 border-y-4 border-[var(--border-primary)] overflow-hidden flex whitespace-nowrap relative group">
+    <div className="bg-transparent py-4 border-y-4 border-black overflow-hidden flex whitespace-nowrap relative group">
       {/* 🎭 THE SCROLLING TRACK */}
       <motion.div 
         animate={{ x: [0, -1000] }}
@@ -22,7 +22,7 @@ export default function TwisterMarquee() {
         {[...twisters, ...twisters].map((text, i) => (
           <span 
             key={i} 
-            className="text-[#FFD166] font-black uppercase italic text-2xl tracking-tighter flex items-center gap-8"
+            className="text-black font-black uppercase italic text-2xl tracking-tighter flex items-center gap-8"
           >
             {text} <span className="text-[#FF5F5F] not-italic">★</span>
           </span>

@@ -9,24 +9,69 @@ export default function Team() {
   const [members, setMembers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("joining");
+  const [sortOrder, setSortOrder] = useState<"asc"|"desc">("desc");
+  const [showFilters, setShowFilters] = useState(false);
+
+  // New Advanced Filters
+  const [selectedRole, setSelectedRole] = useState("all");
+  const [selectedYear, setSelectedYear] = useState("all");
+  const [selectedGender, setSelectedGender] = useState("all");
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "team"), (snap) => {
       let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-      fetched.sort((a, b) => (parseInt(b.joiningYear) || 9999) - (parseInt(a.joiningYear) || 9999));
       setMembers(fetched);
     });
     return () => unsub();
   }, []);
 
+  // Extract unique filter sets dynamically
+  const uniqueRoles = Array.from(new Set(members.map(m => m.role).filter(Boolean))).sort();
+  const uniqueYears = Array.from(new Set(members.map(m => m.joiningYear).filter(Boolean))).sort((a: any, b: any) => Number(b) - Number(a));
+  const uniqueGenders = Array.from(new Set(members.map(m => m.gender).filter(Boolean))).sort();
+
+  const resetFilters = () => {
+    setActiveTab("all");
+    setSearchQuery("");
+    setSelectedRole("all");
+    setSelectedYear("all");
+    setSelectedGender("all");
+    setSortBy("joining");
+    setSortOrder("desc");
+  };
+
   const filteredMembers = members.filter((m) => {
     const matchesTab = activeTab === "all" || m.category === activeTab;
+    const matchesRole = selectedRole === "all" || m.role === selectedRole;
+    const matchesYear = selectedYear === "all" || m.joiningYear === selectedYear;
+    const matchesGender = selectedGender === "all" || m.gender === selectedGender;
+
     const matchesSearch = 
       m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.branch?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return matchesTab && matchesSearch;
+    return matchesTab && matchesRole && matchesYear && matchesGender && matchesSearch;
+  }).sort((a, b) => {
+    let comparison = 0;
+    switch (sortBy) {
+      case 'name':
+        comparison = (a.name || "").localeCompare(b.name || "");
+        break;
+      case 'joining':
+        comparison = (parseInt(a.joiningYear) || 9999) - (parseInt(b.joiningYear) || 9999);
+        break;
+      case 'passout':
+        comparison = (parseInt(a.passoutYear) || 9999) - (parseInt(b.passoutYear) || 9999);
+        break;
+      case 'role':
+        comparison = (a.role || "").localeCompare(b.role || "");
+        break;
+      default:
+        comparison = 0;
+    }
+    return sortOrder === "desc" ? comparison * -1 : comparison;
   });
 
   return (
@@ -43,37 +88,170 @@ export default function Team() {
            </div>
         </div>
 
-        {/* TOOLBAR */}
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-6 bg-white border-4 border-[var(--border-primary)] p-4 shadow-[8px_8px_0px_var(--border-primary)] rounded-3xl">
+        {/* TOOLBAR COMMAND CENTER */}
+        <div className="flex flex-col gap-8 bg-white border-8 border-black p-6 md:p-8 shadow-[12px_12px_0px_black] rounded-none">
            
-           <div className="relative w-full lg:w-[400px]">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-black/30">
-                 <Search size={20} strokeWidth={3} />
-              </div>
-              <input 
-                 type="text" 
-                 placeholder="SEARCH NAME OR ROLE..." 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 className="w-full pl-12 pr-4 py-4 bg-gray-100 border-2 border-transparent focus:border-[var(--border-primary)] focus:bg-white rounded-2xl outline-none font-black uppercase tracking-widest text-[10px] transition-colors"
-              />
+           {/* TOP ROW: Search & Sort */}
+           <div className={`flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 ${showFilters ? 'border-b-4 border-black pb-8' : ''}`}>
+               <div className="relative w-full xl:w-[400px]">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-black/40">
+                     <Search size={20} strokeWidth={4} />
+                  </div>
+                  <input 
+                     type="text" 
+                     placeholder="SEARCH NAME OR ROLE..." 
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                     className="w-full pl-12 pr-4 py-4 h-[56px] bg-white border-4 border-black focus:bg-[#FFD166] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_black] rounded-none outline-none font-black uppercase tracking-widest text-[10px] transition-all placeholder:text-black/30 text-black"
+                  />
+               </div>
+               
+               <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+                 <div className="relative flex-1 md:flex-none md:w-[180px]">
+                    <select 
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="w-full h-[56px] px-4 bg-white border-4 border-black focus:bg-[#FFD166] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_black] rounded-none outline-none font-black uppercase tracking-widest text-[10px] transition-all text-black cursor-pointer appearance-none"
+                    >
+                      <option value="joining">SORT: YEAR (JOIN)</option>
+                      <option value="passout">SORT: YEAR (PASSOUT)</option>
+                      <option value="name">SORT: NAME</option>
+                      <option value="role">SORT: ROLE</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-black text-xs font-black">
+                       ▼
+                    </div>
+                 </div>
+                 
+                 <button 
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="h-[56px] px-6 bg-black text-[#06D6A0] border-4 border-black font-black uppercase text-[12px] tracking-[0.2em] hover:bg-[#06D6A0] hover:text-black hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_black] transition-all"
+                 >
+                    {sortOrder === 'asc' ? 'ASC ↑' : 'DESC ↓'}
+                 </button>
+                 
+                 <button 
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`h-[56px] px-6 text-black border-4 border-black font-black uppercase text-[12px] tracking-[0.2em] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_black] transition-all md:ml-auto ${showFilters ? 'bg-[#FFD166]' : 'bg-white'}`}
+                 >
+                    {showFilters ? '− CLOSE' : '+ FILTERS'}
+                 </button>
+
+                 <button 
+                    onClick={resetFilters}
+                    className="h-[56px] px-6 bg-[#FF5F5F] text-black border-4 border-black font-black uppercase text-[10px] tracking-widest hover:bg-black hover:text-[#FF5F5F] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_black] transition-all"
+                 >
+                    RESET
+                 </button>
+               </div>
            </div>
 
-           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-             {['all', 'president', 'active', 'alumni'].map((tab) => (
-               <button
-                 key={tab}
-                 onClick={() => setActiveTab(tab)}
-                 className={`flex-1 lg:flex-none px-6 py-4 border-2 border-[var(--border-primary)] font-black uppercase text-[9px] sm:text-[10px] tracking-[0.2em] transition-all rounded-2xl ${
-                   activeTab === tab 
-                     ? 'bg-[#06D6A0] text-[var(--text-primary)] shadow-[inset_4px_4px_0px_rgba(0,0,0,0.1)] translate-y-1' 
-                     : 'bg-white text-[var(--text-primary)] hover:bg-[#FFD166] hover:-translate-y-1 shadow-[4px_4px_0px_var(--border-primary)]'
-                 }`}
+           {/* BOTTOM ROW: Dynamic Filters Grid */}
+           <AnimatePresence>
+             {showFilters && (
+               <motion.div 
+                 initial={{ height: 0, opacity: 0 }}
+                 animate={{ height: "auto", opacity: 1 }}
+                 exit={{ height: 0, opacity: 0 }}
+                 className="overflow-hidden"
                >
-                 {tab === 'all' ? 'Full Roster' : tab + "s"}
-               </button>
-             ))}
-           </div>
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-2 pb-2">
+                     
+                     {/* CATEGORY / STATUS */}
+                     <div className="space-y-4">
+                       <h4 className="font-mono font-black uppercase text-[10px] tracking-widest text-black/50 border-b-2 border-black/10 pb-2 inline-block">1. STATUS</h4>
+                       <div className="flex flex-wrap gap-2">
+                         {['all', 'president', 'active', 'alumni'].map((tab) => (
+                           <button
+                             key={tab}
+                             onClick={() => setActiveTab(tab)}
+                             className={`px-4 py-2 border-4 border-black font-black uppercase text-[9px] tracking-[0.1em] transition-all ${
+                               activeTab === tab 
+                                 ? 'bg-[#06D6A0] text-black translate-y-1 translate-x-1 shadow-none' 
+                                 : 'bg-white text-black hover:bg-[#FFD166] hover:-translate-y-1 hover:-translate-x-1 shadow-[4px_4px_0px_black]'
+                             }`}
+                           >
+                             {tab === 'all' ? 'ALL' : tab}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+
+                     {/* ROLES */}
+                     <div className="space-y-4">
+                       <h4 className="font-mono font-black uppercase text-[10px] tracking-widest text-black/50 border-b-2 border-black/10 pb-2 inline-block">2. ROLE</h4>
+                       <div className="flex flex-wrap gap-2 max-h-[150px] overflow-y-auto pr-2">
+                         <button
+                           onClick={() => setSelectedRole("all")}
+                           className={`px-4 py-2 border-4 border-black font-black uppercase text-[9px] tracking-[0.1em] transition-all ${
+                             selectedRole === "all" ? 'bg-[#FFD166] text-black translate-y-1 translate-x-1 shadow-none' : 'bg-white text-black hover:bg-[#FFD166] hover:-translate-y-1 hover:-translate-x-1 shadow-[4px_4px_0px_black]'
+                           }`}
+                         >ALL</button>
+                         {uniqueRoles.map((role: any) => (
+                           <button
+                             key={role}
+                             onClick={() => setSelectedRole(role)}
+                             className={`px-4 py-2 border-4 border-black font-black uppercase text-[9px] tracking-[0.1em] transition-all ${
+                               selectedRole === role ? 'bg-[#FFD166] text-black translate-y-1 translate-x-1 shadow-none' : 'bg-white text-black hover:bg-[#FFD166] hover:-translate-y-1 hover:-translate-x-1 shadow-[4px_4px_0px_black]'
+                             }`}
+                           >{role}</button>
+                         ))}
+                       </div>
+                     </div>
+                     
+                     {/* YEARS & GENDER COMBINED */}
+                     <div className="space-y-6">
+                       {/* YEARS */}
+                       <div className="space-y-4">
+                         <h4 className="font-mono font-black uppercase text-[10px] tracking-widest text-black/50 border-b-2 border-black/10 pb-2 inline-block">3. JOIN YEAR</h4>
+                         <div className="flex flex-wrap gap-2">
+                           <button
+                             onClick={() => setSelectedYear("all")}
+                             className={`px-4 py-2 border-4 border-black font-black uppercase text-[9px] tracking-[0.1em] transition-all ${
+                               selectedYear === "all" ? 'bg-black text-white translate-y-1 translate-x-1 shadow-none' : 'bg-white text-black hover:bg-black hover:text-white hover:-translate-y-1 hover:-translate-x-1 shadow-[4px_4px_0px_black]'
+                             }`}
+                           >ALL</button>
+                           {uniqueYears.map((year: any) => (
+                             <button
+                               key={year}
+                               onClick={() => setSelectedYear(year)}
+                               className={`px-4 py-2 border-4 border-black font-black uppercase text-[9px] tracking-[0.1em] transition-all ${
+                                 selectedYear === year ? 'bg-black text-white translate-y-1 translate-x-1 shadow-none' : 'bg-white text-black hover:bg-black hover:text-white hover:-translate-y-1 hover:-translate-x-1 shadow-[4px_4px_0px_black]'
+                               }`}
+                             >{year}</button>
+                           ))}
+                         </div>
+                       </div>
+
+                       {/* GENDERS */}
+                       {uniqueGenders.length > 0 && (
+                         <div className="space-y-4 border-t-4 border-black/10 pt-4">
+                           <h4 className="font-mono font-black uppercase text-[10px] tracking-widest text-black/50 border-b-2 border-black/10 pb-2 inline-block">4. GENDER</h4>
+                           <div className="flex flex-wrap gap-2">
+                             <button
+                               onClick={() => setSelectedGender("all")}
+                               className={`px-4 py-2 border-4 border-black font-black uppercase text-[9px] tracking-[0.1em] transition-all ${
+                                 selectedGender === "all" ? 'bg-[#FF5F5F] text-white translate-y-1 translate-x-1 shadow-none' : 'bg-white text-black hover:bg-[#FF5F5F] hover:text-white hover:-translate-y-1 hover:-translate-x-1 shadow-[4px_4px_0px_black]'
+                               }`}
+                             >ALL</button>
+                             {uniqueGenders.map((gender: any) => (
+                               <button
+                                 key={gender}
+                                 onClick={() => setSelectedGender(gender)}
+                                 className={`px-4 py-2 border-4 border-black font-black uppercase text-[9px] tracking-[0.1em] transition-all ${
+                                   selectedGender === gender ? 'bg-[#FF5F5F] text-white translate-y-1 translate-x-1 shadow-none' : 'bg-white text-black hover:bg-[#FF5F5F] hover:text-white hover:-translate-y-1 hover:-translate-x-1 shadow-[4px_4px_0px_black]'
+                                 }`}
+                               >{gender}</button>
+                             ))}
+                           </div>
+                         </div>
+                       )}
+                     </div>
+
+                 </div>
+               </motion.div>
+             )}
+           </AnimatePresence>
         </div>
       </div>
 
@@ -101,7 +279,7 @@ export default function Team() {
                     <img 
                        src={member.image} 
                        alt={member.name}
-                       className="absolute inset-0 w-full h-full object-cover grayscale-0 lg:grayscale opacity-100 lg:opacity-80 group-hover:grayscale-0 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                  ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20">

@@ -6,6 +6,7 @@ import {
   serverTimestamp, onSnapshot, query, orderBy
 } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
+import { Trash2, Edit, CheckSquare, Square, Zap } from "lucide-react";
 
 const NoticesManager = () => {
   const [notices, setNotices] = useState<any[]>([]);
@@ -73,74 +74,101 @@ const NoticesManager = () => {
     }
   };
 
-  if (loading) return <div className="p-10 font-black text-gray-400">Loading News Feed...</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="w-12 h-12 border-8 border-black border-t-[#06D6A0] animate-spin shadow-[4px_4px_0px_black]"></div>
+    </div>
+  );
 
   return (
-    <div className="space-y-12">
-      <div className="border-b-4 border-[var(--border-primary)] pb-6">
-        <h1 className="text-5xl font-black tracking-tighter uppercase text-[var(--text-primary)]">News Strip</h1>
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5F5F] mt-2">Global Alerts & Updates</p>
+    <div className="space-y-12 pb-24">
+      <div className="border-b-8 border-black pb-6">
+        <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase text-white" style={{ WebkitTextStroke: '2px black' }}>News Strip</h1>
+        <p className="text-xs md:text-sm font-mono font-black uppercase tracking-[0.4em] bg-[#FFD166] text-black inline-block px-4 py-2 mt-4 border-4 border-black shadow-[4px_4px_0px_black]">
+          GLOBAL ALERTS & UPDATES
+        </p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
         {/* --- NEWS DESK FORM --- */}
         <div className="xl:col-span-1">
-          <form onSubmit={handleSubmit} className="bg-white border-4 border-[var(--border-primary)] p-8 rounded-[2.5rem] shadow-[10px_10px_0px_var(--border-primary)] space-y-5 sticky top-10">
-            <h2 className="font-black uppercase text-[#FF5F5F] tracking-widest text-sm">
-              {editingId ? "Edit Alert ✍️" : "Create Alert 🚀"}
+          <form onSubmit={handleSubmit} className="bg-[#FFF9F0] border-4 border-black p-8 shadow-[8px_8px_0px_#FF5F5F] space-y-6 sticky top-10">
+            <h2 className="font-mono font-black uppercase text-black tracking-widest text-lg flex items-center gap-3 bg-[#FF5F5F] border-4 border-black p-3 -mx-8 -mt-8 mb-8">
+              <Zap size={24} /> {editingId ? "EDIT ALERT" : "CREATE ALERT"}
             </h2>
             
-            <input required type="text" placeholder="Short Header (e.g. AUDITIONS)" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 rounded-xl font-black bg-[var(--bg-primary)] uppercase text-xs tracking-widest" />
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] font-black uppercase tracking-widest text-black">Header</label>
+              <input required type="text" placeholder="e.g. AUDITIONS" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full border-4 border-black p-4 font-mono font-bold bg-white uppercase text-sm tracking-widest shadow-[4px_4px_0px_black] focus:outline-none focus:translate-y-1 focus:translate-x-1 focus:shadow-[0px_0px_0px_black] transition-all" />
+            </div>
             
-            <textarea required placeholder="The Message..." value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 rounded-xl h-32 font-bold text-sm" />
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] font-black uppercase tracking-widest text-black">Message Body</label>
+              <textarea required placeholder="Forms open in 2 days..." value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} className="w-full border-4 border-black p-4 h-32 font-mono font-bold text-sm shadow-[4px_4px_0px_black] bg-white focus:outline-none focus:translate-y-1 focus:translate-x-1 focus:shadow-[0px_0px_0px_black] transition-all" />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})} className="border-2 border-[var(--border-primary)] p-3 rounded-xl font-black text-[10px] uppercase bg-white">
-                <option value="normal">Normal</option>
-                <option value="urgent">Urgent (Red)</option>
-                <option value="highlight">Highlight</option>
-              </select>
-              <div className="flex items-center justify-center gap-2 border-2 border-[var(--border-primary)] rounded-xl bg-gray-50">
-                <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} className="w-4 h-4 accent-[#FF5F5F]" />
-                <label className="text-[9px] font-black uppercase">Live Now</label>
+              <div className="space-y-2">
+                <label className="font-mono text-[10px] font-black uppercase tracking-widest text-black">Priority</label>
+                <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})} className="w-full border-4 border-black p-3 font-mono font-black text-xs uppercase bg-[#FFD166] shadow-[4px_4px_0px_black] focus:outline-none">
+                  <option value="normal">Normal</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="highlight">Highlight</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-mono text-[10px] font-black uppercase tracking-widest text-black">Status</label>
+                <div 
+                  onClick={() => setFormData({...formData, isActive: !formData.isActive})} 
+                  className={`w-full border-4 border-black p-3 font-mono font-black text-xs uppercase flex justify-center items-center gap-2 cursor-pointer shadow-[4px_4px_0px_black] transition-all active:translate-x-1 active:translate-y-1 active:shadow-none ${formData.isActive ? 'bg-[#06D6A0] text-black' : 'bg-gray-300 text-gray-500'}`}
+                >
+                  {formData.isActive ? <CheckSquare size={16} /> : <Square size={16} />} LIVE NOW
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <button type="submit" className="flex-1 bg-[#FF5F5F] text-white border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 hover:shadow-none transition-all">
-                {editingId ? "Update News" : "Push to Feed"}
+            <div className="flex gap-4 pt-4">
+              <button type="submit" className="flex-1 bg-black text-[#06D6A0] border-4 border-black py-4 font-mono font-black uppercase tracking-widest shadow-[6px_6px_0px_#06D6A0] hover:bg-white hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_black] transition-all">
+                {editingId ? "UPDATE NEWS" : "PUSH TO FEED"}
               </button>
               {editingId && (
-                <button type="button" onClick={() => {setEditingId(null); setFormData({title:"", content:"", isActive:true, priority:"normal"})}} className="bg-gray-200 border-4 border-[var(--border-primary)] px-4 rounded-xl font-black uppercase text-xs">X</button>
+                <button type="button" onClick={() => {setEditingId(null); setFormData({title:"", content:"", isActive:true, priority:"normal"})}} className="bg-white text-black border-4 border-black px-6 font-mono font-black uppercase text-xl shadow-[4px_4px_0px_black] hover:bg-[#FF5F5F] hover:text-white transition-all">
+                  X
+                </button>
               )}
             </div>
           </form>
         </div>
 
         {/* --- LIVE FEED LIST --- */}
-        <div className="xl:col-span-2 space-y-4">
+        <div className="xl:col-span-2 space-y-6">
           <AnimatePresence>
             {notices.map((n) => (
               <motion.div 
                 layout key={n.id} 
-                className={`bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[6px_6px_0px_var(--border-primary)] flex items-center justify-between gap-6 ${!n.isActive ? "opacity-50 grayscale" : ""}`}
+                className={`bg-white border-4 border-black p-6 shadow-[8px_8px_0px_black] flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all ${!n.isActive ? "opacity-60 bg-gray-100" : ""}`}
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded border-2 border-[var(--border-primary)] ${n.priority === 'urgent' ? 'bg-[#FF5F5F] text-white' : 'bg-[#FFD166]'}`}>
+                  <div className="flex items-center gap-4 mb-3">
+                    <span className={`text-[10px] font-mono font-black uppercase px-3 py-1 border-2 border-black shadow-[2px_2px_0px_black] ${n.priority === 'urgent' ? 'bg-[#FF5F5F] text-white' : n.priority === 'highlight' ? 'bg-[#FFD166] text-black' : 'bg-gray-300 text-black'}`}>
                       {n.priority}
                     </span>
-                    <h4 className="font-black text-[var(--text-primary)] uppercase tracking-widest text-xs">{n.title}</h4>
+                    <h4 className="font-mono font-black text-black uppercase tracking-widest text-lg">{n.title}</h4>
                   </div>
-                  <p className="text-sm font-bold text-gray-600 line-clamp-1 italic">"{n.content}"</p>
+                  <p className="text-sm font-sans font-bold text-gray-800 italic border-l-4 border-black pl-4 py-1">"{n.content}"</p>
                 </div>
 
-                <div className="flex gap-2">
-                  <button onClick={() => toggleActive(n.id, n.isActive)} className={`p-3 rounded-xl border-2 border-[var(--border-primary)] shadow-[2px_2px_0px_var(--border-primary)] transition-all ${n.isActive ? "bg-[#06D6A0]" : "bg-white"}`}>
-                    {n.isActive ? "🟢" : "⚪"}
+                <div className="flex items-center gap-3 shrink-0 mt-4 md:mt-0">
+                  <button onClick={() => toggleActive(n.id, n.isActive)} className={`w-12 h-12 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_black] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all ${n.isActive ? "bg-[#06D6A0] text-black" : "bg-gray-200 text-gray-500"}`} title={n.isActive ? "Deactivate" : "Activate"}>
+                    {n.isActive ? <CheckSquare size={20} /> : <Square size={20} />}
                   </button>
-                  <button onClick={() => handleEdit(n)} className="bg-white border-2 border-[var(--border-primary)] px-4 py-2 rounded-xl text-[9px] font-black uppercase hover:bg-[var(--bg-primary)]">Edit</button>
-                  <button onClick={() => deleteNotice(n.id)} className="text-red-500 border-2 border-red-500 p-2 rounded-xl">🗑️</button>
+                  <button onClick={() => handleEdit(n)} className="w-12 h-12 flex items-center justify-center bg-[#FFD166] border-4 border-black text-black shadow-[4px_4px_0px_black] hover:bg-white active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" title="Edit">
+                    <Edit size={18} />
+                  </button>
+                  <button onClick={() => deleteNotice(n.id)} className="w-12 h-12 flex items-center justify-center bg-[#FF5F5F] border-4 border-black text-black shadow-[4px_4px_0px_black] hover:bg-black hover:text-[#FF5F5F] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" title="Delete">
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </motion.div>
             ))}

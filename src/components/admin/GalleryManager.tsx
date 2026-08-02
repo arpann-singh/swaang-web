@@ -6,11 +6,12 @@ import {
   serverTimestamp, onSnapshot, query, orderBy 
 } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
+import { Pencil, Home, Trash2, X, Check } from "lucide-react";
 
 const GalleryManager = () => {
   const [gallery, setGallery] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [editingPhoto, setEditingPhoto] = useState<any | null>(null); // 🔥 NEW: Edit State
+  const [editingPhoto, setEditingPhoto] = useState<any | null>(null);
   
   const [newPhoto, setNewPhoto] = useState({
     title: "",
@@ -27,7 +28,6 @@ const GalleryManager = () => {
     });
   }, []);
 
-  // 🚀 ENHANCEMENT: CREW BULK UPLOAD
   const handleBulkUpload = async (e: any) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -65,7 +65,6 @@ const GalleryManager = () => {
     alert("Bulk Staging Complete! 🎞️");
   };
 
-  // 🔥 ENHANCEMENT: ADMIN EDIT LOGIC
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPhoto) return;
@@ -77,7 +76,6 @@ const GalleryManager = () => {
         status: "Curated"
       });
       setEditingPhoto(null);
-      alert("Archive Updated! ✨");
     } catch (err) {
       alert("Update failed.");
     }
@@ -88,16 +86,15 @@ const GalleryManager = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Remove this memory from the archives?")) {
+    if (confirm("REMOVE FROM ARCHIVES? THIS CANNOT BE UNDONE.")) {
       await deleteDoc(doc(db, "gallery", id));
     }
   };
 
   return (
-    <div className="space-y-12">
-      <div className="border-b-4 border-[var(--border-primary)] pb-6">
-        <h1 className="text-5xl font-black tracking-tighter uppercase text-[var(--text-primary)]">The Gallery</h1>
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#06D6A0] mt-2">Bulk Staging & Admin Curation</p>
+    <div className="space-y-12 pb-40">
+      <div className="border-b-8 border-black pb-4 mb-4 flex items-center">
+         <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-black bg-[#FFD166] px-6 py-3 border-4 border-black inline-block shadow-[8px_8px_0px_black]">The Gallery</h2>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
@@ -105,34 +102,48 @@ const GalleryManager = () => {
           
           {/* 🔥 DYNAMIC FORM: SWITCHES BETWEEN UPLOAD AND EDIT */}
           {!editingPhoto ? (
-            <div className="bg-white border-4 border-[var(--border-primary)] p-8 rounded-[2.5rem] shadow-[10px_10px_0px_var(--border-primary)] space-y-5 sticky top-10">
-              <h2 className="font-black uppercase text-[#FF5F5F] tracking-widest text-sm">Bulk Upload (Crew)</h2>
+            <div className="bg-[#FFF9F0] border-8 border-black p-8 shadow-[12px_12px_0px_#06D6A0] space-y-6 sticky top-10">
+              <div className="border-b-8 border-black pb-4">
+                <h2 className="font-mono font-black uppercase text-black bg-[#06D6A0] inline-block px-2 py-1 tracking-widest border-2 border-black text-sm">Bulk Upload (Crew)</h2>
+              </div>
               
-              <input type="text" placeholder="General Title (Optional)" value={newPhoto.title} onChange={e => setNewPhoto({...newPhoto, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-3 rounded-xl font-bold bg-[var(--bg-primary)]" />
-              
-              <textarea placeholder="General Description" value={newPhoto.description} onChange={e => setNewPhoto({...newPhoto, description: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-3 rounded-xl h-24 font-medium" />
-
-              <div className="flex items-center gap-3 p-3 bg-[#FFD166]/10 border-2 border-dashed border-[#FFD166] rounded-xl">
-                <input type="checkbox" checked={newPhoto.showOnHome} onChange={e => setNewPhoto({...newPhoto, showOnHome: e.target.checked})} className="w-5 h-5 accent-[#FFD166]" />
-                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Show on Homepage</label>
+              <div className="space-y-4">
+                  <input type="text" placeholder="GENERAL TITLE (OPTIONAL)" value={newPhoto.title} onChange={e => setNewPhoto({...newPhoto, title: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
+                  
+                  <textarea placeholder="General Description" value={newPhoto.description} onChange={e => setNewPhoto({...newPhoto, description: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-bold h-24 resize-none shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
               </div>
 
-              <label className={`block text-center cursor-pointer bg-[#06D6A0] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase text-xs shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
-                {uploading ? "Processing Bulk..." : "Select Multiple Photos"}
+              <div className="flex items-center gap-4 p-4 bg-black text-white border-4 border-black shadow-[4px_4px_0px_black]">
+                <input type="checkbox" checked={newPhoto.showOnHome} onChange={e => setNewPhoto({...newPhoto, showOnHome: e.target.checked})} className="w-6 h-6 accent-[#FFD166] cursor-pointer" />
+                <label className="text-[10px] font-mono font-black uppercase tracking-widest">Show on Homepage</label>
+              </div>
+
+              <label className={`block text-center cursor-pointer bg-[#06D6A0] text-black border-4 border-black py-4 font-black uppercase text-sm shadow-[6px_6px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_black] hover:bg-[#FFD166] transition-all ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
+                {uploading ? "PROCESSING BULK..." : "SELECT MULTIPLE PHOTOS"}
                 <input type="file" multiple className="hidden" accept="image/*" onChange={handleBulkUpload} />
               </label>
             </div>
           ) : (
-            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="bg-[#FFD166] border-4 border-[var(--border-primary)] p-8 rounded-[2.5rem] shadow-[10px_10px_0px_var(--border-primary)] space-y-5 sticky top-10">
-              <h2 className="font-black uppercase text-[var(--text-primary)] tracking-widest text-sm">Curate Archive (Admin)</h2>
-              <div className="aspect-video rounded-xl overflow-hidden border-2 border-[var(--border-primary)]">
+            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="bg-[#FFD166] border-8 border-black p-8 shadow-[12px_12px_0px_#FF5F5F] space-y-6 sticky top-10">
+              <div className="border-b-8 border-black pb-4">
+                <h2 className="font-mono font-black uppercase text-black bg-[#FF5F5F] inline-block px-2 py-1 tracking-widest border-2 border-black text-sm">Curate Archive</h2>
+              </div>
+              <div className="aspect-video border-4 border-black bg-black">
                 <img src={editingPhoto.url} className="w-full h-full object-cover" />
               </div>
-              <input required type="text" value={editingPhoto.title} onChange={e => setEditingPhoto({...editingPhoto, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-3 rounded-xl font-bold bg-white" />
-              <textarea value={editingPhoto.description} onChange={e => setEditingPhoto({...editingPhoto, description: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-3 rounded-xl h-32 font-medium bg-white" />
-              <div className="flex gap-2">
-                <button onClick={handleUpdate} className="flex-1 bg-[#2D2D2D] text-white py-3 rounded-xl font-black uppercase text-[10px]">Save Details</button>
-                <button onClick={() => setEditingPhoto(null)} className="flex-1 bg-white border-2 border-[var(--border-primary)] py-3 rounded-xl font-black uppercase text-[10px]">Cancel</button>
+              
+              <div className="space-y-4">
+                  <input required type="text" value={editingPhoto.title} onChange={e => setEditingPhoto({...editingPhoto, title: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
+                  <textarea value={editingPhoto.description} onChange={e => setEditingPhoto({...editingPhoto, description: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-bold h-32 resize-none shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
+              </div>
+
+              <div className="flex gap-4">
+                <button onClick={handleUpdate} className="flex-1 bg-black text-[#06D6A0] border-4 border-black py-4 font-black uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#06D6A0] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-2">
+                  <Check size={16} strokeWidth={3} /> SAVE
+                </button>
+                <button onClick={() => setEditingPhoto(null)} className="flex-1 bg-white text-black border-4 border-black py-4 font-black uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none hover:bg-[#FF5F5F] hover:text-white transition-all flex items-center justify-center gap-2">
+                  <X size={16} strokeWidth={3} /> ABORT
+                </button>
               </div>
             </motion.div>
           )}
@@ -141,28 +152,30 @@ const GalleryManager = () => {
         <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
           <AnimatePresence>
             {gallery.map((img) => (
-              <motion.div layout key={img.id} className="bg-white border-4 border-[var(--border-primary)] rounded-[2.5rem] overflow-hidden shadow-[8px_8px_0px_var(--border-primary)] group">
-                <div className="relative aspect-video border-b-4 border-[var(--border-primary)]">
-                  <img src={img.url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={img.title} />
+              <motion.div layout key={img.id} className="bg-white border-8 border-black overflow-hidden shadow-[12px_12px_0px_black] group flex flex-col hover:-translate-y-2 hover:shadow-[16px_16px_0px_black] transition-all">
+                <div className="relative aspect-video border-b-8 border-black bg-black">
+                  <img src={img.url} className="w-full h-full object-cover transition-all" alt={img.title} />
+                  
                   <div className="absolute top-4 right-4 flex gap-2">
-                    {/* 🔥 Edit Button */}
-                    <button onClick={() => setEditingPhoto(img)} className="p-2 bg-[#06D6A0] rounded-full border-2 border-[var(--border-primary)] shadow-[3px_3px_0px_var(--border-primary)] hover:scale-110 transition-transform">
-                      ✏️
+                    <button onClick={() => setEditingPhoto(img)} className="p-3 bg-[#06D6A0] border-4 border-black shadow-[4px_4px_0px_black] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all text-black" title="Edit Data">
+                      <Pencil size={16} strokeWidth={3} />
                     </button>
-                    <button onClick={() => toggleHomeVisibility(img.id, img.showOnHome)} className={`p-2 rounded-full border-2 border-[var(--border-primary)] shadow-[3px_3px_0px_var(--border-primary)] transition-all ${img.showOnHome ? "bg-[#FFD166]" : "bg-white"}`}>
-                      🏠
+                    <button onClick={() => toggleHomeVisibility(img.id, img.showOnHome)} className={`p-3 border-4 border-black shadow-[4px_4px_0px_black] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all text-black ${img.showOnHome ? "bg-[#FFD166]" : "bg-white"}`} title="Toggle Homepage">
+                      <Home size={16} strokeWidth={3} />
                     </button>
-                    <button onClick={() => handleDelete(img.id)} className="p-2 bg-white rounded-full border-2 border-[var(--border-primary)] shadow-[3px_3px_0px_var(--border-primary)] hover:bg-red-50">
-                      🗑️
+                    <button onClick={() => handleDelete(img.id)} className="p-3 bg-white border-4 border-black shadow-[4px_4px_0px_black] hover:translate-y-1 hover:translate-x-1 hover:shadow-none hover:bg-[#FF5F5F] hover:text-white transition-all text-black" title="Delete Image">
+                      <Trash2 size={16} strokeWidth={3} />
                     </button>
                   </div>
+
                   {img.status === "Pending Curation" && (
-                    <div className="absolute bottom-2 left-2 bg-[#FF5F5F] text-white text-[7px] font-black px-2 py-1 rounded-md uppercase tracking-tighter">Needs Title</div>
+                    <div className="absolute bottom-4 left-4 bg-[#FF5F5F] border-2 border-black text-black font-mono text-[10px] font-black px-2 py-1 uppercase tracking-widest shadow-[2px_2px_0px_black]">NEEDS TITLE</div>
                   )}
                 </div>
-                <div className="p-6">
-                  <h3 className="font-black uppercase text-lg text-[var(--text-primary)] tracking-tight truncate">{img.title}</h3>
-                  <p className="text-[10px] font-medium text-gray-500 italic mt-1 line-clamp-2">{img.description || "No description provided."}</p>
+                
+                <div className="p-6 flex-1 bg-[#FFF9F0]">
+                  <h3 className="font-black uppercase text-xl text-black tracking-tight line-clamp-1">{img.title}</h3>
+                  <p className="text-xs font-mono font-black text-gray-600 mt-2 line-clamp-2 uppercase leading-relaxed">{img.description || "NO_DESCRIPTION_PROVIDED"}</p>
                 </div>
               </motion.div>
             ))}

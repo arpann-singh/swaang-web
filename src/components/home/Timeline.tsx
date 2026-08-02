@@ -53,7 +53,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
   if (!timeline || timeline.length === 0) return null;
 
   return (
-    <section id="journey" className="py-24 bg-[#2D2D2D] text-[#FFF9F0] overflow-hidden relative border-b-[8px] md:border-b-[12px] border-black">
+    <section id="journey" className="py-24 bg-transparent text-black overflow-hidden relative border-b-[8px] md:border-b-[12px] border-black">
       {/* 🔥 Scrollbar Style Injection */}
       <style jsx global>{`
         .swaang-scrollbar::-webkit-scrollbar {
@@ -85,33 +85,33 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
           <motion.span 
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            className="bg-[#FFD166] text-[var(--text-primary)] px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-[0.3em] shadow-[4px_4px_0px_#FFF9F0]"
+            className="bg-[#FFD166] text-black border-4 border-black px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-[0.3em] shadow-[4px_4px_0px_black]"
           >
             Our Legacy
           </motion.span>
           <h2 className="text-6xl md:text-9xl font-black uppercase tracking-tighter mt-6 italic leading-none">
-            THE <span className="text-transparent" style={{ WebkitTextStroke: '2px #FFF9F0' }}>JOURNEY</span>
+            THE <span className="text-white" style={{ WebkitTextStroke: '2px black' }}>JOURNEY</span>
           </h2>
         </div>
 
-        {/* 2. 🔥 YEAR SELECTOR (Horizontal Tabs) */}
-        <div className="flex flex-wrap gap-3 mb-12">
-          {years.map((year) => (
-            <button
-              key={year}
-              onClick={() => setActiveYear(year)}
-              className={`px-8 py-3 rounded-2xl border-4 font-black uppercase transition-all duration-300 ${
-                activeYear === year 
-                ? "bg-[#06D6A0] text-[var(--text-primary)] border-[#FFF9F0] -translate-y-2 shadow-[6px_6px_0px_#FFF9F0]" 
-                : "bg-transparent border-[#FFF9F0]/20 text-[#FFF9F0]/40 hover:border-[#FFF9F0]/60"
-              }`}
-            >
-              {year}
-            </button>
-          ))}
+        <div className="max-w-7xl mx-auto mb-16 relative z-10">
+          <div className="flex flex-wrap justify-center gap-4">
+            {years.map((year, index) => (
+              <button
+                key={year}
+                onClick={() => setActiveYear(year)}
+                className={`relative px-8 py-3 font-mono font-black uppercase text-sm tracking-widest transition-all border-4 border-black ${
+                  activeYear === year 
+                    ? 'bg-black text-[#FFD166] shadow-[6px_6px_0px_#FF5F5F] -translate-y-1' 
+                    : 'bg-white text-black hover:bg-gray-100 shadow-[4px_4px_0px_black]'
+                }`}
+              >
+                ACT {index + 1}: {year}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* 3. 🔥 THE FLASHCARD DECK */}
         <div className="relative min-h-[500px] md:min-h-[600px] w-full max-w-lg mx-auto py-8">
           {groupedEvents[activeYear]?.length > 0 ? (
             <AnimatePresence>
@@ -119,18 +119,15 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                 const isPast = index < activeCardIndex;
                 const offsetIndex = index - activeCardIndex;
                 
-                // For extreme performance, only render the top 3 cards visually
                 if (isPast || offsetIndex > 2) return null;
 
                 const cat = categoryMap[item.category] || categoryMap.milestone;
                 const CatIcon = cat.icon;
                 
-                // Stack physics calculations (Z-depth, shrinking, offset)
                 const zIndex = 40 - offsetIndex;
-                const scale = 1 - (offsetIndex * 0.05); // e.g. 1, 0.95, 0.90
-                const yOffset = offsetIndex * 24; // Pushes lower cards further down to "peek" out
+                const scale = 1 - (offsetIndex * 0.05);
+                const yOffset = offsetIndex * 24;
                 
-                // Deterministic pseudo-random rotation between -3 and +3 degrees
                 const rotations = [-3, 2, -1, 3, -2, 1];
                 const baseRotation = rotations[index % rotations.length];
 
@@ -141,14 +138,12 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                     animate={{ opacity: 1, y: yOffset, scale: scale, zIndex: zIndex, rotate: baseRotation }}
                     exit={{ opacity: 0, x: "120%", rotate: 25, transition: { duration: 0.5, ease: "easeIn" } }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    className="absolute top-8 left-4 right-4 md:left-0 md:right-0 bg-[#FFF9F0] text-[var(--text-primary)] border-4 md:border-8 border-black p-6 md:p-8 shadow-[8px_8px_0px_#FF5F5F] md:shadow-[12px_12px_0px_#FF5F5F] flex flex-col justify-between h-[420px] md:h-[480px] group"
+                    className="absolute top-8 left-4 right-4 md:left-0 md:right-0 bg-white text-black border-4 md:border-8 border-black p-6 md:p-8 shadow-[8px_8px_0px_#FF5F5F] md:shadow-[12px_12px_0px_#FF5F5F] flex flex-col justify-between h-[420px] md:h-[480px] group"
                     style={{ transformOrigin: "bottom center" }}
                   >
-                    {/* 📌 The "Masking Tape" */}
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-8 bg-white/70 border border-black/10 shadow-sm rotate-2 mix-blend-overlay z-20 pointer-events-none" />
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-8 bg-[#FFD166]/30 border border-black/5 -rotate-1 mix-blend-multiply z-20 pointer-events-none" />
 
-                    {/* 🔥 Floating Category Badge */}
                     <div className={`absolute -right-4 -top-4 p-3 rounded-full border-4 border-black ${cat.color} shadow-[4px_4px_0px_black] rotate-12 transition-transform z-20`}>
                       <CatIcon size={24} strokeWidth={3} className={cat.color.includes('text-white') ? 'text-white' : 'text-black'} />
                     </div>
@@ -170,7 +165,6 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                         {item.description || item.content || "A milestone event in Swaang's history."}
                       </p>
                       
-                      {/* Interaction Controls (Only clickable if it is the Top Card) */}
                       <div className="mt-auto flex gap-3 pt-4">
                         <button 
                           disabled={offsetIndex !== 0}
@@ -195,7 +189,6 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
             </AnimatePresence>
           ) : null}
 
-          {/* Deck Empty State / Reset */}
           {activeCardIndex >= (groupedEvents[activeYear]?.length || 0) && groupedEvents[activeYear]?.length > 0 && (
              <motion.div 
                initial={{ opacity: 0, scale: 0.9 }}
@@ -219,13 +212,11 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
           )}
         </div>
 
-        {/* Faded Background Decal */}
         <div className="absolute -bottom-20 -right-20 text-[300px] font-black opacity-[0.03] pointer-events-none select-none italic hidden md:block">
           {activeYear}
         </div>
       </div>
 
-      {/* 🪟 THE POP-UP MODAL (Preserved with all features) */}
       <AnimatePresence>
         {activeStory && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
@@ -241,34 +232,39 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
               initial={{ opacity: 0, scale: 0.9, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.9, y: 20 }} 
-              className="bg-[var(--bg-primary)] w-full max-w-3xl max-h-[85vh] overflow-y-auto border-4 border-black p-8 md:p-12 rounded-[2rem] shadow-[16px_16px_0px_#FF5F5F] relative z-10 text-[var(--text-primary)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              className="bg-[#FFF9F0] w-full max-w-4xl max-h-[85vh] overflow-y-auto border-8 border-black shadow-[16px_16px_0px_black] relative z-10 text-black p-4"
             >
               <button 
                 onClick={() => setActiveStory(null)} 
-                className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 bg-white border-4 border-black rounded-full flex items-center justify-center font-black text-xl hover:bg-[#FF5F5F] hover:text-white transition-colors shadow-[2px_2px_0px_black] hover:translate-y-0.5 hover:shadow-none"
+                className="absolute top-6 right-6 w-10 h-10 bg-white border-4 border-black rounded-full flex items-center justify-center font-black text-xl hover:bg-[#FF5F5F] hover:text-white transition-colors shadow-[2px_2px_0px_black] z-30"
               > 
                 <X size={20} /> 
               </button>
 
-              <span className="inline-block bg-[#06D6A0] text-black border-2 border-black px-4 py-1 font-black text-xs uppercase tracking-widest rounded-full mb-6 shadow-[2px_2px_0px_black]">
-                Journey {activeStory.year}
-              </span>
+              <div className="p-8 md:p-12">
+                <span className="inline-block bg-[#06D6A0] text-black border-4 border-black px-4 py-1 font-mono font-black text-xs uppercase tracking-widest mb-6 shadow-[4px_4px_0px_black]">
+                  SCENE: {activeStory.year}
+                </span>
 
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8 leading-none">
-                {activeStory.event || activeStory.title}
-              </h2>
+                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-8 leading-none">
+                  {activeStory.event || activeStory.title}
+                </h2>
 
-              {/* PHOTO GALLERY IN MODAL */}
-              {(activeStory.photo1 || activeStory.photo2) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  {activeStory.photo1 && (
-                    <img src={activeStory.photo1} className="w-full aspect-video object-cover rounded-2xl border-4 border-black shadow-[4px_4px_0px_black]" alt="Memory 1" />
-                  )}
-                  {activeStory.photo2 && (
-                    <img src={activeStory.photo2} className="w-full aspect-video object-cover rounded-2xl border-4 border-black shadow-[4px_4px_0px_black]" alt="Memory 2" />
-                  )}
-                </div>
-              )}
+                {/* PHOTO GALLERY IN MODAL */}
+                {(activeStory.photo1 || activeStory.photo2) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    {activeStory.photo1 && (
+                      <div className="border-4 border-black p-2 bg-white shadow-[8px_8px_0px_black]">
+                        <img src={activeStory.photo1} className="w-full aspect-video object-cover grayscale" alt="Memory 1" />
+                      </div>
+                    )}
+                    {activeStory.photo2 && (
+                      <div className="border-4 border-black p-2 bg-white shadow-[8px_8px_0px_black]">
+                        <img src={activeStory.photo2} className="w-full aspect-video object-cover grayscale" alt="Memory 2" />
+                      </div>
+                    )}
+                  </div>
+                )}
 
               <div className="bg-white border-4 border-black p-6 md:p-8 rounded-2xl shadow-[6px_6px_0px_black/20]">
                 <p className="font-bold text-sm md:text-base leading-relaxed whitespace-pre-wrap opacity-90">
@@ -283,6 +279,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                 >
                   Close Archive
                 </button>
+              </div>
               </div>
             </motion.div>
           </div>
