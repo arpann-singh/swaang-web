@@ -67,7 +67,7 @@ export default function FacultyBlueprint() {
                 // EXECUTIVE_FOUNDATION //
               </p>
               
-              <h2 className="text-7xl md:text-8xl font-black uppercase tracking-tighter text-black leading-[0.85]">
+              <h2 className="text-[13vw] sm:text-7xl md:text-8xl font-black uppercase tracking-tighter text-black leading-[0.85]">
                 THE <br />
                 <span className="text-[#06D6A0]" style={{ WebkitTextStroke: '3px black' }}>BACKBONE</span>
               </h2>
@@ -76,7 +76,7 @@ export default function FacultyBlueprint() {
               <motion.h4 
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                className="text-3xl md:text-4xl font-mono font-black uppercase tracking-widest text-black mt-10 leading-tight relative bg-[#FFD166] border-4 border-black p-4 shadow-[8px_8px_0px_black] inline-block w-full max-w-xl"
+                className="text-xl sm:text-3xl md:text-4xl font-mono font-black uppercase tracking-widest text-black mt-10 leading-tight relative bg-[#FFD166] border-4 border-black p-4 shadow-[8px_8px_0px_black] inline-block w-full max-w-xl"
               >
                 PROF. NAMRATA BHARGAVA
                 <span className="font-black text-sm block mt-2 text-[#FF5F5F]">FOUNDER'S VISION</span>

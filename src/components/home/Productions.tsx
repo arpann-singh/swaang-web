@@ -22,7 +22,7 @@ export default function Productions({ events }: { events: any[] }) {
             <span className="bg-[#FF5F5F] text-white px-6 py-2 font-mono font-black uppercase text-xs tracking-[0.3em] shadow-[4px_4px_0px_black] border-4 border-black inline-block mb-6">
               THE REPERTOIRE
             </span>
-            <h2 className="text-6xl md:text-8xl lg:text-[7rem] font-black uppercase tracking-tighter text-black leading-[0.85] mt-4">
+            <h2 className="text-[9vw] sm:text-6xl md:text-8xl lg:text-[7rem] font-black uppercase tracking-tighter text-black leading-[0.85] mt-4">
               MAJOR <br />
               <span className="text-white" style={{ WebkitTextStroke: '3px black' }}>PRODUCTIONS</span>
             </h2>
@@ -50,7 +50,7 @@ export default function Productions({ events }: { events: any[] }) {
                     <img 
                       src={e.image} 
                       alt={e.title} 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-90 group-hover:opacity-100 scale-105 group-hover:scale-100"
+                      className="w-full h-full object-cover transition-all duration-700 opacity-90 group-hover:opacity-100 scale-105 group-hover:scale-100"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gray-200">

@@ -1,55 +1,75 @@
 "use client";
-import { motion } from "framer-motion";
-import { Quote } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function FounderNote({ data }: { data: any }) {
-  const DirectorCard = ({ name, note, img, color, role, index }: any) => {
-    // 🎭 Rotations to create the "Scrapbook" feel
-    const rotations = ["-rotate-2", "rotate-0", "rotate-2"];
-    const hoverRotations = ["hover:-rotate-1", "hover:rotate-1", "hover:rotate-1"];
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+
+  const founders = [
+    { role: "Founder & Director", name: data?.founderName, note: data?.founderNote, img: data?.founderImage, color: "bg-[#FF5F5F]" },
+    { role: "Co-Founder", name: data?.coFounder1Name, note: data?.coFounder1Note, img: data?.coFounder1Image, color: "bg-[#06D6A0]" },
+    { role: "Co-Founder", name: data?.coFounder2Name, note: data?.coFounder2Note, img: data?.coFounder2Image, color: "bg-[#FFD166]" }
+  ];
+
+  const DirectorCardDesktop = ({ name, note, img, color, role, index }: any) => {
+    const cardRotations = ["-rotate-2", "rotate-1", "-rotate-1"];
+    const hoverRotations = ["hover:rotate-0", "hover:-rotate-1", "hover:rotate-1"];
+    const postItRotations = ["rotate-6", "-rotate-6", "rotate-3"];
+    const postItColors = ["bg-[#FFD166]", "bg-[#06D6A0]", "bg-[#FF5F5F]"];
 
     return (
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className={`relative group flex flex-col h-full transition-transform duration-300 ${rotations[index]} ${hoverRotations[index]}`}
+        className={`relative group flex flex-col h-full transition-transform duration-300 ${cardRotations[index]} ${hoverRotations[index]}`}
       >
         {/* 📸 STACKED PAPER EFFECT (Brutalist Layer) */}
         <div className="absolute inset-0 bg-black translate-x-4 translate-y-4 -z-10 group-hover:translate-x-6 group-hover:translate-y-6 transition-all" />
         
-        {/* 🎭 MAIN CONTENT CARD */}
-        <div className="bg-[#FFF9F0] border-8 border-black p-6 md:p-8 h-full flex flex-col shadow-[8px_8px_0px_#FF5F5F]">
+        {/* 🎭 MAIN CONTENT CARD (Folder) */}
+        <div className={`bg-[#FFF9F0] border-8 border-black p-6 md:p-8 h-full flex flex-col shadow-[8px_8px_0px_black]`}>
           
-          {/* CSS Masking Tape */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-24 h-8 bg-white border-2 border-black/10 shadow-sm -rotate-3 z-30 opacity-90 mix-blend-multiply" />
+          {/* Top Masking Tape */}
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-10 bg-white/80 backdrop-blur-sm border-2 border-black/20 shadow-sm -rotate-3 z-30 opacity-90 mix-blend-multiply flex items-center justify-center">
+             <div className="w-full h-[1px] bg-black/10"></div>
+          </div>
+          
+          {/* Corner Masking Tape */}
+          <div className="absolute -bottom-4 -left-4 w-20 h-8 bg-white/80 backdrop-blur-sm border-2 border-black/20 shadow-sm rotate-45 z-30 opacity-90 mix-blend-multiply" />
 
-          <div className="relative mb-8 aspect-square w-full">
-            <div className={`absolute inset-0 ${color} border-4 border-black translate-x-3 translate-y-3 -z-10`} />
-            <div className="relative h-full w-full border-4 border-black overflow-hidden bg-gray-200 grayscale group-hover:grayscale-0 transition-all duration-700">
+          {/* POLAROID FRAME */}
+          <div className="relative mb-12 bg-white border-4 border-black p-4 pb-12 shadow-[4px_4px_0px_black] transform group-hover:scale-[1.02] transition-transform duration-300 z-20">
+            <div className={`absolute inset-0 ${color} opacity-20 -z-10`} />
+            
+            <div className="relative aspect-square w-full border-4 border-black overflow-hidden bg-gray-200 transition-all duration-700">
                {img ? (
-                 <img 
-                   src={img} 
-                   className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-700" 
-                   alt={name}
-                 />
+                 <img src={img} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-700" alt={name} />
                ) : (
                  <div className="h-full w-full flex items-center justify-center font-mono font-black text-black opacity-30 text-2xl uppercase -rotate-12 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)]">MISSING</div>
                )}
             </div>
+
+            {/* Overlapping Post-it Note */}
+            <div className={`absolute -right-8 -top-8 w-24 h-24 ${postItColors[index]} border-4 border-black shadow-[4px_4px_0px_black] ${postItRotations[index]} p-3 flex flex-col justify-center items-center z-40 transform group-hover:rotate-12 transition-transform`}>
+               <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-black shadow-inner"></div>
+               <span className="font-cinzel font-black uppercase text-center leading-none text-black text-[12px] mt-2">EST.<br/>2014</span>
+            </div>
             
             {/* Role Tag (Typewriter Tape) */}
-            <div className={`absolute -bottom-4 -right-4 bg-black text-white border-4 border-black px-4 py-2 font-mono font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_${color}]`}>
+            <div className={`absolute -bottom-6 -left-6 bg-black text-white border-4 border-black px-4 py-2 font-mono font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_black] z-40 -rotate-3`}>
               {role}
             </div>
           </div>
 
-          <div className="space-y-4 flex-1 mt-4">
-            <div className="flex flex-col gap-2 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_black]">
+          {/* FOUNDER QUOTE / NOTE */}
+          <div className="space-y-4 flex-1 mt-4 relative z-10">
+            <div className="flex flex-col gap-2 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_black] relative">
+              <div className="absolute -top-4 -right-2 text-6xl text-black opacity-10 font-serif">"</div>
               <h4 className="text-xl md:text-2xl font-black uppercase tracking-widest text-black leading-none border-b-4 border-black pb-2 mb-2">
-                {name || "DIRECTOR"} :
+                {name || "DIRECTOR"}
               </h4>
-              <p className="text-sm font-mono font-bold text-black leading-relaxed uppercase">
+              <p className="text-sm font-mono font-bold text-black leading-relaxed uppercase relative z-10">
                 {note || "THE STAGE IS WHERE WE FIND OUR TRUEST SELVES."}
               </p>
             </div>
@@ -58,8 +78,9 @@ export default function FounderNote({ data }: { data: any }) {
       </motion.div>
     );
   };
+
   return (
-    <section className="py-24 md:py-40 px-6 bg-transparent border-b-8 border-black relative overflow-hidden">
+    <section className="py-24 md:py-40 px-6 bg-transparent border-b-8 border-black relative">
       
       {/* 🏙️ MASSIVE CASTING CALL WATERMARK */}
       <div className="absolute inset-0 flex flex-col justify-center gap-16 pointer-events-none opacity-10 overflow-hidden -rotate-3 z-0">
@@ -72,7 +93,7 @@ export default function FounderNote({ data }: { data: any }) {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-black pb-10">
+        <div className="mb-16 md:mb-24 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-black pb-10">
           <div className="max-w-3xl">
             <span className="bg-black text-[#FFD166] px-6 py-2 border-4 border-black font-mono font-black uppercase text-[12px] tracking-[0.3em] shadow-[6px_6px_0px_#FF5F5F] mb-6 inline-block">
               EXECUTIVE BOARD
@@ -86,32 +107,109 @@ export default function FounderNote({ data }: { data: any }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16 md:gap-10 lg:gap-14 pt-10">
-          <DirectorCard 
-            index={0} 
-            role="Founder & Director" 
-            name={data?.founderName} 
-            note={data?.founderNote} 
-            img={data?.founderImage} 
-            color="bg-[#FF5F5F]" 
-          />
-          <DirectorCard 
-            index={1} 
-            role="Co-Founder" 
-            name={data?.coFounder1Name} 
-            note={data?.coFounder1Note} 
-            img={data?.coFounder1Image} 
-            color="bg-[#06D6A0]" 
-          />
-          <DirectorCard 
-            index={2} 
-            role="Co-Founder" 
-            name={data?.coFounder2Name} 
-            note={data?.coFounder2Note} 
-            img={data?.coFounder2Image} 
-            color="bg-[#FFD166]" 
-          />
+        {/* ========================================= */}
+        {/* DESKTOP VIEW: SCRAPBOOK GRID (hidden on mobile) */}
+        {/* ========================================= */}
+        <div className="hidden md:grid md:grid-cols-3 gap-10 lg:gap-14 pt-10 pb-16">
+          {founders.map((founder, i) => (
+            <DirectorCardDesktop key={i} index={i} {...founder} />
+          ))}
         </div>
+
+        {/* ========================================= */}
+        {/* MOBILE VIEW: JOURNEY FLASHCARD DECK (hidden on desktop) */}
+        {/* ========================================= */}
+        <div className="md:hidden relative min-h-[650px] w-full max-w-sm mx-auto py-8">
+          <AnimatePresence>
+            {founders.map((item, index) => {
+              const isPast = index < activeCardIndex;
+              const offsetIndex = index - activeCardIndex;
+              
+              if (isPast || offsetIndex > 2) return null;
+
+              const zIndex = 40 - offsetIndex;
+              const scale = 1 - (offsetIndex * 0.05);
+              const yOffset = offsetIndex * 20;
+              
+              const rotations = [-2, 1, -1];
+              const baseRotation = rotations[index % rotations.length];
+
+              return (
+                <motion.div 
+                  key={index} 
+                  initial={{ opacity: 0, y: yOffset + 100, scale: 0.8 }}
+                  animate={{ opacity: 1, y: yOffset, scale: scale, zIndex: zIndex, rotate: baseRotation }}
+                  exit={{ opacity: 0, x: "-120%", rotate: -25, transition: { duration: 0.5, ease: "easeIn" } }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="absolute top-0 left-0 right-0 bg-[#FFF9F0] border-8 border-black p-4 md:p-6 shadow-[8px_8px_0px_black] flex flex-col min-h-[500px]"
+                  style={{ transformOrigin: "bottom center" }}
+                >
+                  {/* Top Masking Tape */}
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-24 h-8 bg-white/80 border-2 border-black/20 shadow-sm -rotate-3 z-30 flex items-center justify-center">
+                     <div className="w-full h-[1px] bg-black/10"></div>
+                  </div>
+                  
+                  {/* POLAROID FRAME */}
+                  <div className="relative mb-4 bg-white border-4 border-black p-2 pb-6 shadow-[4px_4px_0px_black] z-20 shrink-0">
+                    <div className="relative h-48 w-full border-4 border-black overflow-hidden bg-gray-200">
+                       {item.img ? (
+                         <img src={item.img} className="w-full h-full object-cover" alt={item.name} />
+                       ) : (
+                         <div className="h-full w-full flex items-center justify-center font-mono font-black text-black opacity-30 text-xl uppercase -rotate-12 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)]">MISSING</div>
+                       )}
+                    </div>
+                    {/* Role Tag (Typewriter Tape) */}
+                    <div className="absolute -bottom-5 -left-4 bg-black text-white border-4 border-black px-3 py-1.5 font-mono font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_black] z-40 -rotate-3">
+                      {item.role}
+                    </div>
+                  </div>
+
+                  {/* FOUNDER QUOTE / NOTE */}
+                  <div className="flex flex-col gap-2 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_black] relative flex-1">
+                    <div className="absolute -top-2 -right-1 text-5xl text-black opacity-10 font-serif">"</div>
+                    <h4 className="text-lg font-black uppercase tracking-widest text-black leading-none border-b-4 border-black pb-2 mb-1 shrink-0">
+                      {item.name || "DIRECTOR"}
+                    </h4>
+                    <p className="text-[10px] font-mono font-bold text-black leading-relaxed uppercase relative z-10">
+                      {item.note || "THE STAGE IS WHERE WE FIND OUR TRUEST SELVES."}
+                    </p>
+                  </div>
+
+                  {/* NEXT BUTTON */}
+                  <div className="mt-4 shrink-0">
+                    <button 
+                      disabled={offsetIndex !== 0}
+                      onClick={(e) => { e.stopPropagation(); setActiveCardIndex(prev => prev + 1); }}
+                      className={`w-full bg-[#06D6A0] text-black border-4 border-black py-4 font-black uppercase text-xs shadow-[4px_4px_0px_black] transition-all flex items-center justify-center gap-2 ${offsetIndex === 0 ? 'hover:bg-[#FF5F5F] hover:text-white active:translate-x-1 active:translate-y-1 active:shadow-none' : 'opacity-50 cursor-not-allowed pointer-events-none'}`}
+                    >
+                      Next Founder ➔
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {/* End of Deck Message */}
+          {activeCardIndex >= founders.length && (
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="absolute top-0 left-0 right-0 bg-black text-[#FFF9F0] text-center border-4 border-dashed border-[#FFF9F0]/30 p-8 flex flex-col items-center justify-center min-h-[500px] z-10"
+             >
+               <h3 className="text-3xl font-black uppercase mb-2">END OF DECK</h3>
+               <p className="font-bold text-xs opacity-50 uppercase tracking-widest mb-8">All founders viewed.</p>
+               
+               <button 
+                 onClick={() => setActiveCardIndex(0)}
+                 className="bg-[#FFD166] text-black border-4 border-black px-8 py-4 font-black uppercase tracking-widest shadow-[4px_4px_0px_#FFF9F0]/30 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+               >
+                 RESTACK ↺
+               </button>
+             </motion.div>
+          )}
+        </div>
+
       </div>
     </section>
   );

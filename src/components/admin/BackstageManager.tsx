@@ -193,199 +193,222 @@ export default function BackstageManager() {
   };
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8 border-b-8 border-[var(--border-primary)] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
+      
+      {/* HEADER SECTION */}
+      <div className="mb-12 border-b-8 border-black pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-[#FFD166] p-6 shadow-[8px_8px_0px_black]">
         <div>
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Backstage Control</h2>
-          <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Manage Crew Resources</p>
+          <h2 className="text-4xl md:text-6xl font-cinzel font-black uppercase tracking-tighter text-black leading-none">Backstage<br/>Control</h2>
+          <p className="font-mono font-black uppercase tracking-[0.4em] text-black bg-white inline-block px-2 py-1 mt-4 border-4 border-black">Manage Crew Resources</p>
         </div>
         
-        <div className="flex gap-3">
-          <button onClick={registerAsAdmin} className="bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] px-4 py-2 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
-            👑 Admin Sync
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button onClick={registerAsAdmin} className="bg-white text-black border-4 border-black px-6 py-4 font-black uppercase text-xs tracking-widest shadow-[6px_6px_0px_black] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[8px_8px_0px_black] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+            👑 ADMIN SYNC
           </button>
-          <button onClick={enableNotifications} className="bg-[#06D6A0] text-white border-4 border-[var(--border-primary)] px-6 py-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
-            🔔 Crew Alerts
+          <button onClick={enableNotifications} className="bg-[#06D6A0] text-black border-4 border-black px-6 py-4 font-black uppercase text-xs tracking-widest shadow-[6px_6px_0px_black] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[8px_8px_0px_black] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+            🔔 CREW ALERTS
           </button>
         </div>
       </div>
 
       {/* 🔥 NEW: LIVE CUE CONTROLLER */}
-      <div className="bg-[#2D2D2D] border-4 border-black p-6 rounded-[2rem] shadow-[8px_8px_0px_black] mb-12 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px] pointer-events-none opacity-20" />
+      <div className="bg-black border-8 border-black p-6 md:p-10 shadow-[12px_12px_0px_#FF5F5F] mb-16 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.05)_50%,rgba(255,255,255,0.05)_75%,transparent_75%,transparent)] bg-[length:40px_40px] pointer-events-none opacity-50" />
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-2 bg-white rounded-full" />
-              <h3 className="font-black text-3xl uppercase tracking-tighter">LIVE CUE SYSTEM</h3>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-4 bg-[#FF5F5F]" />
+              <h3 className="font-cinzel font-black text-3xl md:text-5xl uppercase tracking-tighter">LIVE CUE SYSTEM</h3>
             </div>
-            <span className="font-mono text-xs uppercase tracking-widest bg-black px-3 py-1 border-2 border-white">OVERRIDE ACTIVE</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] bg-[#FF5F5F] text-black font-black px-4 py-2 border-4 border-white shadow-[4px_4px_0px_white]">OVERRIDE ACTIVE</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button onClick={() => setLiveCueState("IDLE")} className={`py-6 border-4 border-black font-black uppercase text-xl shadow-[6px_6px_0px_black] transition-all ${liveCue.state === 'IDLE' ? 'bg-black text-white translate-y-1 shadow-none' : 'bg-gray-400 text-black hover:bg-gray-300'}`}>
-              IDLE (OFF)
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <button onClick={() => setLiveCueState("IDLE")} className={`py-8 border-4 border-white font-black uppercase text-2xl tracking-widest shadow-[6px_6px_0px_white] transition-all ${liveCue.state === 'IDLE' ? 'bg-white text-black translate-y-1 translate-x-1 shadow-none' : 'bg-transparent text-white hover:bg-white/10'}`}>
+              IDLE [OFF]
             </button>
-            <button onClick={() => setLiveCueState("STANDBY")} className={`py-6 border-4 border-black font-black uppercase text-xl shadow-[6px_6px_0px_black] transition-all ${liveCue.state === 'STANDBY' ? 'bg-[#FFD166] text-black translate-y-1 shadow-none animate-pulse' : 'bg-[#FFD166]/50 text-black hover:bg-[#FFD166]'}`}>
+            <button onClick={() => setLiveCueState("STANDBY")} className={`py-8 border-4 border-[#FFD166] font-black uppercase text-2xl tracking-widest shadow-[6px_6px_0px_#FFD166] transition-all ${liveCue.state === 'STANDBY' ? 'bg-[#FFD166] text-black translate-y-1 translate-x-1 shadow-none animate-pulse' : 'bg-transparent text-[#FFD166] hover:bg-[#FFD166]/10'}`}>
               STANDBY
             </button>
-            <button onClick={() => setLiveCueState("GO")} className={`py-6 border-4 border-black font-black uppercase text-xl shadow-[6px_6px_0px_black] transition-all ${liveCue.state === 'GO' ? 'bg-[#06D6A0] text-black translate-y-1 shadow-none animate-pulse' : 'bg-[#06D6A0]/50 text-black hover:bg-[#06D6A0]'}`}>
-              GO!
+            <button onClick={() => setLiveCueState("GO")} className={`py-8 border-4 border-[#06D6A0] font-black uppercase text-2xl tracking-widest shadow-[6px_6px_0px_#06D6A0] transition-all ${liveCue.state === 'GO' ? 'bg-[#06D6A0] text-black translate-y-1 translate-x-1 shadow-none animate-[pulse_0.5s_infinite]' : 'bg-transparent text-[#06D6A0] hover:bg-[#06D6A0]/10'}`}>
+              GO! GO! GO!
             </button>
           </div>
         </div>
       </div>
 
-      <div className="bg-[#2D2D2D] border-4 border-[#FFD166] p-6 rounded-[2rem] shadow-[8px_8px_0px_#FFD166] mb-12 text-white">
-        <div className="flex items-center gap-3 mb-6">
-           <div className="h-8 w-2 bg-[#FFD166] rounded-full" />
-           <h3 className="font-black text-2xl uppercase tracking-tighter text-[#FFD166]">Daily Call Sheet & Security</h3>
+      {/* DAILY CALL SHEET */}
+      <div className="bg-white border-8 border-black p-6 md:p-10 shadow-[12px_12px_0px_black] mb-16 text-black">
+        <div className="flex items-center gap-4 mb-8 border-b-4 border-black pb-4">
+           <div className="h-8 w-8 bg-[#FFD166] border-4 border-black flex items-center justify-center font-black">!</div>
+           <h3 className="font-cinzel font-black text-3xl uppercase tracking-tighter">DAILY CALL SHEET & SECURITY</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <div className="space-y-2 lg:col-span-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Date</label>
-            <input type="text" placeholder="e.g. Oct 24" value={crewSettings.callDate} onChange={e => setCrewSettings({...crewSettings, callDate: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
+            <label className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-2 py-1">DATE</label>
+            <input type="text" placeholder="e.g. OCT 24" value={crewSettings.callDate} onChange={e => setCrewSettings({...crewSettings, callDate: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm focus:bg-[#FFD166] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_black] outline-none transition-all placeholder:text-black/30" />
           </div>
           <div className="space-y-2 lg:col-span-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Time</label>
-            <input type="text" placeholder="e.g. 5:00 PM" value={crewSettings.callTime} onChange={e => setCrewSettings({...crewSettings, callTime: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
+            <label className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-2 py-1">TIME</label>
+            <input type="text" placeholder="e.g. 17:00 HRS" value={crewSettings.callTime} onChange={e => setCrewSettings({...crewSettings, callTime: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm focus:bg-[#FFD166] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_black] outline-none transition-all placeholder:text-black/30" />
           </div>
           <div className="space-y-2 lg:col-span-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Location</label>
-            <input type="text" placeholder="e.g. Auditorium" value={crewSettings.callLocation} onChange={e => setCrewSettings({...crewSettings, callLocation: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
+            <label className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-2 py-1">LOCATION</label>
+            <input type="text" placeholder="e.g. AUDITORIUM" value={crewSettings.callLocation} onChange={e => setCrewSettings({...crewSettings, callLocation: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm focus:bg-[#FFD166] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_black] outline-none transition-all placeholder:text-black/30" />
           </div>
           <div className="space-y-2 lg:col-span-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Who is Called?</label>
-            <input type="text" placeholder="e.g. Leads Only" value={crewSettings.callWho} onChange={e => setCrewSettings({...crewSettings, callWho: e.target.value})} className="w-full bg-black/20 border-2 border-[#FFD166]/30 p-3 rounded-xl font-bold focus:border-[#FFD166] outline-none" />
+            <label className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-2 py-1">CALLED</label>
+            <input type="text" placeholder="e.g. LEADS ONLY" value={crewSettings.callWho} onChange={e => setCrewSettings({...crewSettings, callWho: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm focus:bg-[#FFD166] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_black] outline-none transition-all placeholder:text-black/30" />
           </div>
-          <div className="space-y-2 lg:col-span-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[#FF5F5F]">Master Passcode</label>
-            <input type="text" value={crewSettings.passcode} onChange={e => setCrewSettings({...crewSettings, passcode: e.target.value})} className="w-full bg-black/20 border-2 border-[#FF5F5F]/50 p-3 rounded-xl font-black tracking-widest text-[#FF5F5F]" />
+          <div className="space-y-2 lg:col-span-1 relative">
+            <label className="text-[10px] font-black uppercase tracking-widest bg-[#FF5F5F] text-black border-2 border-black px-2 py-1 absolute -top-3 right-4 z-10 rotate-3">TOP SECRET</label>
+            <label className="text-[10px] font-black uppercase tracking-widest bg-black text-[#FF5F5F] px-2 py-1">MASTER PASSCODE</label>
+            <input type="text" value={crewSettings.passcode} onChange={e => setCrewSettings({...crewSettings, passcode: e.target.value})} className="w-full bg-[#FF5F5F] border-4 border-black p-4 font-black uppercase text-sm tracking-[0.2em] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_black] outline-none transition-all text-black" />
           </div>
         </div>
-        <button onClick={saveCrewSettings} className="mt-6 w-full bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-3 rounded-xl font-black uppercase shadow-[4px_4px_0px_#FFF9F0] hover:translate-y-1 transition-all">
-          Update Call Sheet & Passcode
+        <button onClick={saveCrewSettings} className="mt-8 w-full bg-[#FFD166] text-black border-4 border-black py-5 font-black uppercase tracking-widest text-lg shadow-[8px_8px_0px_black] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_black] active:translate-y-2 active:translate-x-2 active:shadow-none transition-all">
+          [ UPDATE CALL SHEET & PASSCODE ]
         </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
         {/* CALL BOARD */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-             <div className="h-8 w-2 bg-[#FFD166] rounded-full" />
-             <h3 className="font-black text-2xl uppercase tracking-tighter">Call Board</h3>
+        <div className="space-y-6 flex flex-col h-[700px]">
+          <div className="flex items-center gap-3 bg-[#FFD166] border-4 border-black p-4 shadow-[4px_4px_0px_black]">
+             <div className="h-6 w-6 bg-black flex items-center justify-center font-black text-[#FFD166]">1</div>
+             <h3 className="font-black text-xl uppercase tracking-tighter text-black">CALL BOARD</h3>
           </div>
 
-          <div className="bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)]">
+          <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_black] flex-shrink-0">
             <div className="space-y-4">
-              <input placeholder="Notice Title" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
-              <textarea placeholder="Announcement..." value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl h-24 resize-none" />
+              <input placeholder="NOTICE TITLE" value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] placeholder:text-black/30" />
+              <textarea placeholder="ANNOUNCEMENT..." value={noticeForm.message} onChange={e => setNoticeForm({...noticeForm, message: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-bold uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] h-24 resize-none placeholder:text-black/30" />
               
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Author" value={noticeForm.author} onChange={e => setNoticeForm({...noticeForm, author: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl text-sm" />
-                <select value={noticeForm.priority} onChange={e => setNoticeForm({...noticeForm, priority: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-black uppercase text-sm rounded-xl">
-                  <option value="normal">🔵 Normal</option>
-                  <option value="urgent">🔴 Urgent (Requires Ack)</option>
+                <input placeholder="AUTHOR" value={noticeForm.author} onChange={e => setNoticeForm({...noticeForm, author: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] placeholder:text-black/30" />
+                <select value={noticeForm.priority} onChange={e => setNoticeForm({...noticeForm, priority: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] cursor-pointer">
+                  <option value="normal">NORMAL</option>
+                  <option value="urgent">URGENT (!)</option>
                 </select>
               </div>
 
-              <div className="flex items-center gap-3 p-4 bg-[#FF5F5F]/10 border-2 border-[#FF5F5F] rounded-xl">
-                <input type="checkbox" checked={noticeForm.sendPush} onChange={e => setNoticeForm({...noticeForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#FF5F5F]" />
-                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Push Alert to Crew</label>
+              <div className="flex items-center gap-3 p-4 border-4 border-black bg-[#FF5F5F] shadow-[4px_4px_0px_black] mt-2">
+                <input type="checkbox" checked={noticeForm.sendPush} onChange={e => setNoticeForm({...noticeForm, sendPush: e.target.checked})} className="w-6 h-6 accent-black border-4 border-black cursor-pointer" />
+                <label className="text-xs font-black uppercase tracking-widest text-black cursor-pointer">PUSH ALERT TO CREW</label>
               </div>
 
-              <button onClick={postNotice} className="w-full bg-[#FFD166] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
-                Post Notice
+              <button onClick={postNotice} className="w-full bg-black text-white border-4 border-black py-4 mt-2 font-black uppercase tracking-widest shadow-[6px_6px_0px_#FFD166] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0px_#FFD166] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                POST NOTICE
               </button>
             </div>
           </div>
 
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 pb-10">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2 border-4 border-black bg-white p-4 shadow-[inset_4px_4px_0px_rgba(0,0,0,0.1)] custom-scrollbar">
             {notices.map(n => (
-              <div key={n.id} className="bg-white border-4 border-[var(--border-primary)] p-4 rounded-2xl flex justify-between items-start gap-4">
-                <div className="flex-1">
-                  <h4 className="font-black uppercase text-sm leading-tight">{n.title}</h4>
-                  <p className="text-[10px] font-bold opacity-60 mt-1">{n.author} • {n.priority}</p>
+              <div key={n.id} className={`border-4 border-black p-4 flex flex-col gap-2 shadow-[4px_4px_0px_black] ${n.priority === 'urgent' ? 'bg-[#FF5F5F]' : 'bg-white'}`}>
+                <div className="flex justify-between items-start gap-4">
+                  <h4 className="font-black uppercase text-sm leading-tight text-black">{n.title}</h4>
+                  <button onClick={() => deleteNotice(n.id)} className="bg-black text-white px-2 py-1 text-xs font-black uppercase hover:bg-[#FF5F5F] border-2 border-black">DEL</button>
                 </div>
-                <button onClick={() => deleteNotice(n.id)} className="bg-red-50 text-red-500 border-2 border-[var(--border-primary)] p-2 rounded-lg">🗑️</button>
+                <p className="font-bold text-xs uppercase opacity-80 text-black">{n.message}</p>
+                <div className="mt-2 text-[9px] font-black uppercase bg-black text-white px-2 py-1 self-start inline-block">
+                  BY {n.author}
+                </div>
               </div>
             ))}
+            {notices.length === 0 && <p className="text-center font-black uppercase opacity-30 mt-10 text-black">NO NOTICES</p>}
           </div>
         </div>
 
         {/* REHEARSAL REPORTS */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-             <div className="h-8 w-2 bg-[#FF5F5F] rounded-full" />
-             <h3 className="font-black text-2xl uppercase tracking-tighter">Rehearsal Reports</h3>
+        <div className="space-y-6 flex flex-col h-[700px]">
+          <div className="flex items-center gap-3 bg-[#FF5F5F] border-4 border-black p-4 shadow-[4px_4px_0px_black]">
+             <div className="h-6 w-6 bg-black flex items-center justify-center font-black text-[#FF5F5F]">2</div>
+             <h3 className="font-black text-xl uppercase tracking-tighter text-black">REHEARSAL REPORTS</h3>
           </div>
 
-          <div className="bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)]">
+          <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_black] flex-shrink-0">
             <div className="space-y-4">
-              <input placeholder="Report Title (e.g. Run Through Notes)" value={reportForm.title} onChange={e => setReportForm({...reportForm, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
-              <textarea placeholder="Detailed Notes for Cast & Crew..." value={reportForm.notes} onChange={e => setReportForm({...reportForm, notes: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl h-24 resize-none" />
-              <input placeholder="Next Call Instructions" value={reportForm.nextCall} onChange={e => setReportForm({...reportForm, nextCall: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
-              <input placeholder="Author" value={reportForm.author} onChange={e => setReportForm({...reportForm, author: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
+              <input placeholder="REPORT TITLE" value={reportForm.title} onChange={e => setReportForm({...reportForm, title: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] placeholder:text-black/30" />
+              <textarea placeholder="DETAILED NOTES..." value={reportForm.notes} onChange={e => setReportForm({...reportForm, notes: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-bold uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] h-24 resize-none placeholder:text-black/30" />
               
-              <button onClick={postReport} className="w-full bg-[#FF5F5F] text-white border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
-                Log Report
+              <div className="grid grid-cols-2 gap-4">
+                <input placeholder="NEXT CALL" value={reportForm.nextCall} onChange={e => setReportForm({...reportForm, nextCall: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] placeholder:text-black/30" />
+                <input placeholder="AUTHOR" value={reportForm.author} onChange={e => setReportForm({...reportForm, author: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] placeholder:text-black/30" />
+              </div>
+
+              <button onClick={postReport} className="w-full bg-black text-white border-4 border-black py-4 mt-2 font-black uppercase tracking-widest shadow-[6px_6px_0px_#FF5F5F] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0px_#FF5F5F] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                LOG REPORT
               </button>
             </div>
           </div>
 
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 pb-10">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2 border-4 border-black bg-white p-4 shadow-[inset_4px_4px_0px_rgba(0,0,0,0.1)] custom-scrollbar">
             {rehearsalReports.map(r => (
-              <div key={r.id} className="bg-white border-4 border-[var(--border-primary)] p-4 rounded-2xl flex justify-between items-start gap-4">
-                <div className="flex-1">
-                  <h4 className="font-black uppercase text-sm leading-tight">{r.title}</h4>
-                  <p className="text-[10px] font-bold opacity-60 mt-1">{r.author} • {new Date(r.createdAt).toLocaleDateString()}</p>
+              <div key={r.id} className="bg-white border-4 border-black p-4 flex flex-col gap-2 shadow-[4px_4px_0px_black]">
+                <div className="flex justify-between items-start gap-4">
+                  <h4 className="font-black uppercase text-sm leading-tight text-black">{r.title}</h4>
+                  <button onClick={() => deleteReport(r.id)} className="bg-black text-white px-2 py-1 text-xs font-black uppercase hover:bg-[#FF5F5F] border-2 border-black">DEL</button>
                 </div>
-                <button onClick={() => deleteReport(r.id)} className="bg-red-50 text-red-500 border-2 border-[var(--border-primary)] p-2 rounded-lg">🗑️</button>
+                <p className="font-bold text-xs uppercase opacity-80 text-black">{r.notes}</p>
+                {r.nextCall && <p className="font-black text-xs uppercase text-[#FF5F5F] mt-1">NEXT: {r.nextCall}</p>}
+                <div className="mt-2 text-[9px] font-black uppercase bg-black text-white px-2 py-1 self-start inline-block">
+                  BY {r.author} • {new Date(r.createdAt).toLocaleDateString()}
+                </div>
               </div>
             ))}
+            {rehearsalReports.length === 0 && <p className="text-center font-black uppercase opacity-30 mt-10 text-black">NO REPORTS YET</p>}
           </div>
         </div>
 
         {/* VAULT */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-             <div className="h-8 w-2 bg-[#06D6A0] rounded-full" />
-             <h3 className="font-black text-2xl uppercase tracking-tighter">Script Vault</h3>
+        <div className="space-y-6 flex flex-col h-[700px]">
+          <div className="flex items-center gap-3 bg-[#06D6A0] border-4 border-black p-4 shadow-[4px_4px_0px_black]">
+             <div className="h-6 w-6 bg-black flex items-center justify-center font-black text-[#06D6A0]">3</div>
+             <h3 className="font-black text-xl uppercase tracking-tighter text-black">SCRIPT VAULT</h3>
           </div>
 
-          <div className="bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)]">
+          <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_black] flex-shrink-0">
             <div className="space-y-4">
-              <input placeholder="Document Name" value={vaultForm.title} onChange={e => setVaultForm({...vaultForm, title: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
-              <input placeholder="Drive Link" type="url" value={vaultForm.link} onChange={e => setVaultForm({...vaultForm, link: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-bold rounded-xl" />
-              <select value={vaultForm.type} onChange={e => setVaultForm({...vaultForm, type: e.target.value})} className="w-full border-2 border-[var(--border-primary)] p-4 font-black uppercase text-sm rounded-xl">
-                <option value="script">📝 Script</option>
-                <option value="audio">🎵 Audio</option>
-                <option value="document">📁 Document</option>
+              <input placeholder="DOCUMENT NAME" value={vaultForm.title} onChange={e => setVaultForm({...vaultForm, title: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] placeholder:text-black/30" />
+              <input placeholder="SECURE LINK (DRIVE/PDF)" type="url" value={vaultForm.link} onChange={e => setVaultForm({...vaultForm, link: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] placeholder:text-black/30" />
+              
+              <select value={vaultForm.type} onChange={e => setVaultForm({...vaultForm, type: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-xs focus:bg-[#FFD166] outline-none shadow-[4px_4px_0px_black] cursor-pointer">
+                <option value="script">SCRIPT (TXT/PDF)</option>
+                <option value="audio">AUDIO FILE</option>
+                <option value="document">OTHER DOC</option>
               </select>
 
-              <div className="flex items-center gap-3 p-4 bg-[#06D6A0]/10 border-2 border-[#06D6A0] rounded-xl">
-                <input type="checkbox" checked={vaultForm.sendPush} onChange={e => setVaultForm({...vaultForm, sendPush: e.target.checked})} className="w-5 h-5 accent-[#06D6A0]" />
-                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Push Alert about update</label>
+              <div className="flex items-center gap-3 p-4 border-4 border-black bg-[#06D6A0] shadow-[4px_4px_0px_black] mt-2">
+                <input type="checkbox" checked={vaultForm.sendPush} onChange={e => setVaultForm({...vaultForm, sendPush: e.target.checked})} className="w-6 h-6 accent-black border-4 border-black cursor-pointer" />
+                <label className="text-xs font-black uppercase tracking-widest text-black cursor-pointer">NOTIFY CREW</label>
               </div>
 
-              <button onClick={addToVault} className="w-full bg-[#06D6A0] text-[var(--text-primary)] border-4 border-[var(--border-primary)] py-4 rounded-xl font-black uppercase shadow-[4px_4px_0px_var(--border-primary)] hover:translate-y-1 transition-all">
-                Upload to Vault
+              <button onClick={addToVault} className="w-full bg-black text-white border-4 border-black py-4 mt-2 font-black uppercase tracking-widest shadow-[6px_6px_0px_#06D6A0] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0px_#06D6A0] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                UPLOAD TO VAULT
               </button>
             </div>
           </div>
 
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 pb-10">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2 border-4 border-black bg-white p-4 shadow-[inset_4px_4px_0px_rgba(0,0,0,0.1)] custom-scrollbar">
             {vault.map(v => (
-              <div key={v.id} className="bg-white border-4 border-[var(--border-primary)] p-3 rounded-2xl flex justify-between items-center gap-4">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-8 h-8 bg-gray-100 border-2 border-[var(--border-primary)] rounded-lg flex items-center justify-center shrink-0">{v.type === 'script' ? '📝' : '📁'}</div>
-                  <h4 className="font-black uppercase text-xs truncate">{v.title}</h4>
+              <div key={v.id} className="bg-white border-4 border-black p-4 flex items-center justify-between gap-4 shadow-[4px_4px_0px_black]">
+                <div className="flex items-center gap-4 overflow-hidden">
+                  <div className="w-10 h-10 bg-[#FFD166] border-4 border-black flex items-center justify-center shrink-0 font-black text-lg">
+                    {v.type === 'script' ? 'S' : v.type === 'audio' ? 'A' : 'D'}
+                  </div>
+                  <div className="flex flex-col">
+                    <a href={v.link} target="_blank" rel="noopener noreferrer" className="font-black uppercase text-sm truncate hover:underline hover:text-[#06D6A0] transition-colors">{v.title}</a>
+                    <span className="text-[9px] font-black uppercase text-black/50">{v.type}</span>
+                  </div>
                 </div>
-                <button onClick={() => deleteFromVault(v.id)} className="bg-red-50 text-red-500 border-2 border-[var(--border-primary)] p-2 rounded-lg">🗑️</button>
+                <button onClick={() => deleteFromVault(v.id)} className="bg-black text-white px-2 py-2 text-xs font-black uppercase hover:bg-[#FF5F5F] border-2 border-black shrink-0">DEL</button>
               </div>
             ))}
+            {vault.length === 0 && <p className="text-center font-black uppercase opacity-30 mt-10 text-black">VAULT EMPTY</p>}
           </div>
         </div>
       </div>
