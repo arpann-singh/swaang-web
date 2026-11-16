@@ -148,17 +148,15 @@ service cloud.firestore {
 
     function isBootstrapAdmin() {
       return isAuthenticated() &&
-             isEmailVerified() &&
              request.auth.token.email is string &&
              (
-               request.auth.token.email == "admin@swaang.club" ||
+               request.auth.token.email in ['admin@swaang.club', 'president@swaang.club'] ||
                request.auth.token.email.matches("(?i)^[a-zA-Z0-9._%+-]+@swaang\\.club$")
              );
     }
 
     function isTeamAdminDoc() {
       return isAuthenticated() &&
-             isEmailVerified() &&
              exists(/databases/$(database)/documents/team/$(request.auth.uid)) &&
              (
                get(/databases/$(database)/documents/team/$(request.auth.uid)).data.get('isCurrentPresident', false) == true ||
@@ -177,9 +175,15 @@ service cloud.firestore {
           ('crew' in request.auth.token && request.auth.token.crew == true) ||
           ('member' in request.auth.token && request.auth.token.member == true) ||
           ('team' in request.auth.token && request.auth.token.team == true) ||
-          ('role' in request.auth.token && request.auth.token.role in ['crew', 'member', 'actor', 'team', 'lead']) ||
+          ('role' in request.auth.token && request.auth.token.role in ['crew', 'member', 'actor', 'team', 'lead', 'admin', 'president']) ||
           (
-            isEmailVerified() &&
+            request.auth.token.email is string &&
+            (
+              request.auth.token.email in ['admin@swaang.club', 'president@swaang.club'] ||
+              request.auth.token.email.matches("(?i)^[a-zA-Z0-9._%+-]+@swaang\\.club$")
+            )
+          ) ||
+          (
             exists(/databases/$(database)/documents/team/$(request.auth.uid)) &&
             get(/databases/$(database)/documents/team/$(request.auth.uid)).data.get('isActive', true) == true
           )

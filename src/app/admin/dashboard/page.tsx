@@ -44,6 +44,8 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
+    let unsubs: (() => void)[] = [];
+
     const unsubAuth = onAuthStateChanged(auth, async (u) => { 
       if (!u) {
         router.push("/admin"); 
@@ -56,37 +58,40 @@ export default function AdminDashboard() {
           return;
         }
         setAuthLoading(false);
+
+        // ✅ Initialize Real-Time Data Listeners only AFTER Admin Clearance is Verified
+        const unsubConfig = onSnapshot(doc(db, "settings", "site_config"), (d) => {
+          setSiteConfig(d.data() || {});
+        }, (err) => console.warn("Site config listener warning:", err));
+
+        const unsubInbox = onSnapshot(query(collection(db, "messages"), orderBy("createdAt", "desc")), (s) => 
+          setMessages(s.docs.map(d => ({ id: d.id, ...d.data() }))),
+          (err) => console.warn("Inbox listener warning:", err)
+        );
+
+        const unsubAuditions = onSnapshot(query(collection(db, "auditions"), orderBy("submittedAt", "desc")), (s) => {
+          setAuditions(s.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, (err) => console.warn("Auditions listener warning:", err));
+
+        const unsubTeam = onSnapshot(collection(db, "team"), (s) => {
+          setTeam(s.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, (err) => console.warn("Team listener warning:", err));
+
+        const unsubSched = onSnapshot(query(collection(db, "production_schedule"), orderBy("date", "asc")), (s) => {
+          setSchedule(s.docs.map(d => ({ id: d.id, ...d.data() })));
+          setLoading(false);
+        }, (err) => {
+          console.warn("Schedule listener warning:", err);
+          setLoading(false);
+        });
+
+        unsubs = [unsubConfig, unsubInbox, unsubAuditions, unsubTeam, unsubSched];
       }
-    });
-
-    const unsubConfig = onSnapshot(doc(db, "settings", "site_config"), (d) => {
-      setSiteConfig(d.data() || {});
-    });
-
-    const unsubInbox = onSnapshot(query(collection(db, "messages"), orderBy("createdAt", "desc")), (s) => 
-      setMessages(s.docs.map(d => ({ id: d.id, ...d.data() })))
-    );
-
-    const unsubAuditions = onSnapshot(query(collection(db, "auditions"), orderBy("submittedAt", "desc")), (s) => {
-      setAuditions(s.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    const unsubTeam = onSnapshot(collection(db, "team"), (s) => {
-      setTeam(s.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    const unsubSched = onSnapshot(query(collection(db, "production_schedule"), orderBy("date", "asc")), (s) => {
-      setSchedule(s.docs.map(d => ({ id: d.id, ...d.data() })));
-      setLoading(false);
     });
 
     return () => {
       unsubAuth();
-      unsubConfig();
-      unsubInbox();
-      unsubAuditions();
-      unsubTeam();
-      unsubSched();
+      unsubs.forEach(unsub => unsub());
     };
   }, [router]);
 

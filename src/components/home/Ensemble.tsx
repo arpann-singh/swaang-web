@@ -12,10 +12,14 @@ export default function Ensemble({ team: parentTeam }: { team?: any[] }) {
     // 🔥 FIXED: Changed "showOnHome" to "isSpotlight" to match your Admin Panel!
     const q = query(collection(db, "team"), where("isSpotlight", "==", true));
     
-    const unsub = onSnapshot(q, (snap) => {
-      const fetchedTeam = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setTeamMembers(fetchedTeam);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const fetchedTeam = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setTeamMembers(fetchedTeam);
+      },
+      (err) => console.warn("Ensemble spotlight listener warning:", err)
+    );
     
     return () => unsub();
   }, []);

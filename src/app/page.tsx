@@ -15,6 +15,7 @@ import Ensemble from "@/components/home/Ensemble";
 
 // 🔥 FIXED: Added the missing imports for your new interactive components
 import TwisterMarquee from "@/components/home/TwisterMarquee";
+import SectionDivider from "@/components/SectionDivider";
 
 export default function Home() {
   const [data, setData] = useState<any>({});
@@ -26,14 +27,15 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    onSnapshot(doc(db, "settings", "homepage"), (d) => setData(d.data() || {}));
-    onSnapshot(doc(db, "settings", "aotm"), (d) => setAotm(d.data()));
+    const unsubHome = onSnapshot(doc(db, "settings", "homepage"), (d) => setData(d.data() || {}), (e) => console.warn("Homepage settings notice:", e));
+    const unsubAotm = onSnapshot(doc(db, "settings", "aotm"), (d) => setAotm(d.data()), (e) => console.warn("AOTM notice:", e));
     
-    onSnapshot(collection(db, "team"), (s) => 
-      setTeam(s.docs.map(d => ({id: d.id, ...d.data()})).filter((m:any) => m.isSpotlight))
+    const unsubTeam = onSnapshot(collection(db, "team"), (s) => 
+      setTeam(s.docs.map(d => ({id: d.id, ...d.data()})).filter((m:any) => m.isSpotlight)),
+      (e) => console.warn("Team notice:", e)
     );
     
-    onSnapshot(query(collection(db, "events"), orderBy("date", "desc")), (s) => {
+    const unsubEvents = onSnapshot(query(collection(db, "events"), orderBy("date", "desc")), (s) => {
       const fetchedEvents = s.docs.map(d => ({id: d.id, ...d.data()})).filter((e:any) => e.showOnHome);
       
       fetchedEvents.sort((a: any, b: any) => {
@@ -43,18 +45,30 @@ export default function Home() {
       });
       
       setEvents(fetchedEvents);
-    });
+    }, (e) => console.warn("Events notice:", e));
     
-    onSnapshot(query(collection(db, "timeline"), orderBy("year", "asc")), (s) => {
+    const unsubTimeline = onSnapshot(query(collection(db, "timeline"), orderBy("year", "asc")), (s) => {
       setTimeline(s.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    }, (e) => console.warn("Timeline notice:", e));
 
-    onSnapshot(collection(db, "notices"), (s) => {
+    const unsubNotices = onSnapshot(collection(db, "notices"), (s) => {
       const fetchedNotices = s.docs.map(d => ({ id: d.id, ...d.data() }));
       fetchedNotices.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0)); 
       setNotices(fetchedNotices);
       setLoading(false); 
+    }, (e) => {
+      console.warn("Notices notice:", e);
+      setLoading(false);
     });
+
+    return () => {
+      unsubHome();
+      unsubAotm();
+      unsubTeam();
+      unsubEvents();
+      unsubTimeline();
+      unsubNotices();
+    };
   }, []);
 
   const activeNoticesCount = notices.filter(n => n.isActive).length;
@@ -86,12 +100,18 @@ export default function Home() {
           <StageNotices notices={notices} />
         </div>
         
+        <SectionDivider number="ACT // 01" title="THE BLUEPRINT" tagline="MEET THE ARCHITECTS & ADVISORS" />
         <FacultyBlueprint />
         <FounderNote data={data} />
         <Spotlight aotm={aotm} />
         
+        <SectionDivider number="ACT // 02" title="THE CHRONICLES" tagline="FROM STREET SQUARES TO NATIONAL THEATRE // EST. 2014" />
         <Timeline timeline={timeline} />
+
+        <SectionDivider number="ACT // 03" title="THE REPERTOIRE" tagline="50+ PLAYS WRITTEN, DIRECTED & PERFORMED" />
         <Productions events={events} />
+
+        <SectionDivider number="ACT // 04" title="THE ENSEMBLE" tagline="ACTORS, PLAYWRIGHTS, DIRECTORS & STAGE CREW" />
         <Ensemble team={team} />
 
           {/* 🔥 NEW INTERACTIVE ELEMENTS */}

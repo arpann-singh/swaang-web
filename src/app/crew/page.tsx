@@ -85,32 +85,57 @@ export default function CrewPage() {
   });
 
   useEffect(() => {
+    let crewSubs: (() => void)[] = [];
+
     // 🔥 UPDATED: Strict Auth State Listener with Authorization Check
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
         // 1. Verify if this Google Email exists in our registered 'team' collection
-        const q = query(collection(db, "team"), where("email", "==", user.email));
-        const snap = await getDocs(q);
+        try {
+          const q = query(collection(db, "team"), where("email", "==", user.email));
+          const snap = await getDocs(q);
 
-        if (!snap.empty) {
-          // ✅ AUTHORIZED: User exists in Swaang Directory
-          const mData = { id: snap.docs[0].id, ...snap.docs[0].data() };
-          setMemberData(mData);
-          setIsAuthenticated(true);
-          
-          // Set identifiers for AvailabilityGrid
-          localStorage.setItem("swaang_crew_id", snap.docs[0].id);
-          localStorage.setItem("swaang_crew_name", (mData as any).name);
-        } else {
-          // ❌ UNAUTHORIZED: Email not found in Directory
-          await signOut(auth); // Boot them out immediately
-          setIsAuthenticated(false);
-          setMemberData(null);
-          alert("Access Denied: Your email is not registered in the Swaang Personnel Directory. Contact the Directorate.");
+          if (!snap.empty) {
+            // ✅ AUTHORIZED: User exists in Swaang Directory
+            const mData = { id: snap.docs[0].id, ...snap.docs[0].data() };
+            setMemberData(mData);
+            setIsAuthenticated(true);
+            
+            // Set identifiers for AvailabilityGrid
+            localStorage.setItem("swaang_crew_id", snap.docs[0].id);
+            localStorage.setItem("swaang_crew_name", (mData as any).name);
+
+            // Fetch Private Call Board
+            const noticeSub = onSnapshot(query(collection(db, "callboard"), orderBy("createdAt", "desc")), (s) => {
+              setNotices(s.docs.map(d => ({ id: d.id, ...d.data() })));
+            }, (err) => console.warn("Callboard listener warning:", err));
+
+            // Fetch Vault
+            const vaultSub = onSnapshot(query(collection(db, "vault"), orderBy("createdAt", "desc")), (s) => {
+              setVault(s.docs.map(d => ({ id: d.id, ...d.data() })));
+            }, (err) => console.warn("Vault listener warning:", err));
+
+            // Fetch Rehearsal Reports
+            const reportSub = onSnapshot(query(collection(db, "rehearsal_reports"), orderBy("createdAt", "desc")), (s) => {
+              setRehearsalReports(s.docs.map(d => ({ id: d.id, ...d.data() })));
+            }, (err) => console.warn("Rehearsal reports listener warning:", err));
+
+            crewSubs = [noticeSub, vaultSub, reportSub];
+          } else {
+            // ❌ UNAUTHORIZED: Email not found in Directory
+            await signOut(auth); // Boot them out immediately
+            setIsAuthenticated(false);
+            setMemberData(null);
+            alert("Access Denied: Your email is not registered in the Swaang Personnel Directory. Contact the Directorate.");
+          }
+        } catch (e) {
+          console.warn("Crew auth check warning:", e);
         }
       } else {
         setIsAuthenticated(false);
         setMemberData(null);
+        crewSubs.forEach(unsub => unsub());
+        crewSubs = [];
       }
       setLoading(false);
     });
@@ -120,41 +145,32 @@ export default function CrewPage() {
       setPermissionStatus(Notification.permission);
     }
 
-    // Fetch Private Call Board
-    const noticeSub = onSnapshot(query(collection(db, "callboard"), orderBy("createdAt", "desc")), (snap) => {
-      setNotices(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // Fetch Vault
-    const vaultSub = onSnapshot(query(collection(db, "vault"), orderBy("createdAt", "desc")), (snap) => {
-      setVault(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // Fetch Settings (Call Sheet)
+    // Fetch Public Settings (Call Sheet)
     const settingsSub = onSnapshot(doc(db, "settings", "crew"), (docSnap) => {
       if (docSnap.exists()) {
         setCrewSettings(prev => ({ ...prev, ...docSnap.data() }));
       }
-    });
-
-    // Fetch Rehearsal Reports
-    const reportSub = onSnapshot(query(collection(db, "rehearsal_reports"), orderBy("createdAt", "desc")), (snap) => {
-      setRehearsalReports(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    }, (err) => console.warn("Crew settings listener warning:", err));
 
     // Fetch Active Team
     const teamSub = onSnapshot(query(collection(db, "team"), where("isActive", "==", true)), (snap) => {
       setTeamMembers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    }, (err) => console.warn("Active team listener warning:", err));
 
     // Fetch Live Cue
     const liveCueSub = onSnapshot(doc(db, "settings", "live_cue"), (docSnap) => {
       if (docSnap.exists()) {
         setLiveCue(docSnap.data());
       }
-    });
+    }, (err) => console.warn("Live cue listener warning:", err));
 
-    return () => { unsubAuth(); noticeSub(); vaultSub(); settingsSub(); reportSub(); teamSub(); liveCueSub(); };
+    return () => { 
+      unsubAuth(); 
+      crewSubs.forEach(unsub => unsub());
+      settingsSub(); 
+      teamSub(); 
+      liveCueSub(); 
+    };
   }, []);
 
   // 🔒 Handle Google Login

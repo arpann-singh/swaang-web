@@ -14,7 +14,11 @@ export default function Footer() {
 
   // Fetch settings from Firebase
   useEffect(() => {
-    return onSnapshot(doc(db, "settings", "homepage"), (d) => setData(d.data() || {}));
+    return onSnapshot(
+      doc(db, "settings", "homepage"),
+      (d) => setData(d.data() || {}),
+      (err) => console.warn("Footer homepage settings warning:", err)
+    );
   }, []);
 
   // 🛑 THE KILL SWITCH: Hide in Admin

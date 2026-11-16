@@ -10,7 +10,11 @@ export default function GlobalTicker() {
 
   useEffect(() => {
     const q = query(collection(db, "notices"), orderBy("createdAt", "desc"));
-    return onSnapshot(q, (s) => setNotices(s.docs.map(d => d.data()).filter((n: any) => n.isActive)));
+    return onSnapshot(
+      q,
+      (s) => setNotices(s.docs.map(d => d.data()).filter((n: any) => n.isActive)),
+      (err) => console.warn("GlobalTicker notices listener warning:", err)
+    );
   }, []);
 
   useEffect(() => {
