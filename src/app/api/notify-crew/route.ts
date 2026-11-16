@@ -1,66 +1,87 @@
 // src/app/api/notify-crew/route.ts
 import { NextResponse } from "next/server";
 import * as admin from "firebase-admin";
-
-// 1. Initialize the Firebase Admin SDK securely
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: "swaangclub", 
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
-}
-
-const db = admin.firestore();
+import { getAdminApp, verifyAuthToken } from "@/lib/serverAuth";
 
 export async function POST(req: Request) {
   try {
+    // 1. Authenticate the caller
+    const authContext = await verifyAuthToken(req);
+    if (!authContext) {
+      return NextResponse.json(
+        { error: "Unauthorized. Valid authentication credentials are required." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { title, message, recipientType = "all" } = body;
 
-    if (!title || !message) {
-      return NextResponse.json({ error: "Missing title or message" }, { status: 400 });
+    // 2. Validate payload
+    if (!title || typeof title !== "string" || !message || typeof message !== "string") {
+      return NextResponse.json({ error: "Missing or invalid title or message." }, { status: 400 });
     }
 
-    // 2. Fetch tokens based on role
+    if (title.length > 100 || message.length > 500) {
+      return NextResponse.json({ error: "Payload exceeds allowed size limits." }, { status: 400 });
+    }
+
+    // 3. Authorize based on recipientType
+    // Only verified admins can broadcast to "all" (entire crew)
+    if (recipientType === "all" && !authContext.isAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: Only administrators can dispatch broadcasts to all crew members." },
+        { status: 403 }
+      );
+    }
+
+    // Team members can ping admins ("admin" recipientType)
+    if (recipientType === "admin" && !authContext.isTeamMember && !authContext.isAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: You must be a registered team member to send alerts to admins." },
+        { status: 403 }
+      );
+    }
+
+    // 4. Fetch tokens based on role
+    getAdminApp();
+    const db = admin.firestore();
     let tokensQuery: any = db.collection("fcm_tokens");
-    
+
     if (recipientType === "admin") {
       tokensQuery = tokensQuery.where("role", "==", "admin");
     }
 
     const tokensSnapshot = await tokensQuery.get();
-    
-    // 🔥 FIXED: Added explicit type (admin.firestore.QueryDocumentSnapshot) to the doc parameter
-    const tokens = tokensSnapshot.docs.map((doc: admin.firestore.QueryDocumentSnapshot) => doc.data().token);
+    const tokens = tokensSnapshot.docs
+      .map((doc: admin.firestore.QueryDocumentSnapshot) => doc.data().token)
+      .filter((t: any): t is string => typeof t === "string" && t.length > 0);
 
     if (tokens.length === 0) {
-      return NextResponse.json({ 
-        message: recipientType === "admin" ? "No Admin devices registered." : "No crew members subscribed." 
+      return NextResponse.json({
+        message: recipientType === "admin" ? "No Admin devices registered." : "No crew members subscribed.",
       }, { status: 200 });
     }
 
-    // 3. Package the Push Notification
+    // 5. Package Push Notification
     const payload = {
       notification: {
         title: recipientType === "admin" ? `👑 ADMIN ALERT: ${title}` : `🚨 ${title}`,
         body: message,
       },
-      tokens: tokens, 
+      tokens: tokens,
     };
 
-    // 4. Dispatch
+    // 6. Dispatch
     const response = await admin.messaging().sendEachForMulticast(payload);
 
-    return NextResponse.json({ 
-      success: true, 
-      message: `Alert Dispatched! Reached ${response.successCount} devices. Failed: ${response.failureCount}` 
+    return NextResponse.json({
+      success: true,
+      message: `Alert Dispatched! Reached ${response.successCount} devices. Failed: ${response.failureCount}`,
     }, { status: 200 });
 
   } catch (error: any) {
     console.error("Push Dispatch Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

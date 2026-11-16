@@ -57,7 +57,7 @@ export default function CrewPage() {
 
   // 🚀 MEDIA STAGING & IMAGE UPLOAD
   const [isBulkUploading, setIsBulkUploading] = useState(false);
-  const IMGBB_API_KEY = "098e6a70fbe6f7594e40f4641a1998b0";
+  const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || "098e6a70fbe6f7594e40f4641a1998b0";
 
   // 🔥 1. SINGLE ACTION PRIORITY LOGIC
   // Logic to determine if a Call Sheet is the current absolute priority
@@ -244,9 +244,13 @@ export default function CrewPage() {
         createdAt: Date.now()
       });
 
+      const idToken = await auth.currentUser?.getIdToken();
       await fetch("/api/notify-crew", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {})
+        },
         body: JSON.stringify({ 
           title: "ABSENCE ALERT", 
           message: `${pingForm.name || memberData?.name} is ${pingForm.type}. MSG: ${pingForm.message}`,

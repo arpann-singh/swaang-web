@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { verifyAdminAccess } from "@/lib/authConfig";
 import { db, auth } from "@/lib/firebase";
 import { doc, onSnapshot, collection, query, orderBy, limit } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -43,10 +44,17 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (u) => { 
+    const unsubAuth = onAuthStateChanged(auth, async (u) => { 
       if (!u) {
         router.push("/admin"); 
       } else {
+        const hasAccess = await verifyAdminAccess(u);
+        if (!hasAccess) {
+          await signOut(auth);
+          alert("ACCESS DENIED: Your account does not possess Administrative Clearance.");
+          router.push("/admin");
+          return;
+        }
         setAuthLoading(false);
       }
     });

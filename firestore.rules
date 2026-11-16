@@ -1,0 +1,649 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model & Schema Definitions
+    // ===============================================================
+    //
+    // 1. Collection: messages
+    //    Document ID: Auto-generated string
+    //    Fields:
+    //      - name: string (required, 1-100 chars)
+    //      - email: string (required, valid email, 1-120 chars)
+    //      - subject: string (required, 1-200 chars)
+    //      - message: string (required, 1-5000 chars)
+    //      - phone: string (optional, 0-30 chars) or null
+    //      - status: string (optional, 'unread' | 'read' | 'archived' | 'replied')
+    //      - createdAt: timestamp or number (required)
+    //
+    // 2. Collection: auditions
+    //    Document ID: Auto-generated string
+    //    Fields:
+    //      - name: string (required, 1-100 chars)
+    //      - email: string (required, valid email, 1-120 chars)
+    //      - status: string (required, 'pending' on create; admins may update)
+    //      - phone: string (optional, 0-30 chars)
+    //      - branch: string (optional, 0-100 chars)
+    //      - year: string (optional, 0-20 chars)
+    //      - role: string (optional, 0-100 chars)
+    //      - experience: string (optional, 0-3000 chars)
+    //      - portfolio: string (optional, 0-1000 chars)
+    //      - photoLink: string (optional, 0-1000 chars)
+    //      - motivation: string (optional, 0-3000 chars)
+    //      - message: string (optional, 0-3000 chars)
+    //      - submittedAt: string | number | timestamp (optional)
+    //      - timestamp: timestamp (optional)
+    //      - scores: map (optional, admin-managed evaluation scores)
+    //      - notes: string (optional, 0-3000 chars, admin-managed)
+    //      - evaluatorFeedback: string | map (optional, admin-managed)
+    //
+    // 3. Collection: team
+    //    Document ID: Auto-generated string or UID
+    //    Fields:
+    //      - name: string (required, 1-100 chars)
+    //      - email: string (optional/required, valid email, 1-120 chars)
+    //      - role: string (optional, 0-100 chars, immutable by non-admins)
+    //      - description: string (optional, 0-3000 chars, editable by owner)
+    //      - branch: string (optional, 0-100 chars)
+    //      - year: string (optional, 0-30 chars)
+    //      - instagram: string (optional, 0-200 chars, editable by owner)
+    //      - linkedin: string (optional, 0-200 chars, editable by owner)
+    //      - github: string (optional, 0-200 chars, editable by owner)
+    //      - image: string (optional, 0-1000 chars, editable by owner)
+    //      - category: string (optional, e.g. 'active'|'alumni'|'faculty'|'president', immutable by non-admins)
+    //      - tenure: string (optional, 0-50 chars)
+    //      - passoutYear: string (optional, 0-20 chars)
+    //      - joiningYear: string (optional, 0-20 chars)
+    //      - isActive: bool (optional, immutable by non-admins)
+    //      - isSpotlight: bool (optional, immutable by non-admins)
+    //      - isCurrentPresident: bool (optional, immutable by non-admins)
+    //      - phone: string (optional, 0-30 chars, editable by owner)
+    //      - availability: map or string (optional, editable by owner)
+    //      - uid: string (optional, 0-128 chars, immutable)
+    //      - citation: string (optional, 0-1000 chars)
+    //      - stat1: number (optional)
+    //      - stat2: number (optional)
+    //      - stat3: number (optional)
+    //      - createdAt: timestamp or number (optional, immutable)
+    //      - updatedAt: timestamp or number (optional)
+    //
+    // 4. Collection: settings
+    //    Document ID: 'site_config' | 'auditions' | 'audition_resources' | 'credits' | 'crew' | 'faculty' | 'homepage' | 'live_cue' | 'aotm'
+    //    Fields: Global configuration maps
+    //
+    // 5. Public Content Collections:
+    //    - events: title, description, image, status, date, time, playbillUrl, teaserUrl, fullVideoUrl, showOnHome, isRsvpEnabled
+    //    - timeline: year, title, description, photo1, photo2, createdAt, updatedAt
+    //    - gallery: url, title, description, showOnHome, status, createdAt, updatedAt
+    //    - blog / blog_posts: title, slug, content, excerpt, author, coverImage, tags, isPublished, createdAt, updatedAt
+    //    - notices: title, content, isActive, priority, createdAt, updatedAt
+    //    - credits: list (developers/contributors list), updatedAt
+    //    - alumni: name, role, batch, tenure, description, image, linkedin, instagram, github, createdAt
+    //    - production_archive: title, year, synopsis, poster, driveLink, castCount, awards, createdAt
+    //
+    // 6. Crew / Backstage Collections:
+    //    - callboard: title, message, priority, author, acknowledgedBy (list of names), createdAt
+    //    - vault: title, link, type, createdAt
+    //    - rehearsal_reports: title, notes, nextCall, author, createdAt
+    //    - production_schedule: title, date, track, createdAt
+    //    - availability: userId (doc ID), userName, slots (list of time slots), updatedAt
+    //    - activity_logs: action, details, timestamp, actor
+    //    - expenses: title, amount, category, createdAt
+    //    - letters_history: memberId, memberName, letterType, issuedBy, createdAt
+    //
+    // 7. Collection: fcm_tokens
+    //    Document ID: token string
+    //    Fields: token, email, uid, platform, createdAt, lastSeen
+    //
+    // 8. Collection: rsvps
+    //    Document ID: Auto-generated string
+    //    Fields: eventId, eventName, userName, userEmail, userPhone, userBranch, isCheckedIn, createdAt
+    // ===============================================================
+
+    // ===============================================================
+    // Global Default Deny
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isAuthenticated() &&
+             request.auth.token.email_verified == true;
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+             email.size() >= 3 &&
+             email.size() <= 120 &&
+             email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string &&
+             url.size() <= 1000 &&
+             (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
+    }
+
+    function isValidList(lst, maxSize) {
+      return lst is list && lst.size() <= maxSize;
+    }
+
+    // Role & Authority Checks
+    function hasAdminClaim() {
+      return isAuthenticated() && (
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        ('role' in request.auth.token && request.auth.token.role == 'admin')
+      );
+    }
+
+    function isBootstrapAdmin() {
+      return isAuthenticated() &&
+             isEmailVerified() &&
+             request.auth.token.email is string &&
+             (
+               request.auth.token.email == "admin@swaang.club" ||
+               request.auth.token.email.matches("(?i)^[a-zA-Z0-9._%+-]+@swaang\\.club$")
+             );
+    }
+
+    function isTeamAdminDoc() {
+      return isAuthenticated() &&
+             isEmailVerified() &&
+             exists(/databases/$(database)/documents/team/$(request.auth.uid)) &&
+             (
+               get(/databases/$(database)/documents/team/$(request.auth.uid)).data.get('isCurrentPresident', false) == true ||
+               get(/databases/$(database)/documents/team/$(request.auth.uid)).data.get('role', '').matches("(?i).*(admin|president|lead|director).*") ||
+               get(/databases/$(database)/documents/team/$(request.auth.uid)).data.get('category', '').matches("(?i).*(president|admin|lead).*")
+             );
+    }
+
+    function isAdmin() {
+      return hasAdminClaim() || isBootstrapAdmin() || isTeamAdminDoc();
+    }
+
+    function isTeamMember() {
+      return isAdmin() || (
+        isAuthenticated() && (
+          ('crew' in request.auth.token && request.auth.token.crew == true) ||
+          ('member' in request.auth.token && request.auth.token.member == true) ||
+          ('team' in request.auth.token && request.auth.token.team == true) ||
+          ('role' in request.auth.token && request.auth.token.role in ['crew', 'member', 'actor', 'team', 'lead']) ||
+          (
+            isEmailVerified() &&
+            exists(/databases/$(database)/documents/team/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/team/$(request.auth.uid)).data.get('isActive', true) == true
+          )
+        )
+      );
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    // 1. Messages Validator
+    function isValidMessage(data) {
+      return data.keys().hasAll(['name', 'email', 'subject', 'message', 'createdAt']) &&
+             data.keys().hasOnly(['name', 'email', 'phone', 'subject', 'message', 'status', 'createdAt']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             isValidEmail(data.email) &&
+             data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 200 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 5000 &&
+             (data.createdAt is timestamp || data.createdAt is number) &&
+             (!('phone' in data) || data.phone == null || (data.phone is string && data.phone.size() <= 30)) &&
+             (!('status' in data) || (data.status is string && data.status in ['unread', 'read', 'archived', 'replied']));
+    }
+
+    // 2. Auditions Validator
+    function isValidAudition(data) {
+      return data.keys().hasAll(['name', 'email', 'status']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             isValidEmail(data.email) &&
+             data.status is string && data.status in ['pending', 'selected', 'rejected', 'shortlisted', 'waitlisted', 'reviewed'] &&
+             (!('phone' in data) || data.phone == null || (data.phone is string && data.phone.size() <= 30)) &&
+             (!('branch' in data) || (data.branch is string && data.branch.size() <= 100)) &&
+             (!('year' in data) || (data.year is string && data.year.size() <= 20)) &&
+             (!('role' in data) || (data.role is string && data.role.size() <= 100)) &&
+             (!('experience' in data) || (data.experience is string && data.experience.size() <= 3000)) &&
+             (!('portfolio' in data) || (data.portfolio is string && data.portfolio.size() <= 1000)) &&
+             (!('photoLink' in data) || (data.photoLink is string && data.photoLink.size() <= 1000)) &&
+             (!('motivation' in data) || (data.motivation is string && data.motivation.size() <= 3000)) &&
+             (!('message' in data) || (data.message is string && data.message.size() <= 3000)) &&
+             (!('submittedAt' in data) || data.submittedAt is string || data.submittedAt is number || data.submittedAt is timestamp) &&
+             (!('timestamp' in data) || data.timestamp is timestamp) &&
+             (!('scores' in data) || data.scores is map) &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 3000)) &&
+             (!('evaluatorFeedback' in data) || (data.evaluatorFeedback is string && data.evaluatorFeedback.size() <= 3000) || data.evaluatorFeedback is map);
+    }
+
+    // 3. Team Member Validator
+    function isValidTeamMember(data) {
+      return data.keys().hasAll(['name']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             (!('email' in data) || (data.email is string && isValidEmail(data.email))) &&
+             (!('role' in data) || (data.role is string && data.role.size() <= 100)) &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 3000)) &&
+             (!('branch' in data) || (data.branch is string && data.branch.size() <= 100)) &&
+             (!('year' in data) || (data.year is string && data.year.size() <= 30)) &&
+             (!('instagram' in data) || (data.instagram is string && data.instagram.size() <= 200)) &&
+             (!('linkedin' in data) || (data.linkedin is string && data.linkedin.size() <= 200)) &&
+             (!('github' in data) || (data.github is string && data.github.size() <= 200)) &&
+             (!('image' in data) || (data.image is string && data.image.size() <= 1000)) &&
+             (!('category' in data) || (data.category is string && data.category.size() <= 50)) &&
+             (!('tenure' in data) || (data.tenure is string && data.tenure.size() <= 50)) &&
+             (!('passoutYear' in data) || (data.passoutYear is string && data.passoutYear.size() <= 20)) &&
+             (!('joiningYear' in data) || (data.joiningYear is string && data.joiningYear.size() <= 20)) &&
+             (!('isActive' in data) || data.isActive is bool) &&
+             (!('isSpotlight' in data) || data.isSpotlight is bool) &&
+             (!('isCurrentPresident' in data) || data.isCurrentPresident is bool) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 30)) &&
+             (!('availability' in data) || data.availability is map || data.availability is string) &&
+             (!('uid' in data) || (data.uid is string && data.uid.size() <= 128)) &&
+             (!('citation' in data) || (data.citation is string && data.citation.size() <= 1000)) &&
+             (!('stat1' in data) || data.stat1 is number) &&
+             (!('stat2' in data) || data.stat2 is number) &&
+             (!('stat3' in data) || data.stat3 is number) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    // 4. Events Validator
+    function isValidEvent(data) {
+      return data.keys().hasAll(['title']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 150 &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 3000)) &&
+             (!('status' in data) || (data.status is string && data.status.size() <= 50)) &&
+             (!('date' in data) || (data.date is string && data.date.size() <= 50)) &&
+             (!('time' in data) || (data.time is string && data.time.size() <= 20)) &&
+             (!('image' in data) || (data.image is string && data.image.size() <= 1000)) &&
+             (!('playbillUrl' in data) || (data.playbillUrl is string && data.playbillUrl.size() <= 1000)) &&
+             (!('teaserUrl' in data) || (data.teaserUrl is string && data.teaserUrl.size() <= 1000)) &&
+             (!('fullVideoUrl' in data) || (data.fullVideoUrl is string && data.fullVideoUrl.size() <= 1000)) &&
+             (!('showOnHome' in data) || data.showOnHome is bool) &&
+             (!('isRsvpEnabled' in data) || data.isRsvpEnabled is bool) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    // 5. Timeline Validator
+    function isValidTimeline(data) {
+      return data.keys().hasAll(['title', 'year']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             (data.year is string || data.year is number) &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 3000)) &&
+             (!('photo1' in data) || (data.photo1 is string && data.photo1.size() <= 1000)) &&
+             (!('photo2' in data) || (data.photo2 is string && data.photo2.size() <= 1000)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    // 6. Gallery Validator
+    function isValidGallery(data) {
+      return data.keys().hasAll(['url']) &&
+             isValidUrl(data.url) &&
+             (!('title' in data) || (data.title is string && data.title.size() <= 200)) &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+             (!('showOnHome' in data) || data.showOnHome is bool) &&
+             (!('status' in data) || (data.status is string && data.status.size() <= 50)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    // 7. Blog Post Validator
+    function isValidBlogPost(data) {
+      return data.keys().hasAll(['title', 'slug']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.slug is string && data.slug.size() >= 1 && data.slug.size() <= 200 &&
+             (!('content' in data) || (data.content is string && data.content.size() <= 50000)) &&
+             (!('excerpt' in data) || (data.excerpt is string && data.excerpt.size() <= 1000)) &&
+             (!('author' in data) || (data.author is string && data.author.size() <= 100)) &&
+             (!('coverImage' in data) || (data.coverImage is string && data.coverImage.size() <= 1000)) &&
+             (!('tags' in data) || isValidList(data.tags, 30)) &&
+             (!('isPublished' in data) || data.isPublished is bool) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    // 8. Notices Validator
+    function isValidNotice(data) {
+      return data.keys().hasAll(['title', 'content']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 3000 &&
+             (!('isActive' in data) || data.isActive is bool) &&
+             (!('priority' in data) || (data.priority is string && data.priority.size() <= 30)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    // 9. Callboard Validator
+    function isValidCallboard(data) {
+      return data.keys().hasAll(['title', 'message']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 5000 &&
+             (!('priority' in data) || (data.priority is string && data.priority.size() <= 30)) &&
+             (!('author' in data) || (data.author is string && data.author.size() <= 100)) &&
+             (!('acknowledgedBy' in data) || isValidList(data.acknowledgedBy, 500)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number);
+    }
+
+    // 10. Vault Validator
+    function isValidVault(data) {
+      return data.keys().hasAll(['title', 'link']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             isValidUrl(data.link) &&
+             (!('type' in data) || (data.type is string && data.type.size() <= 50)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number);
+    }
+
+    // 11. Rehearsal Reports Validator
+    function isValidRehearsalReport(data) {
+      return data.keys().hasAll(['title', 'notes']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.notes is string && data.notes.size() >= 1 && data.notes.size() <= 10000 &&
+             (!('nextCall' in data) || (data.nextCall is string && data.nextCall.size() <= 200)) &&
+             (!('author' in data) || (data.author is string && data.author.size() <= 100)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number);
+    }
+
+    // 12. Production Schedule Validator
+    function isValidProductionSchedule(data) {
+      return data.keys().hasAll(['title', 'date']) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.date is string && data.date.size() >= 1 && data.date.size() <= 50 &&
+             (!('track' in data) || (data.track is string && data.track.size() <= 50)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number);
+    }
+
+    // 13. Availability Validator
+    function isValidAvailability(data) {
+      return data.keys().hasAll(['userId', 'slots']) &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             isValidList(data.slots, 300) &&
+             (!('userName' in data) || (data.userName is string && data.userName.size() <= 100)) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    // 14. FCM Tokens Validator
+    function isValidFcmToken(data, tokenId) {
+      return data.keys().hasAll(['token']) &&
+             data.token is string && data.token == tokenId && data.token.size() <= 500 &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 120)) &&
+             (!('uid' in data) || (data.uid is string && data.uid.size() <= 128)) &&
+             (!('platform' in data) || (data.platform is string && data.platform.size() <= 50)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number) &&
+             (!('lastSeen' in data) || data.lastSeen is timestamp || data.lastSeen is number);
+    }
+
+    // 15. RSVPs Validator
+    function isValidRsvp(data) {
+      return data.keys().hasAll(['eventId', 'userName', 'userEmail']) &&
+             data.eventId is string && data.eventId.size() >= 1 && data.eventId.size() <= 100 &&
+             data.userName is string && data.userName.size() >= 1 && data.userName.size() <= 100 &&
+             isValidEmail(data.userEmail) &&
+             (!('eventName' in data) || (data.eventName is string && data.eventName.size() <= 200)) &&
+             (!('userPhone' in data) || (data.userPhone is string && data.userPhone.size() <= 30)) &&
+             (!('userBranch' in data) || (data.userBranch is string && data.userBranch.size() <= 100)) &&
+             (!('isCheckedIn' in data) || data.isCheckedIn is bool) &&
+             (!('createdAt' in data) || data.createdAt is timestamp || data.createdAt is number);
+    }
+
+    // ===============================================================
+    // Collection Match Rules
+    // ===============================================================
+
+    // 1. Messages: Public contact inquiries & crew pings
+    match /messages/{messageId} {
+      // Public create: validated string fields, createdAt timestamp/number
+      allow create: if isValidMessage(request.resource.data) &&
+                       (!('status' in request.resource.data) || request.resource.data.status == 'unread');
+
+      // Admin only: read, update, delete
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin() && isValidMessage(request.resource.data);
+    }
+
+    // 2. Auditions: Public audition applications
+    match /auditions/{auditionId} {
+      // Public create: must have status 'pending', non-admins cannot set evaluation scores or notes
+      allow create: if isValidAudition(request.resource.data) &&
+                       request.resource.data.status == 'pending' &&
+                       !('scores' in request.resource.data) &&
+                       !('notes' in request.resource.data);
+
+      // Admin only: read, update, delete
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin() && isValidAudition(request.resource.data);
+    }
+
+    // 3. Team: Personnel directory
+    match /team/{memberId} {
+      // Public read: anyone can view team profiles and ensemble
+      allow read: if true;
+
+      // Admin create & delete
+      allow create: if isAdmin() && isValidTeamMember(request.resource.data);
+      allow delete: if isAdmin();
+
+      // Update: Admin OR verified member updating their own profile
+      allow update: if (isAdmin() && isValidTeamMember(request.resource.data)) ||
+                       (
+                         isAuthenticated() &&
+                         isEmailVerified() &&
+                         isValidTeamMember(request.resource.data) &&
+                         (
+                           (resource.data.get('email', '') != '' && request.auth.token.email.matches("(?i)" + resource.data.email)) ||
+                           (resource.data.get('uid', '') != '' && request.auth.uid == resource.data.uid)
+                         ) &&
+                         // Field whitelist: member can only update profile fields, not privileges or roles
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                           'name', 'phone', 'image', 'description', 'instagram', 'linkedin', 'github', 'availability', 'updatedAt'
+                         ]) &&
+                         // Privilege escalation protection: verify sensitive fields remain unchanged
+                         areImmutableFieldsUnchanged(['role', 'category', 'isCurrentPresident', 'isActive', 'isSpotlight', 'email', 'createdAt'])
+                       );
+    }
+
+    // 4. Settings: Global configuration docs
+    match /settings/{docId} {
+      // Public read: site config, audition resources, credits, etc.
+      allow read: if true;
+
+      // Admin write only
+      allow write: if isAdmin();
+    }
+
+    // 5. Public Content Collections
+    // Events
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidEvent(request.resource.data);
+      allow update: if isAdmin() && isValidEvent(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Timeline / Journey
+    match /timeline/{timelineId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidTimeline(request.resource.data);
+      allow update: if isAdmin() && isValidTimeline(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Gallery
+    match /gallery/{photoId} {
+      allow read: if true;
+
+      // Admin can create any photo; crew members can stage uploads pending curation
+      allow create: if (isAdmin() && isValidGallery(request.resource.data)) ||
+                       (
+                         isTeamMember() &&
+                         isValidGallery(request.resource.data) &&
+                         request.resource.data.get('status', '') == 'Pending Curation' &&
+                         request.resource.data.get('showOnHome', false) == false
+                       );
+
+      allow update: if isAdmin() && isValidGallery(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Blog / Blog Posts
+    match /blog_posts/{postId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidBlogPost(request.resource.data);
+      allow update: if isAdmin() && isValidBlogPost(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /blog/{postId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidBlogPost(request.resource.data);
+      allow update: if isAdmin() && isValidBlogPost(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Notices
+    match /notices/{noticeId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidNotice(request.resource.data);
+      allow update: if isAdmin() && isValidNotice(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Standalone Credits
+    match /credits/{creditId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Alumni
+    match /alumni/{alumniId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Production Archive
+    match /production_archive/{archiveId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 6. Crew / Backstage Collections
+    // Callboard
+    match /callboard/{noticeId} {
+      // Read: Team members or Admins
+      allow read: if isTeamMember();
+
+      // Create & Delete: Admins only
+      allow create: if isAdmin() && isValidCallboard(request.resource.data);
+      allow delete: if isAdmin();
+
+      // Update: Admin OR Team Member acknowledging the callboard notice
+      allow update: if (isAdmin() && isValidCallboard(request.resource.data)) ||
+                       (
+                         isTeamMember() &&
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledgedBy']) &&
+                         isValidList(request.resource.data.acknowledgedBy, 500) &&
+                         areImmutableFieldsUnchanged(['title', 'message', 'priority', 'author', 'createdAt'])
+                       );
+    }
+
+    // Vault
+    match /vault/{vaultId} {
+      allow read: if isTeamMember();
+      allow create: if isAdmin() && isValidVault(request.resource.data);
+      allow update: if isAdmin() && isValidVault(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Rehearsal Reports
+    match /rehearsal_reports/{reportId} {
+      allow read: if isTeamMember();
+      allow create: if isAdmin() && isValidRehearsalReport(request.resource.data);
+      allow update: if isAdmin() && isValidRehearsalReport(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Production Schedule
+    match /production_schedule/{scheduleId} {
+      allow read: if isTeamMember();
+      allow create: if isAdmin() && isValidProductionSchedule(request.resource.data);
+      allow update: if isAdmin() && isValidProductionSchedule(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Availability
+    match /availability/{userId} {
+      // Read: Team members and Admins
+      allow read: if isTeamMember();
+
+      // Write: Admins OR the authenticated owner of this availability slot
+      allow create, update: if (isAdmin() && isValidAvailability(request.resource.data)) ||
+                               (isTeamMember() && isOwner(userId) && isValidAvailability(request.resource.data));
+
+      allow delete: if isAdmin() || (isTeamMember() && isOwner(userId));
+    }
+
+    // Activity Logs
+    match /activity_logs/{logId} {
+      allow read: if isTeamMember();
+      allow create: if isTeamMember();
+      allow update, delete: if isAdmin();
+    }
+
+    // Financial & Letters History (Admin Only)
+    match /expenses/{expenseId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /letters_history/{historyId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 7. FCM Tokens
+    match /fcm_tokens/{tokenId} {
+      // Read: Admins only
+      allow read: if isAdmin();
+
+      // Create / Update: Authenticated users or token owner
+      allow create, update: if (isAuthenticated() || request.resource.data.token == tokenId) &&
+                               isValidFcmToken(request.resource.data, tokenId);
+
+      // Delete: Admins or Token Owner
+      allow delete: if isAdmin() ||
+                       (isAuthenticated() && (
+                         resource.data.get('uid', '') == request.auth.uid ||
+                         (resource.data.get('email', '') != '' && resource.data.email == request.auth.token.email)
+                       ));
+    }
+
+    // 8. RSVPs: Event RSVPs
+    match /rsvps/{rsvpId} {
+      // Public create: Validated RSVP payload, default check-in is false
+      allow create: if isValidRsvp(request.resource.data) &&
+                       (!('isCheckedIn' in request.resource.data) || request.resource.data.isCheckedIn == false);
+
+      // Admin only: read, update (e.g. check-in guest), delete
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin() && isValidRsvp(request.resource.data);
+    }
+
+  }
+}

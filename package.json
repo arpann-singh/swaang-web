@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -22,7 +22,8 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "tailwind-merge": "latest"
+    "tailwind-merge": "latest",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "latest",

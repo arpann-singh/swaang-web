@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { getDeviceToken } from "@/lib/firebase";
 
@@ -122,9 +122,13 @@ export default function BackstageManager() {
       });
 
       if (noticeForm.sendPush) {
+        const idToken = await auth.currentUser?.getIdToken();
         await fetch("/api/notify-crew", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {})
+          },
           body: JSON.stringify({ 
             title: noticeForm.title, 
             message: noticeForm.message,
@@ -172,9 +176,13 @@ export default function BackstageManager() {
       });
 
       if (vaultForm.sendPush) {
+        const idToken = await auth.currentUser?.getIdToken();
         await fetch("/api/notify-crew", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {})
+          },
           body: JSON.stringify({ 
             title: `📜 NEW ${vaultForm.type.toUpperCase()}`, 
             message: `${vaultForm.title} has been added to the Vault. Check it now!`,

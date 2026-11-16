@@ -1,0 +1,46 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isDocument() {
+      return request.resource.contentType.matches('application/pdf');
+    }
+    
+    function isUnderMaxSize(maxMB) {
+      return request.resource.size < maxMB * 1024 * 1024;
+    }
+
+    // Public Assets (Gallery, Team photos, Branding, Posters)
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isImage() && isUnderMaxSize(10);
+    }
+    
+    // Audition Portfolios and Resumes
+    match /auditions/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if (isImage() || isDocument()) && isUnderMaxSize(15);
+    }
+
+    // Vault & Backstage Documents (Scripts, Rehearsal Logs)
+    match /vault/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isImage() || isDocument()) && isUnderMaxSize(25);
+    }
+
+    // Default fallback: allow read if authenticated, block unauthenticated writes
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isUnderMaxSize(10);
+    }
+  }
+}
