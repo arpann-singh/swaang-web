@@ -1,9 +1,46 @@
 "use client";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, doc } from "firebase/firestore";
+
+function Magnetic({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 220, damping: 15, mass: 0.1 });
+  const springY = useSpring(y, { stiffness: 220, damping: 15, mass: 0.1 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    const distanceX = (clientX - centerX) * 0.35;
+    const distanceY = (clientY - centerY) * 0.35;
+    x.set(distanceX);
+    y.set(distanceY);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x: springX, y: springY }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 export default function Hero({ data, activeNoticesCount = 0 }: { data: any, activeNoticesCount?: number }) {
   const [activeNotice, setActiveNotice] = useState<any>(null);
@@ -133,12 +170,20 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
             </h1>
           </div>
           
-          <div className="flex z-10">
+          <div className="flex z-10 select-none">
             {"SWAANG".split("").map((char, index) => (
               <motion.h1 
                 key={index}
                 initial={{ opacity: 0, y: -100, rotateX: 90 }}
                 animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                whileHover={{ 
+                  y: -24, 
+                  scale: 1.15, 
+                  rotate: index % 2 === 0 ? -6 : 6,
+                  color: "#FF5F5F",
+                  transition: { type: "spring", stiffness: 450, damping: 12 }
+                }}
+                whileTap={{ scale: 0.95 }}
                 transition={{ 
                   delay: 0.2 + (index * 0.1), 
                   type: "spring", 
@@ -146,7 +191,7 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
                   damping: 10,
                   mass: 2
                 }}
-                className="font-black text-[16vw] md:text-[14rem] leading-[0.8] tracking-tighter text-brand-text uppercase origin-bottom"
+                className="font-black text-[16vw] md:text-[14rem] leading-[0.8] tracking-tighter text-brand-text uppercase origin-bottom cursor-pointer transition-colors duration-200"
               >
                 {char}
               </motion.h1>
@@ -156,8 +201,15 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
           <motion.div 
             initial={{ opacity: 0, rotate: -10, scale: 0.5 }}
             animate={{ opacity: 1, rotate: -2, scale: 1 }}
+            whileHover={{ 
+              scale: 1.08, 
+              rotate: 1, 
+              boxShadow: "12px 12px 0px black",
+              transition: { type: "spring", stiffness: 350, damping: 12 } 
+            }}
+            whileTap={{ scale: 0.96 }}
             transition={{ delay: 0.5, type: "spring", stiffness: 200, damping: 12 }}
-            className="mt-6 md:mt-8 px-8 py-3 bg-[#FF5F5F] border-8 border-black transform -rotate-2 shadow-[8px_8px_0px_black] relative z-20"
+            className="mt-6 md:mt-8 px-8 py-3 bg-[#FF5F5F] border-8 border-black transform -rotate-2 shadow-[8px_8px_0px_black] relative z-20 cursor-pointer"
           >
             <span className="font-mono font-black text-xl md:text-3xl uppercase tracking-widest text-black">
               THE DRAMA CLUB
@@ -188,19 +240,25 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
              </motion.div>
           </div>
 
-          {/* DYNAMIC Call to Action */}
+          {/* DYNAMIC Call to Action with Magnetic Attraction */}
           <div className="p-6 md:p-8 flex items-center justify-center bg-[#06D6A0] relative z-20">
-             <Link 
-               href={isAuditionLive ? "/auditions" : "/events"}
-               className={`group flex items-center justify-between w-full max-w-[280px] bg-black border-4 border-black px-6 py-4 shadow-[8px_8px_0px_white] hover:translate-y-1 hover:translate-x-1 transition-all active:shadow-none active:translate-y-2 active:translate-x-2`}
-             >
-               <span className={`font-mono font-black text-lg md:text-xl uppercase tracking-widest text-[#06D6A0]`}>
-                 {isAuditionLive ? "JOIN US" : "EXPLORE"}
-               </span>
-               <div className={`w-10 h-10 bg-[#FF5F5F] border-4 border-black flex items-center justify-center group-hover:rotate-45 transition-transform shadow-[4px_4px_0px_white]`}>
-                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-               </div>
-             </Link>
+             <Magnetic className="w-full max-w-[280px]">
+               <Link 
+                 href={isAuditionLive ? "/auditions" : "/events"}
+                 className={`group flex items-center justify-between w-full bg-black border-4 border-black px-6 py-4 shadow-[8px_8px_0px_white] hover:shadow-[12px_12px_0px_white] transition-all duration-200 active:shadow-none active:translate-y-2 active:translate-x-2`}
+               >
+                 <span className={`font-mono font-black text-lg md:text-xl uppercase tracking-widest text-[#06D6A0] group-hover:text-white transition-colors`}>
+                   {isAuditionLive ? "JOIN US" : "EXPLORE"}
+                 </span>
+                 <motion.div 
+                   whileHover={{ rotate: 45, scale: 1.15 }}
+                   transition={{ type: "spring", stiffness: 350, damping: 10 }}
+                   className={`w-10 h-10 bg-[#FF5F5F] border-4 border-black flex items-center justify-center shadow-[4px_4px_0px_white] group-hover:bg-[#FFD166] transition-colors`}
+                 >
+                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                 </motion.div>
+               </Link>
+             </Magnetic>
           </div>
 
         </div>

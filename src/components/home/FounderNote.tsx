@@ -22,6 +22,11 @@ export default function FounderNote({ data }: { data: any }) {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
+        drag
+        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        whileDrag={{ scale: 1.04, rotate: 0, zIndex: 50, cursor: "grabbing" }}
+        whileHover={{ cursor: "grab" }}
         className={`relative group flex flex-col h-full transition-transform duration-300 ${cardRotations[index]} ${hoverRotations[index]}`}
       >
         {/* 📸 STACKED PAPER EFFECT (Brutalist Layer) */}
@@ -30,9 +35,11 @@ export default function FounderNote({ data }: { data: any }) {
         {/* 🎭 MAIN CONTENT CARD (Folder) */}
         <div className={`bg-[#FFF9F0] border-8 border-black p-6 md:p-8 h-full flex flex-col shadow-[8px_8px_0px_black]`}>
           
-          {/* Top Masking Tape */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-10 bg-white/80 backdrop-blur-sm border-2 border-black/20 shadow-sm -rotate-3 z-30 opacity-90 mix-blend-multiply flex items-center justify-center">
-             <div className="w-full h-[1px] bg-black/10"></div>
+          {/* Top Masking Tape with Drag Hint */}
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 h-10 bg-white/90 backdrop-blur-sm border-2 border-black/30 shadow-sm -rotate-3 z-30 opacity-95 mix-blend-multiply flex items-center justify-center gap-1 group-hover:bg-[#FFD166] transition-colors">
+             <span className="font-mono font-bold text-[9px] uppercase tracking-wider text-black select-none">
+               📌 DRAG TO TEST
+             </span>
           </div>
           
           {/* Corner Masking Tape */}
@@ -44,7 +51,7 @@ export default function FounderNote({ data }: { data: any }) {
             
             <div className="relative aspect-square w-full border-4 border-black overflow-hidden bg-gray-200 transition-all duration-700">
                {img ? (
-                 <img src={img} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-700" alt={name} />
+                 <img src={img} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-700 pointer-events-none" alt={name} />
                ) : (
                  <div className="h-full w-full flex items-center justify-center font-mono font-black text-black opacity-30 text-2xl uppercase -rotate-12 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)]">MISSING</div>
                )}
@@ -53,17 +60,17 @@ export default function FounderNote({ data }: { data: any }) {
             {/* Overlapping Post-it Note */}
             <div className={`absolute -right-8 -top-8 w-24 h-24 ${postItColors[index]} border-4 border-black shadow-[4px_4px_0px_black] ${postItRotations[index]} p-3 flex flex-col justify-center items-center z-40 transform group-hover:rotate-12 transition-transform`}>
                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-black shadow-inner"></div>
-               <span className="font-cinzel font-black uppercase text-center leading-none text-black text-[12px] mt-2">EST.<br/>2014</span>
+               <span className="font-cinzel font-black uppercase text-center leading-none text-black text-[12px] mt-2 select-none">EST.<br/>2014</span>
             </div>
             
             {/* Role Tag (Typewriter Tape) */}
-            <div className={`absolute -bottom-6 -left-6 bg-black text-white border-4 border-black px-4 py-2 font-mono font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_black] z-40 -rotate-3`}>
+            <div className={`absolute -bottom-6 -left-6 bg-black text-white border-4 border-black px-4 py-2 font-mono font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_black] z-40 -rotate-3 select-none`}>
               {role}
             </div>
           </div>
 
           {/* FOUNDER QUOTE / NOTE */}
-          <div className="space-y-4 flex-1 mt-4 relative z-10">
+          <div className="space-y-4 flex-1 mt-4 relative z-10 select-none">
             <div className="flex flex-col gap-2 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_black] relative">
               <div className="absolute -top-4 -right-2 text-6xl text-black opacity-10 font-serif">"</div>
               <h4 className="text-xl md:text-2xl font-black uppercase tracking-widest text-black leading-none border-b-4 border-black pb-2 mb-2">
@@ -141,12 +148,23 @@ export default function FounderNote({ data }: { data: any }) {
                   animate={{ opacity: 1, y: yOffset, scale: scale, zIndex: zIndex, rotate: baseRotation }}
                   exit={{ opacity: 0, x: "-120%", rotate: -25, transition: { duration: 0.5, ease: "easeIn" } }}
                   transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  drag={offsetIndex === 0 ? "x" : false}
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.65}
+                  onDragEnd={(_e, info) => {
+                    if (offsetIndex === 0 && (info.offset.x < -60 || info.velocity.x < -250)) {
+                      setActiveCardIndex(prev => prev + 1);
+                    }
+                  }}
+                  whileDrag={{ scale: 1.02, cursor: "grabbing" }}
                   className="absolute top-0 left-0 right-0 bg-[#FFF9F0] border-8 border-black p-4 md:p-6 shadow-[8px_8px_0px_black] flex flex-col min-h-[500px]"
                   style={{ transformOrigin: "bottom center" }}
                 >
-                  {/* Top Masking Tape */}
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-24 h-8 bg-white/80 border-2 border-black/20 shadow-sm -rotate-3 z-30 flex items-center justify-center">
-                     <div className="w-full h-[1px] bg-black/10"></div>
+                  {/* Top Masking Tape with Swipe / Next Hint */}
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-white/90 border-2 border-black/30 shadow-sm -rotate-3 z-30 flex items-center justify-center">
+                     <span className="font-mono font-bold text-[9px] uppercase tracking-wider text-black select-none">
+                       {offsetIndex === 0 ? "SWIPE ➔ OR TAP NEXT" : "IN QUEUE"}
+                     </span>
                   </div>
                   
                   {/* POLAROID FRAME */}

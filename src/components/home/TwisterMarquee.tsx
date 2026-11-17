@@ -20,12 +20,20 @@ export default function TwisterMarquee() {
         className="flex gap-12 items-center"
       >
         {[...twisters, ...twisters].map((text, i) => (
-          <span 
+          <motion.span 
             key={i} 
-            className="text-black font-black uppercase italic text-2xl tracking-tighter flex items-center gap-8"
+            whileHover={{ scale: 1.08 }}
+            className="text-black font-black uppercase italic text-2xl tracking-tighter flex items-center gap-8 cursor-pointer select-none transition-colors hover:text-[#FF5F5F]"
           >
-            {text} <span className="text-[#FF5F5F] not-italic">★</span>
-          </span>
+            {text}{" "}
+            <motion.span 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              className="text-[#FF5F5F] not-italic inline-block"
+            >
+              ★
+            </motion.span>
+          </motion.span>
         ))}
       </motion.div>
 
