@@ -30,6 +30,10 @@ import CommandCenter from "@/components/admin/CommandCenter";
 import CommandPalette from "@/components/admin/CommandPalette"; 
 import AlumniManager from "@/components/admin/AlumniManager";
 import BlogManager from "@/components/admin/BlogManager";
+import ArchiveManager from "@/components/admin/ArchiveManager";
+import ResourcesManager from "@/components/admin/ResourcesManager";
+import BudgetManager from "@/components/admin/BudgetManager";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard"); 
@@ -109,17 +113,21 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: "dashboard", label: "Command Center", color: "bg-[#06D6A0]" },
+    { id: "analytics", label: "Analytics", color: "bg-[#FFD166]" },
     { id: "branding", label: "Branding", color: "bg-[#FF5F5F]" },
     { id: "spotlight", label: "Spotlight", color: "bg-[#FFD166]" },
     { id: "timeline", label: "Timeline", color: "bg-[#06D6A0]" },
+    { id: "archive", label: "Archive", color: "bg-[#FF5F5F]" },
     { id: "inbox", label: "Inbox", color: "bg-[#FF5F5F]" },
     { id: "auditions", label: "Auditions", color: "bg-[#FFD166]" },
+    { id: "resources", label: "Audition Prep", color: "bg-[#06D6A0]" },
     { id: "events", label: "Events", color: "bg-[#06D6A0]" },
     { id: "rsvps", label: "Guest List", color: "bg-[#FF5F5F]" },
     { id: "team", label: "Team", color: "bg-[#FFD166]" },
     { id: "alumni", label: "Alumni", color: "bg-[#06D6A0]" },
     { id: "blog", label: "Blog", color: "bg-[#FF5F5F]" },
     { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
+    { id: "budget", label: "Finances", color: "bg-[#06D6A0]" },
     { id: "letters", label: "Letters", color: "bg-[#FF5F5F]" },
     { id: "conflicts", label: "Conflicts", color: "bg-[#06D6A0]" },
     { id: "schedule", label: "Schedule", color: "bg-[#FF5F5F]" },
@@ -220,17 +228,21 @@ export default function AdminDashboard() {
             className="max-w-7xl mx-auto w-full"
           >
             {activeTab === "dashboard" && <CommandCenter stats={aggregatedStats} />}
+            {activeTab === "analytics" && <AnalyticsDashboard />}
             {activeTab === "branding" && <BrandingEditor />}
             {activeTab === "spotlight" && <AOTMManager />}
             {activeTab === "timeline" && <TimelineManager />}
+            {activeTab === "archive" && <ArchiveManager />}
             {activeTab === "inbox" && <InboxManager messages={messages} />}
             {activeTab === "auditions" && <AuditionsManager auditions={auditions} />} 
+            {activeTab === "resources" && <ResourcesManager />}
             {activeTab === "events" && <EventsManager />}
             { activeTab === "rsvps" && <RsvpsManager /> }
             { activeTab === "team" && <TeamManager initialSearch={searchQuery} /> }
             { activeTab === "alumni" && <AlumniManager /> }
             { activeTab === "blog" && <BlogManager /> }
             { activeTab === "gallery" && <GalleryManager /> }
+            {activeTab === "budget" && <BudgetManager />}
             { activeTab === "schedule" && <ProductionCalendar /> }
             {activeTab === "letters" && <LetterGenerator />} 
             {activeTab === "conflicts" && <ConflictMapper />}

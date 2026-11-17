@@ -1,7 +1,13 @@
 "use client";
 import { motion } from "framer-motion";
 
-export default function FacultyBlueprint() {
+export default function FacultyBlueprint({ data }: { data?: any }) {
+  const mentorName = data?.facultyName || "PROF. NAMRATA BHARGAVA";
+  const mentorTitle = data?.facultyTitle || "FOUNDER'S VISION";
+  const mentorQuote = data?.facultyQuote || "EVERY STANDING OVATION IS A TESTAMENT TO THE STRUCTURE THAT HOLDS THE STAGE. SWAANG EXISTS BECAUSE OF YOUR UNWAVERING SUPPORT, YOUR STRATEGIC VISION, AND YOUR TIMELESS MENTORSHIP. YOU BELIEVED IN US BEFORE THE CURTAIN ROSE — AND THAT BELIEF MADE ALL THE DIFFERENCE.";
+  const mentorImage = data?.facultyImage || "/faculty-backbone.jpg";
+  const mentorBadge = data?.facultyBadge || "Founding Mentor";
+
   return (
     <section className="py-28 px-6 bg-[var(--bg-primary)] relative overflow-hidden border-y-8 border-[var(--border-primary)]">
       
@@ -23,7 +29,7 @@ export default function FacultyBlueprint() {
             className="w-full lg:w-5/12 relative"
           >
             {/* Architectural Blueprint Markers -> Brutalist Crosshairs */}
-            <div className="absolute -top-8 -left-8 w-16 h-16 border-t-8 border-l-8 border-black z-20" />
+            <div className="absolute -top-8 -left-8 w-16 h-16 border-t-8 border-black z-20" />
             <div className="absolute -bottom-8 -right-8 w-16 h-16 border-b-8 border-r-8 border-black z-20" />
 
             <div className="bg-white border-8 border-black p-4 md:p-6 shadow-[16px_16px_0px_black] relative">
@@ -33,8 +39,8 @@ export default function FacultyBlueprint() {
 
               <div className="relative group overflow-hidden h-[380px] md:h-[550px] border-4 border-black bg-gray-100">
                 <img 
-                  src="/faculty-backbone.jpg" // 📸 REPLACE WITH ACTUAL IMAGE
-                  alt="Faculty Backbone" 
+                  src={mentorImage} 
+                  alt={mentorName} 
                   className="w-full h-full object-cover grayscale-0 group-hover:grayscale transition-all duration-700"
                 />
                 
@@ -55,7 +61,7 @@ export default function FacultyBlueprint() {
                     <span className="text-3xl">🏆</span>
                 </div>
                 <div className="bg-[var(--bg-primary)] border-2 border-black px-2 py-0.5 rounded-full text-[8px] font-black uppercase text-black tracking-widest whitespace-nowrap">
-                    Founding Mentor
+                    {mentorBadge}
                 </div>
             </motion.div>
           </motion.div>
@@ -78,8 +84,8 @@ export default function FacultyBlueprint() {
                 whileInView={{ opacity: 1, y: 0 }}
                 className="text-xl sm:text-3xl md:text-4xl font-mono font-black uppercase tracking-widest text-black mt-10 leading-tight relative bg-[#FFD166] border-4 border-black p-4 shadow-[8px_8px_0px_black] inline-block w-full max-w-xl"
               >
-                PROF. NAMRATA BHARGAVA
-                <span className="font-black text-sm block mt-2 text-[#FF5F5F]">FOUNDER'S VISION</span>
+                {mentorName}
+                <span className="font-black text-sm block mt-2 text-[#FF5F5F]">{mentorTitle}</span>
               </motion.h4>
             </div>
 
@@ -89,7 +95,7 @@ export default function FacultyBlueprint() {
                 <span className="font-mono font-black text-2xl text-white">"</span>
               </div>
               <p className="text-lg md:text-xl font-mono font-bold text-black leading-relaxed">
-                EVERY STANDING OVATION IS A TESTAMENT TO THE STRUCTURE THAT HOLDS THE STAGE. SWAANG EXISTS BECAUSE OF YOUR UNWAVERING SUPPORT, YOUR STRATEGIC VISION, AND YOUR TIMELESS MENTORSHIP. YOU BELIEVED IN US BEFORE THE CURTAIN ROSE — AND THAT BELIEF MADE ALL THE DIFFERENCE.
+                {mentorQuote}
               </p>
             </div>
 

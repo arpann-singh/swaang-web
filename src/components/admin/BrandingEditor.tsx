@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function BrandingEditor() {
   const [data, setData] = useState<any>({ styles: {} });
@@ -20,7 +20,7 @@ export default function BrandingEditor() {
   // 🚀 Sync everything to Firebase
   const syncAll = async () => {
     try {
-      await updateDoc(doc(db, "settings", "homepage"), data);
+      await setDoc(doc(db, "settings", "homepage"), data, { merge: true });
       alert("Full Stage Identity & Typography Synced! 🎭");
     } catch (err) {
       alert("Sync Error: " + err);
@@ -225,6 +225,86 @@ export default function BrandingEditor() {
             </div>
           </div>
 
+        </div>
+
+        {/* 🏛️ ROW: FACULTY BACKBONE & JOURNEY CONFIG */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+          {/* FACULTY BACKBONE HUB */}
+          <div className="bg-[#FFF9F0] border-8 border-black p-8 md:p-10 shadow-[16px_16px_0px_#06D6A0] flex flex-col h-full space-y-6">
+            <div className="border-b-8 border-black pb-4">
+              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-black bg-[#06D6A0] px-4 py-2 border-4 border-black inline-block">Faculty Backbone</h2>
+              <p className="font-mono text-xs font-bold uppercase text-black/60 mt-2">Executive Foundation & Chief Mentor Tribute</p>
+            </div>
+
+            <div className="space-y-4 flex-1">
+              <div>
+                <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black block mb-1">Mentor Name</label>
+                <input className="w-full bg-white border-4 border-black p-3 font-black uppercase text-base shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" placeholder="PROF. NAMRATA BHARGAVA" value={data.facultyName || ""} onChange={e => setData({...data, facultyName: e.target.value})} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black block mb-1">Subtitle / Vision Tag</label>
+                  <input className="w-full bg-white border-4 border-black p-3 font-bold text-xs uppercase shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" placeholder="FOUNDER'S VISION" value={data.facultyTitle || ""} onChange={e => setData({...data, facultyTitle: e.target.value})} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black block mb-1">Medal Badge</label>
+                  <input className="w-full bg-white border-4 border-black p-3 font-bold text-xs uppercase shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" placeholder="Founding Mentor" value={data.facultyBadge || ""} onChange={e => setData({...data, facultyBadge: e.target.value})} />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black block mb-1">Tribute Quote / Vision</label>
+                <textarea className="w-full bg-white border-4 border-black p-3 font-bold text-xs h-32 resize-none shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" placeholder="EVERY STANDING OVATION IS A TESTAMENT TO THE STRUCTURE THAT HOLDS THE STAGE..." value={data.facultyQuote || ""} onChange={e => setData({...data, facultyQuote: e.target.value})} />
+              </div>
+
+              <div className="flex items-center gap-6 p-4 bg-[#06D6A0] border-4 border-black w-full mt-2 shadow-[8px_8px_0px_black]">
+                <Preview url={data.facultyImage} loading={uploading === "facultyImage"} />
+                <div className="flex flex-col gap-2 w-full">
+                  <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black">Portrait Link</label>
+                  <input className="w-full bg-white border-2 border-black p-2 font-mono text-[10px]" placeholder="Image URL" value={data.facultyImage || ""} onChange={e => setData({...data, facultyImage: e.target.value})} />
+                  <label className="bg-black text-[#06D6A0] px-4 py-2 font-black uppercase text-[10px] cursor-pointer hover:bg-gray-800 transition-colors w-max border-2 border-black">
+                    UPLOAD PHOTO
+                    <input type="file" onChange={(e) => handleUpload(e, "facultyImage")} className="hidden" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* JOURNEY GLIMPSE CONFIG */}
+          <div className="bg-[#FFF9F0] border-8 border-black p-8 md:p-10 shadow-[16px_16px_0px_#FFD166] flex flex-col h-full space-y-6">
+            <div className="border-b-8 border-black pb-4">
+              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-black bg-[#FFD166] px-4 py-2 border-4 border-black inline-block">Journey Glimpse</h2>
+              <p className="font-mono text-xs font-bold uppercase text-black/60 mt-2">Homepage Chronicle Banner & Gateway to /journey</p>
+            </div>
+
+            <div className="space-y-6 flex-1">
+              <div>
+                <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black block mb-2">Glimpse Header Tagline</label>
+                <textarea 
+                  className="w-full bg-white border-4 border-black p-4 font-bold text-sm h-28 resize-none shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" 
+                  placeholder="A GLIMPSE INTO A DECADE OF REVOLUTIONARY STREET THEATRE & PROSCENIUM TRIUMPHS." 
+                  value={data.journeyTagline || ""} 
+                  onChange={e => setData({...data, journeyTagline: e.target.value})} 
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black block mb-2">Gateway Call-to-Action Text</label>
+                <input 
+                  className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" 
+                  placeholder="UNCOVER THE FULL 10-YEAR SWAANG ARCHIVE ➔" 
+                  value={data.journeyCtaText || ""} 
+                  onChange={e => setData({...data, journeyCtaText: e.target.value})} 
+                />
+              </div>
+
+              <div className="p-4 bg-[#FFD166]/40 border-4 border-black text-xs font-mono font-bold leading-relaxed">
+                💡 <span className="font-black uppercase">NOTE:</span> The individual timeline events are managed in the <strong className="underline">Timeline</strong> tab. The homepage automatically presents a curated 3-card Glimpse snapshot that links directly to the full archive at <span className="font-black">/journey</span>.
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 📟 BOTTOM ROW: STAGE CUES (Ticker) */}

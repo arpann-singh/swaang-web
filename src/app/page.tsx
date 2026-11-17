@@ -99,7 +99,7 @@ export default function Home() {
           <StageNotices notices={notices} />
         </div>
         
-        <FacultyBlueprint />
+        <FacultyBlueprint data={data} />
         <FounderNote data={data} />
         <Spotlight aotm={aotm} />
         <Timeline timeline={timeline} />
