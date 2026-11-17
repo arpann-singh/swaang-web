@@ -17,8 +17,6 @@
     --border-primary: #2D2D2D;
     --card-primary: #ffffff;
   }
-  
-
 
   body {
     background-color: var(--bg-primary);
@@ -42,7 +40,6 @@
 }
 
 /* Notice Marquee - Colorful Edition */
-/* Thin Notice Marquee */
 @keyframes marquee {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
@@ -52,16 +49,16 @@
   display: inline-block;
   padding-left: 100%;
   animation: marquee 40s linear infinite;
-  font-size: 10px; /* Smaller text */
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #fff;
-  line-height: 24px; /* Matches the new thin height */
+  line-height: 24px;
 }
 
 .notice-band-container {
-  height: 28px; /* Very thin */
+  height: 28px;
   background-color: #FF5F5F;
   border-bottom: 2px solid #2D2D2D;
   overflow: hidden;
@@ -70,51 +67,26 @@
   align-items: center;
 }
 
-/* ------------------------------------- */
-/* 🔳 GLOBAL NEO-BRUTALIST SCROLLBARS    */
-/* ------------------------------------- */
+/* 🔳 GLOBAL SCROLLBARS */
 ::-webkit-scrollbar {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 ::-webkit-scrollbar-track {
   background: #FFF9F0;
-  border-left: 4px solid #000;
+  border-left: 2px solid #000;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #FF5F5F;
-  border: 4px solid #000;
+  border: 2px solid #000;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #06D6A0;
 }
 
-/* Specific scoping for containers asking for it explicitly */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 16px;
-  height: 16px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #FFF9F0;
-  border-left: 4px solid #000;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #06D6A0;
-  border: 4px solid #000;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #FF5F5F;
-}
-
-/* ------------------------------------- */
-/* 🔳 BRUTALIST BUTTON (Heavy Press)     */
-/* ------------------------------------- */
 .brutalist-button {
   transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 4px 4px 0px #000;
@@ -130,174 +102,237 @@
 }
 
 /* =========================================================================
-   🎭 SWAANG STUDIO ADMIN THEME ENGINE (DARK / LIGHT DUAL ATELIER)
+   🎭 SWAANG STUDIO ADMIN THEME ENGINE (HIGH CONTRAST & FULL READABILITY)
    ========================================================================= */
 
+/* 1. DARK STUDIO PALETTE */
 .admin-theme-dark {
   --adm-bg: #0E0E12;
   --adm-sidebar: #121216;
   --adm-card: #16161B;
-  --adm-card-inner: rgba(255, 255, 255, 0.03);
-  --adm-border: rgba(255, 255, 255, 0.1);
+  --adm-card-inner: #1C1C22;
+  --adm-border: rgba(255, 255, 255, 0.12);
   --adm-border-subtle: rgba(255, 255, 255, 0.06);
-  --adm-text-head: #FFF9F0;
+  --adm-text-head: #FFFFFF;
   --adm-text-body: #E4E4E7;
   --adm-text-muted: #A1A1AA;
-  --adm-text-faint: #71717A;
-  --adm-input-bg: rgba(255, 255, 255, 0.04);
-  --adm-input-border: rgba(255, 255, 255, 0.12);
-  --adm-accent-gold: #F59E0B;
-  --adm-accent-emerald: #10B981;
-  --adm-accent-rose: #F43F5E;
+  --adm-input-bg: #1A1A20;
+  --adm-input-border: rgba(255, 255, 255, 0.15);
   --adm-card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
   --adm-scroll-thumb: rgba(255, 255, 255, 0.15);
   --adm-scroll-track: #0E0E12;
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-text-body) !important;
 }
 
+/* 2. LIGHT ATELIER PALETTE */
 .admin-theme-light {
   --adm-bg: #F8F6F0;
   --adm-sidebar: #FFFFFF;
   --adm-card: #FFFFFF;
-  --adm-card-inner: #FBF9F5;
+  --adm-card-inner: #F4F1EA;
   --adm-border: #E5E0D5;
-  --adm-border-subtle: #EDE9E0;
-  --adm-text-head: #18181B;
+  --adm-border-subtle: #ECE8E0;
+  --adm-text-head: #09090B;
   --adm-text-body: #27272A;
   --adm-text-muted: #52525B;
-  --adm-text-faint: #71717A;
   --adm-input-bg: #FFFFFF;
-  --adm-input-border: #DCD6CA;
-  --adm-accent-gold: #D97706;
-  --adm-accent-emerald: #059669;
-  --adm-accent-rose: #E11D48;
+  --adm-input-border: #D1D5DB;
   --adm-card-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06), 0 0 0 1px #E5E0D5;
   --adm-scroll-thumb: rgba(0, 0, 0, 0.15);
   --adm-scroll-track: #F8F6F0;
-}
-
-/* Base admin shell */
-.admin-root {
   background-color: var(--adm-bg) !important;
   color: var(--adm-text-body) !important;
 }
 
 /* Studio scrollbars for admin */
-.admin-root ::-webkit-scrollbar,
-.admin-root .custom-scrollbar::-webkit-scrollbar {
+.admin-theme-dark ::-webkit-scrollbar,
+.admin-theme-light ::-webkit-scrollbar,
+.admin-theme-dark .custom-scrollbar::-webkit-scrollbar,
+.admin-theme-light .custom-scrollbar::-webkit-scrollbar {
   width: 8px !important;
   height: 8px !important;
 }
 
-.admin-root ::-webkit-scrollbar-track,
-.admin-root .custom-scrollbar::-webkit-scrollbar-track {
+.admin-theme-dark ::-webkit-scrollbar-track,
+.admin-theme-light ::-webkit-scrollbar-track {
   background: var(--adm-scroll-track) !important;
   border: none !important;
 }
 
-.admin-root ::-webkit-scrollbar-thumb,
-.admin-root .custom-scrollbar::-webkit-scrollbar-thumb {
+.admin-theme-dark ::-webkit-scrollbar-thumb,
+.admin-theme-light ::-webkit-scrollbar-thumb {
   background: var(--adm-scroll-thumb) !important;
   border-radius: 9999px !important;
   border: none !important;
 }
 
-/* Normalize all chunky borders and blocky shadows across all admin pages */
-.admin-root .border-8,
-.admin-root .border-4 {
+/* Normalize all chunky borders to 1px */
+.admin-theme-dark .border-8,
+.admin-theme-dark .border-4,
+.admin-theme-dark .border-2,
+.admin-theme-light .border-8,
+.admin-theme-light .border-4,
+.admin-theme-light .border-2 {
   border-width: 1px !important;
 }
 
-.admin-root .border-2 {
-  border-width: 1px !important;
-}
-
-.admin-root [class*="border-black"],
-.admin-root [class*="border-[var(--border-primary)]"] {
+/* Normalize chunky border colors */
+.admin-theme-dark [class*="border-black"],
+.admin-theme-dark [class*="border-[var(--border-primary)]"],
+.admin-theme-light [class*="border-black"],
+.admin-theme-light [class*="border-[var(--border-primary)]"] {
   border-color: var(--adm-border) !important;
 }
 
-.admin-root [class*="shadow-["] {
+/* Replace all harsh black box shadows */
+.admin-theme-dark [class*="shadow-["],
+.admin-theme-light [class*="shadow-["] {
   box-shadow: var(--adm-card-shadow) !important;
 }
 
-.admin-root .rounded-\[3rem\],
-.admin-root .rounded-\[3\.5rem\],
-.admin-root .rounded-\[2\.5rem\],
-.admin-root .rounded-\[2rem\] {
+/* Smooth out oversized radiuses */
+.admin-theme-dark .rounded-\[3rem\],
+.admin-theme-dark .rounded-\[3\.5rem\],
+.admin-theme-dark .rounded-\[2\.5rem\],
+.admin-theme-dark .rounded-\[2rem\],
+.admin-theme-light .rounded-\[3rem\],
+.admin-theme-light .rounded-\[3\.5rem\],
+.admin-theme-light .rounded-\[2\.5rem\],
+.admin-theme-light .rounded-\[2rem\] {
   border-radius: 1.25rem !important;
 }
 
-/* DARK MODE CARD OVERRIDES (Convert harsh white cards to dark studio cards) */
-.admin-theme-dark .admin-root .bg-white,
-.admin-theme-dark .admin-root .bg-\[\#FFF9F0\],
-.admin-theme-dark .admin-root .bg-gray-50,
-.admin-theme-dark .admin-root .bg-\[var\(--bg-primary\)\] {
+/* =========================================================================
+   DARK MODE TEXT & CARD CONTRAST RULES
+   ========================================================================= */
+
+.admin-theme-dark .bg-white,
+.admin-theme-dark .bg-\[\#FFF9F0\],
+.admin-theme-dark .bg-gray-50,
+.admin-theme-dark .bg-\[var\(--bg-primary\)\] {
   background-color: var(--adm-card) !important;
   color: var(--adm-text-body) !important;
   border-color: var(--adm-border) !important;
 }
 
-.admin-theme-dark .admin-root .text-black,
-.admin-theme-dark .admin-root .text-\[var\(--text-primary\)\] {
+/* Invert all dark text inside dark theme so it is readable */
+.admin-theme-dark .text-black,
+.admin-theme-dark .text-zinc-900,
+.admin-theme-dark .text-zinc-800,
+.admin-theme-dark .text-gray-900,
+.admin-theme-dark .text-gray-800,
+.admin-theme-dark .text-\[var\(--text-primary\)\] {
   color: var(--adm-text-body) !important;
 }
 
-.admin-theme-dark .admin-root h1,
-.admin-theme-dark .admin-root h2,
-.admin-theme-dark .admin-root h3,
-.admin-theme-dark .admin-root h4 {
+/* Headings in dark theme must be pure white */
+.admin-theme-dark h1,
+.admin-theme-dark h2,
+.admin-theme-dark h3,
+.admin-theme-dark h4,
+.admin-theme-dark h5,
+.admin-theme-dark h6,
+.admin-theme-dark .font-cinzel {
   color: var(--adm-text-head) !important;
 }
 
-.admin-theme-dark .admin-root input,
-.admin-theme-dark .admin-root textarea,
-.admin-theme-dark .admin-root select {
+/* Form inputs in dark theme */
+.admin-theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.admin-theme-dark textarea,
+.admin-theme-dark select {
   background-color: var(--adm-input-bg) !important;
   border-color: var(--adm-input-border) !important;
   color: var(--adm-text-head) !important;
   border-radius: 0.75rem !important;
 }
 
-/* LIGHT MODE CARD OVERRIDES (Convert dark cards to crisp warm atelier cards) */
-.admin-theme-light .admin-root .bg-\[\#16161A\],
-.admin-theme-light .admin-root .bg-\[\#16161B\],
-.admin-theme-light .admin-root .bg-\[\#141418\],
-.admin-theme-light .admin-root .bg-\[\#121215\],
-.admin-theme-light .admin-root .bg-\[\#101014\],
-.admin-theme-light .admin-root .bg-\[\#1C1B20\],
-.admin-theme-light .admin-root .bg-\[\#24171B\],
-.admin-theme-light .admin-root .bg-\[\#2D2D2D\],
-.admin-theme-light .admin-root .bg-black {
+.admin-theme-dark input::placeholder,
+.admin-theme-dark textarea::placeholder {
+  color: #71717A !important;
+}
+
+/* =========================================================================
+   LIGHT MODE TEXT & CARD CONTRAST RULES
+   ========================================================================= */
+
+.admin-theme-light .bg-\[\#16161A\],
+.admin-theme-light .bg-\[\#16161B\],
+.admin-theme-light .bg-\[\#141418\],
+.admin-theme-light .bg-\[\#121215\],
+.admin-theme-light .bg-\[\#101014\],
+.admin-theme-light .bg-\[\#1C1B20\],
+.admin-theme-light .bg-\[\#24171B\],
+.admin-theme-light .bg-\[\#2D2D2D\],
+.admin-theme-light .bg-black {
   background-color: var(--adm-card) !important;
   color: var(--adm-text-body) !important;
   border-color: var(--adm-border) !important;
 }
 
-.admin-theme-light .admin-root .text-white,
-.admin-theme-light .admin-root .text-\[\#FFF9F0\],
-.admin-theme-light .admin-root .text-zinc-100,
-.admin-theme-light .admin-root .text-zinc-200 {
+/* Invert all white text inside light theme so it is readable */
+.admin-theme-light .text-white,
+.admin-theme-light .text-zinc-100,
+.admin-theme-light .text-zinc-200,
+.admin-theme-light .text-zinc-300,
+.admin-theme-light .text-\[\#FFF9F0\] {
   color: var(--adm-text-head) !important;
 }
 
-.admin-theme-light .admin-root .text-zinc-300,
-.admin-theme-light .admin-root .text-zinc-400 {
+.admin-theme-light .text-zinc-400,
+.admin-theme-light .text-zinc-500,
+.admin-theme-light .text-gray-400 {
   color: var(--adm-text-muted) !important;
 }
 
-.admin-theme-light .admin-root h1,
-.admin-theme-light .admin-root h2,
-.admin-theme-light .admin-root h3,
-.admin-theme-light .admin-root h4 {
+/* Headings in light theme must be crisp pitch-black */
+.admin-theme-light h1,
+.admin-theme-light h2,
+.admin-theme-light h3,
+.admin-theme-light h4,
+.admin-theme-light h5,
+.admin-theme-light h6,
+.admin-theme-light .font-cinzel {
   color: var(--adm-text-head) !important;
 }
 
-.admin-theme-light .admin-root input,
-.admin-theme-light .admin-root textarea,
-.admin-theme-light .admin-root select {
+/* Form inputs in light theme */
+.admin-theme-light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.admin-theme-light textarea,
+.admin-theme-light select {
   background-color: var(--adm-input-bg) !important;
   border-color: var(--adm-input-border) !important;
   color: var(--adm-text-head) !important;
   border-radius: 0.75rem !important;
 }
 
+.admin-theme-light input::placeholder,
+.admin-theme-light textarea::placeholder {
+  color: #9CA3AF !important;
+}
+
+/* =========================================================================
+   BUTTON CONTRAST PROTECTION
+   ========================================================================= */
+
+/* Amber / Yellow / Emerald / Green action buttons always have dark text */
+.admin-theme-dark button[class*="bg-amber"],
+.admin-theme-dark button[class*="bg-[#FFD166]"],
+.admin-theme-dark button[class*="bg-[#06D6A0]"],
+.admin-theme-dark button[class*="bg-emerald"],
+.admin-theme-light button[class*="bg-amber"],
+.admin-theme-light button[class*="bg-[#FFD166]"],
+.admin-theme-light button[class*="bg-[#06D6A0]"],
+.admin-theme-light button[class*="bg-emerald"] {
+  color: #000000 !important;
+}
+
+/* Rose / Red / Crimson action buttons always have white text */
+.admin-theme-dark button[class*="bg-rose"],
+.admin-theme-dark button[class*="bg-red"],
+.admin-theme-dark button[class*="bg-[#FF5F5F]"],
+.admin-theme-light button[class*="bg-rose"],
+.admin-theme-light button[class*="bg-red"],
+.admin-theme-light button[class*="bg-[#FF5F5F]"] {
+  color: #FFFFFF !important;
+}
