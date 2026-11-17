@@ -27,6 +27,7 @@ import { DirtyField, InspectorHistoryStep } from "./types";
 export default function VisualInspectorOverlay() {
   const [isActive, setIsActive] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthWarning, setShowAuthWarning] = useState(false);
 
@@ -64,6 +65,7 @@ export default function VisualInspectorOverlay() {
       } else {
         setIsAdmin(false);
       }
+      setAuthChecked(true);
     });
     return () => unsub();
   }, []);
@@ -76,7 +78,7 @@ export default function VisualInspectorOverlay() {
       if (urlParams.get("inspect") === "true") {
         if (isAdmin) {
           setIsActive(true);
-        } else {
+        } else if (authChecked) {
           setShowAuthWarning(true);
         }
       }
@@ -532,6 +534,32 @@ export default function VisualInspectorOverlay() {
             <X size={16} />
           </button>
         </motion.div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 🚀 QUICK ACCESS FLOATING PILL (When Inactive)                  */}
+      {/* ============================================================== */}
+      {!isActive && (
+        <motion.button
+          data-cms-inspector-ui
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => {
+            if (isAdmin) {
+              setIsActive(true);
+            } else {
+              setShowAuthWarning(true);
+            }
+          }}
+          className="fixed bottom-6 right-6 z-[9990] bg-black text-[#06D6A0] border-4 border-black px-4 py-2.5 font-mono font-black text-xs uppercase tracking-widest shadow-[6px_6px_0px_#FFD166] hover:bg-[#FFD166] hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_black] transition-all flex items-center gap-2 cursor-pointer"
+          title="Toggle Visual Studio Inspector (Ctrl+Shift+E)"
+        >
+          <Sparkles size={16} className="text-[#FF5F5F] animate-spin" style={{ animationDuration: "6s" }} />
+          <span>INSPECT MODE</span>
+          <kbd className="hidden sm:inline-block bg-white/20 text-white text-[9px] px-1.5 py-0.5 rounded ml-1 font-mono">
+            Ctrl+Shift+E
+          </kbd>
+        </motion.button>
       )}
 
       {/* ============================================================== */}
