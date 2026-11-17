@@ -60,8 +60,13 @@ export async function verifyAdminAccess(user: User | null): Promise<boolean> {
     console.warn("Could not check Firestore team directory for admin privileges:", err);
   }
 
-  // Default: if email is the primary admin domain or club admin email
-  if (email.endsWith("@swaang.club") || email === "admin@swaang.club") {
+  // Default: if email is the primary admin domain, club admin email, or developer admin email
+  if (
+    email.endsWith("@swaang.club") ||
+    email === "admin@swaang.club" ||
+    email === "president@swaang.club" ||
+    email === "arpans7@outlook.in"
+  ) {
     return true;
   }
 

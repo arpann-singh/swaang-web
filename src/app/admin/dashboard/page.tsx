@@ -54,7 +54,7 @@ export default function AdminDashboard() {
         const hasAccess = await verifyAdminAccess(u);
         if (!hasAccess) {
           await signOut(auth);
-          alert("ACCESS DENIED: Your account does not possess Administrative Clearance.");
+          alert(`ACCESS DENIED: Your account (${u.email || "no email"}) does not possess Administrative Clearance.`);
           router.push("/admin");
           return;
         }

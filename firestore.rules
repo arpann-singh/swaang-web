@@ -150,7 +150,7 @@ service cloud.firestore {
       return isAuthenticated() &&
              request.auth.token.email is string &&
              (
-               request.auth.token.email in ['admin@swaang.club', 'president@swaang.club'] ||
+               request.auth.token.email in ['admin@swaang.club', 'president@swaang.club', 'arpans7@outlook.in'] ||
                request.auth.token.email.matches("(?i)^[a-zA-Z0-9._%+-]+@swaang\\.club$")
              );
     }
@@ -179,7 +179,7 @@ service cloud.firestore {
           (
             request.auth.token.email is string &&
             (
-              request.auth.token.email in ['admin@swaang.club', 'president@swaang.club'] ||
+              request.auth.token.email in ['admin@swaang.club', 'president@swaang.club', 'arpans7@outlook.in'] ||
               request.auth.token.email.matches("(?i)^[a-zA-Z0-9._%+-]+@swaang\\.club$")
             )
           ) ||
