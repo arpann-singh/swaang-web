@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { verifyAdminAccess } from "@/lib/authConfig";
 import { db, auth } from "@/lib/firebase";
-import { doc, onSnapshot, collection, query, orderBy, limit } from "firebase/firestore";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, onSnapshot, collection, query, orderBy } from "firebase/firestore";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react"; // 🔥 Ensure Search icon is imported
+import { Search, Menu, X, LogOut, Terminal, ShieldCheck } from "lucide-react";
 
 // --- EXISTING COMPONENTS ---
 import BrandingEditor from "@/components/admin/BrandingEditor";
@@ -22,7 +22,7 @@ import CreditsEditor from "@/components/admin/CreditsEditor";
 import NoticesManager from "@/components/admin/NoticesManager";
 import BackstageManager from "@/components/admin/BackstageManager";
 
-// --- NEW PRODUCTIVITY COMPONENTS ---
+// --- PRODUCTIVITY & ARCHIVE COMPONENTS ---
 import LetterGenerator from "@/components/admin/LetterGenerator"; 
 import ConflictMapper from "@/components/admin/ConflictMapper";
 import ProductionCalendar from "@/components/admin/ProductionCalendar";
@@ -38,6 +38,10 @@ import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard"); 
   const [searchQuery, setSearchQuery] = useState(""); 
+  const [sidebarFilter, setSidebarFilter] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
   const [siteConfig, setSiteConfig] = useState<any>({});
   const [messages, setMessages] = useState<any[]>([]);
   const [auditions, setAuditions] = useState<any[]>([]);
@@ -61,6 +65,7 @@ export default function AdminDashboard() {
           router.push("/admin");
           return;
         }
+        setCurrentUser(u);
         setAuthLoading(false);
 
         // ✅ Initialize Real-Time Data Listeners only AFTER Admin Clearance is Verified
@@ -102,6 +107,7 @@ export default function AdminDashboard() {
   const handleJump = (tabId: string, queryText?: string) => {
     setActiveTab(tabId);
     setSearchQuery(queryText || "");
+    setMobileMenuOpen(false);
   };
 
   const aggregatedStats = {
@@ -111,30 +117,71 @@ export default function AdminDashboard() {
     nextCall: schedule.length > 0 ? `${schedule[0].title} (${schedule[0].date})` : "No Calls Scheduled"
   };
 
-  const tabs = [
-    { id: "dashboard", label: "Command Center", color: "bg-[#06D6A0]" },
-    { id: "analytics", label: "Analytics", color: "bg-[#FFD166]" },
-    { id: "branding", label: "Branding", color: "bg-[#FF5F5F]" },
-    { id: "spotlight", label: "Spotlight", color: "bg-[#FFD166]" },
-    { id: "timeline", label: "Timeline", color: "bg-[#06D6A0]" },
-    { id: "archive", label: "Archive", color: "bg-[#FF5F5F]" },
-    { id: "inbox", label: "Inbox", color: "bg-[#FF5F5F]" },
-    { id: "auditions", label: "Auditions", color: "bg-[#FFD166]" },
-    { id: "resources", label: "Audition Prep", color: "bg-[#06D6A0]" },
-    { id: "events", label: "Events", color: "bg-[#06D6A0]" },
-    { id: "rsvps", label: "Guest List", color: "bg-[#FF5F5F]" },
-    { id: "team", label: "Team", color: "bg-[#FFD166]" },
-    { id: "alumni", label: "Alumni", color: "bg-[#06D6A0]" },
-    { id: "blog", label: "Blog", color: "bg-[#FF5F5F]" },
-    { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
-    { id: "budget", label: "Finances", color: "bg-[#06D6A0]" },
-    { id: "letters", label: "Letters", color: "bg-[#FF5F5F]" },
-    { id: "conflicts", label: "Conflicts", color: "bg-[#06D6A0]" },
-    { id: "schedule", label: "Schedule", color: "bg-[#FF5F5F]" },
-    { id: "notices", label: "Public", color: "bg-[#FFD166]" },
-    { id: "backstage", label: "Backstage", color: "bg-[#06D6A0]" },
-    { id: "credits", label: "Credits", color: "bg-[#FF5F5F]" },
+  const pendingAuditionsCount = auditions.filter(a => !a.status || a.status === "pending").length;
+
+  // 🗂️ CATEGORIZED TAB ARCHITECTURE
+  const tabCategories = [
+    {
+      title: "EXECUTIVE HUB",
+      tabs: [
+        { id: "dashboard", label: "Master Hub", color: "bg-[#06D6A0]" },
+        { id: "analytics", label: "Analytics", color: "bg-[#FFD166]" },
+      ]
+    },
+    {
+      title: "EDITORIAL & MEDIA",
+      tabs: [
+        { id: "branding", label: "Branding", color: "bg-[#FF5F5F]" },
+        { id: "spotlight", label: "Spotlight", color: "bg-[#FFD166]" },
+        { id: "timeline", label: "Timeline", color: "bg-[#06D6A0]" },
+        { id: "archive", label: "Archive", color: "bg-[#FF5F5F]" },
+        { id: "blog", label: "Blog", color: "bg-[#FF5F5F]" },
+        { id: "gallery", label: "Gallery", color: "bg-[#FFD166]" },
+      ]
+    },
+    {
+      title: "CASTING & PEOPLE",
+      tabs: [
+        { id: "auditions", label: "Casting Desk", color: "bg-[#FFD166]", badge: pendingAuditionsCount },
+        { id: "resources", label: "Audition Prep", color: "bg-[#06D6A0]" },
+        { id: "team", label: "Crew Roster", color: "bg-[#FFD166]" },
+        { id: "alumni", label: "Alumni", color: "bg-[#06D6A0]" },
+      ]
+    },
+    {
+      title: "STAGE & BACKSTAGE",
+      tabs: [
+        { id: "events", label: "Events", color: "bg-[#06D6A0]" },
+        { id: "rsvps", label: "Guest List", color: "bg-[#FF5F5F]" },
+        { id: "schedule", label: "Call Times", color: "bg-[#FF5F5F]" },
+        { id: "conflicts", label: "Conflicts", color: "bg-[#06D6A0]" },
+        { id: "backstage", label: "Backstage", color: "bg-[#06D6A0]" },
+        { id: "credits", label: "Credits", color: "bg-[#FF5F5F]" },
+      ]
+    },
+    {
+      title: "FINANCE & COMMS",
+      tabs: [
+        { id: "budget", label: "Finances", color: "bg-[#06D6A0]" },
+        { id: "inbox", label: "Inbox", color: "bg-[#FF5F5F]", badge: messages.length },
+        { id: "notices", label: "Public", color: "bg-[#FFD166]" },
+        { id: "letters", label: "Letters", color: "bg-[#FF5F5F]" },
+      ]
+    }
   ];
+
+  // Flat list for CommandPalette compatibility
+  const flatTabs = tabCategories.flatMap(c => c.tabs);
+
+  // Filtered categories based on sidebar search input
+  const filteredCategories = tabCategories.map(cat => ({
+    ...cat,
+    tabs: cat.tabs.filter(t => 
+      t.label.toLowerCase().includes(sidebarFilter.toLowerCase()) ||
+      t.id.toLowerCase().includes(sidebarFilter.toLowerCase()) ||
+      cat.title.toLowerCase().includes(sidebarFilter.toLowerCase())
+    )
+  })).filter(cat => cat.tabs.length > 0);
 
   if (authLoading) {
     return (
@@ -155,69 +202,225 @@ export default function AdminDashboard() {
   }
 
   return (
-    /* 🔥 CHANGE: flex-col for mobile, flex-row for desktop */
     <div className="flex flex-col xl:flex-row h-screen w-full bg-[#2D2D2D] overflow-hidden font-sans text-white">
       
       <CommandPalette 
         onJump={handleJump} 
-        tabs={tabs || []} 
+        tabs={flatTabs || []} 
         team={team || []} 
         events={schedule || []} 
         auditions={auditions || []}
       />
 
-      {/* 📱💻 FIXED SIDEBAR / HEADER */}
-      {/* 🔥 NEO-BRUTALIST SIDEBAR */}
-      <aside className="w-full xl:w-72 bg-[#FFD166] border-b-8 xl:border-b-0 xl:border-r-8 border-black flex flex-col shrink-0 h-auto xl:h-full relative z-50 text-black shadow-[8px_0px_0px_black] xl:shadow-[16px_0px_0px_black]">
-        
-        <div className="p-4 xl:p-8 pb-3 xl:pb-0 flex justify-between items-center xl:items-start xl:flex-col border-b-4 xl:border-b-0 border-black xl:mb-6">
-          <div className="flex flex-col text-left">
-            <h2 className="font-cinzel text-3xl xl:text-5xl font-black tracking-tighter uppercase leading-none" style={{ WebkitTextStroke: '1px black' }}>SWAANG</h2>
-            <p className="text-[10px] font-mono font-black uppercase tracking-[0.2em] bg-black text-[#06D6A0] inline-block px-2 py-1 mt-2 border-2 border-black border-dashed">SYS.ADMIN</p>
-          </div>
-
-          {/* 🔥 Mobile Controls: Added Terminal Trigger Icon */}
-          <div className="flex items-center gap-3 xl:hidden">
-            <button 
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-              className="p-3 border-4 border-black bg-white shadow-[4px_4px_0px_black] active:translate-y-1 active:shadow-[2px_2px_0px_black] transition-all"
-              aria-label="Open Terminal"
-            >
-              <Search size={18} strokeWidth={4} />
-            </button>
-            <button onClick={() => signOut(auth)} className="px-4 py-2 border-4 border-black font-black uppercase text-[10px] bg-[#FF5F5F] text-white shadow-[4px_4px_0px_black] active:translate-y-1 active:shadow-[2px_2px_0px_black] transition-all">
-              Log Out
-            </button>
+      {/* 📱 MOBILE HEADER BAR */}
+      <header className="xl:hidden w-full bg-[#FFD166] border-b-8 border-black px-4 py-3 flex justify-between items-center z-50 shadow-[0px_4px_0px_black] shrink-0 text-black">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 border-4 border-black bg-white shadow-[2px_2px_0px_black] active:translate-y-0.5"
+            aria-label="Toggle navigation drawer"
+          >
+            {mobileMenuOpen ? <X size={20} strokeWidth={4} /> : <Menu size={20} strokeWidth={4} />}
+          </button>
+          <div>
+            <h2 className="font-cinzel text-2xl font-black uppercase tracking-tight leading-none">SWAANG</h2>
+            <span className="text-[8px] font-mono font-black uppercase bg-black text-[#06D6A0] px-1.5 py-0.5">ADMIN</span>
           </div>
         </div>
 
-        <nav className="flex flex-row xl:flex-col gap-3 px-4 xl:px-6 pb-4 xl:pb-6 mt-4 xl:mt-0 overflow-x-auto xl:overflow-y-auto no-scrollbar items-center xl:items-stretch whitespace-nowrap w-full flex-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleJump(tab.id)}
-              className={`shrink-0 px-4 py-3 xl:p-4 border-4 border-black font-black uppercase text-[10px] xl:text-xs transition-all duration-200 ${
-                activeTab === tab.id 
-                ? `${tab.color} text-black shadow-none translate-y-1` 
-                : "bg-white shadow-[6px_6px_0px_black] hover:bg-gray-100 hover:translate-y-1 hover:shadow-[2px_2px_0px_black]"
-              }`}
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
+            className="p-2 border-2 border-black bg-white shadow-[2px_2px_0px_black]"
+            title="Open command palette (Ctrl+K)"
+          >
+            <Terminal size={16} strokeWidth={3} />
+          </button>
+          <button 
+            onClick={() => signOut(auth)} 
+            className="px-3 py-1.5 border-2 border-black font-mono font-black uppercase text-[10px] bg-[#FF5F5F] text-white shadow-[2px_2px_0px_black]"
+          >
+            Log Out
+          </button>
+        </div>
+      </header>
+
+      {/* 📱 MOBILE NAVIGATION DRAWER (SLIDE-OVER) */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: -300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -300 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="xl:hidden fixed inset-y-0 left-0 w-80 bg-[#FFD166] z-50 border-r-8 border-black p-6 overflow-y-auto custom-scrollbar flex flex-col justify-between shadow-[16px_0px_0px_black] text-black"
+          >
+            <div>
+              <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-4">
+                <div>
+                  <h3 className="font-cinzel text-3xl font-black uppercase leading-none">SWAANG</h3>
+                  <p className="font-mono text-[9px] font-black uppercase bg-black text-[#06D6A0] px-2 py-0.5 mt-1 inline-block">
+                    OPERATIONS GRID
+                  </p>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 border-2 border-black bg-white"
+                >
+                  <X size={18} strokeWidth={3} />
+                </button>
+              </div>
+
+              {/* TABS BY CATEGORY */}
+              <div className="space-y-6">
+                {tabCategories.map((cat) => (
+                  <div key={cat.title}>
+                    <p className="font-mono text-[9px] font-black uppercase tracking-wider text-black/60 mb-2">
+                      // {cat.title}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {cat.tabs.map((tab) => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => handleJump(tab.id)}
+                            className={`p-2.5 border-2 border-black font-mono font-black text-left text-xs uppercase flex items-center justify-between transition-all ${
+                              isActive
+                                ? "bg-black text-[#FFD166] shadow-none translate-x-1"
+                                : "bg-white text-black shadow-[2px_2px_0px_black] hover:bg-gray-100"
+                            }`}
+                          >
+                            <span className="truncate">{tab.label}</span>
+                            {tab.badge && tab.badge > 0 && (
+                              <span className="bg-[#FF5F5F] text-white text-[8px] font-black px-1.5 py-0.5 rounded-full ml-1 shrink-0">
+                                {tab.badge}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-6 border-t-4 border-black mt-6">
+              <button
+                onClick={() => signOut(auth)}
+                className="w-full py-3 border-4 border-black font-mono font-black uppercase text-xs bg-[#FF5F5F] text-white shadow-[4px_4px_0px_black]"
+              >
+                SECURE SIGN OUT
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 💻 DESKTOP NEO-BRUTALIST SIDEBAR */}
+      <aside className="hidden xl:flex w-72 bg-[#FFD166] border-r-8 border-black flex-col shrink-0 h-full relative z-40 text-black shadow-[16px_0px_0px_black] justify-between">
+        
+        {/* BRAND HEADER & LIVE STATUS */}
+        <div className="p-6 pb-4 border-b-4 border-black">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="font-cinzel text-4xl font-black tracking-tighter uppercase leading-none">
+                SWAANG
+              </h2>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-[9px] font-mono font-black uppercase tracking-[0.2em] bg-black text-[#06D6A0] inline-block px-2 py-0.5 border border-black">
+                  SYS.ADMIN
+                </span>
+                <span className="flex items-center gap-1 text-[9px] font-mono font-bold text-black/70">
+                  <span className="w-2 h-2 rounded-full bg-[#06D6A0] border border-black animate-pulse" />
+                  LIVE
+                </span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
+              className="p-2 border-2 border-black bg-white shadow-[2px_2px_0px_black] hover:translate-y-0.5 hover:shadow-none transition-all"
+              title="Open Omnibar (Ctrl+K)"
             >
-              {tab.label}
-              {tab.id === "inbox" && messages.length > 0 && ` (${messages.length})`}
-              {tab.id === "auditions" && auditions.length > 0 && ` (${auditions.length})`}
+              <Terminal size={14} strokeWidth={3} />
             </button>
+          </div>
+
+          {/* SIDEBAR INSTANT FILTER */}
+          <div className="relative mt-4">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-black/50" />
+            <input
+              type="text"
+              placeholder="Filter tabs..."
+              value={sidebarFilter}
+              onChange={(e) => setSidebarFilter(e.target.value)}
+              className="w-full pl-8 pr-2 py-1.5 bg-white border-2 border-black font-mono text-[11px] font-bold uppercase placeholder:normal-case outline-none focus:border-black"
+            />
+          </div>
+        </div>
+
+        {/* 📜 SCROLLABLE CATEGORIZED NAVIGATION */}
+        <nav className="flex-1 overflow-y-auto custom-scrollbar px-6 py-4 space-y-6">
+          {filteredCategories.map((cat) => (
+            <div key={cat.title} className="space-y-2">
+              <p className="font-mono text-[9px] font-black uppercase tracking-wider text-black/60 px-1">
+                // {cat.title}
+              </p>
+              <div className="space-y-1.5">
+                {cat.tabs.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleJump(tab.id)}
+                      className={`w-full text-left px-3 py-2 border-2 border-black font-mono font-black text-xs uppercase flex items-center justify-between transition-all duration-150 ${
+                        isActive 
+                          ? `${tab.color} text-black shadow-none translate-x-1 border-4` 
+                          : "bg-white text-black shadow-[3px_3px_0px_black] hover:bg-white/80 hover:translate-x-0.5 hover:shadow-[1px_1px_0px_black]"
+                      }`}
+                    >
+                      <span className="truncate">{tab.label}</span>
+                      {tab.badge && tab.badge > 0 ? (
+                        <span className="bg-[#FF5F5F] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-black ml-1 shrink-0">
+                          {tab.badge}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </nav>
         
-        <div className="p-8 mt-auto hidden xl:block border-t-8 border-black">
-            <button onClick={() => signOut(auth)} className="w-full p-4 border-4 border-black font-black uppercase text-xs bg-white text-black hover:bg-[#FF5F5F] hover:text-white transition-all shadow-[6px_6px_0px_black] hover:shadow-[2px_2px_0px_black] hover:translate-x-1 hover:translate-y-1">
+        {/* FOOTER USER CARD */}
+        <div className="p-4 border-t-4 border-black bg-[#FFF9F0]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="truncate pr-2">
+              <span className="block font-mono text-[8px] font-black text-black/50 uppercase">AUTHENTICATED</span>
+              <p className="font-mono text-[10px] font-black text-black truncate leading-tight">
+                {currentUser?.email || "admin@swaang.club"}
+              </p>
+            </div>
+            <span className="bg-[#06D6A0] text-black font-mono text-[8px] font-black uppercase px-1.5 py-0.5 border border-black shrink-0">
+              CLEARANCE_1
+            </span>
+          </div>
+
+          <button 
+            onClick={() => signOut(auth)} 
+            className="w-full py-2 border-2 border-black font-mono font-black uppercase text-[10px] bg-white text-black hover:bg-[#FF5F5F] hover:text-white transition-all shadow-[2px_2px_0px_black] flex items-center justify-center gap-1.5"
+          >
+            <LogOut size={12} strokeWidth={3} />
             SECURE SIGN OUT
-            </button>
+          </button>
         </div>
       </aside>
 
       {/* 🚀 MAIN CONTENT AREA */}
-      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-12 custom-scrollbar bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] text-black">
+      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-10 custom-scrollbar bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] text-black">
         <AnimatePresence mode="wait">
           <motion.div 
             key={activeTab} 
@@ -227,7 +430,7 @@ export default function AdminDashboard() {
             transition={{ duration: 0.2 }}
             className="max-w-7xl mx-auto w-full"
           >
-            {activeTab === "dashboard" && <CommandCenter stats={aggregatedStats} />}
+            {activeTab === "dashboard" && <CommandCenter stats={aggregatedStats} onJump={handleJump} />}
             {activeTab === "analytics" && <AnalyticsDashboard />}
             {activeTab === "branding" && <BrandingEditor />}
             {activeTab === "spotlight" && <AOTMManager />}
@@ -237,13 +440,13 @@ export default function AdminDashboard() {
             {activeTab === "auditions" && <AuditionsManager auditions={auditions} />} 
             {activeTab === "resources" && <ResourcesManager />}
             {activeTab === "events" && <EventsManager />}
-            { activeTab === "rsvps" && <RsvpsManager /> }
-            { activeTab === "team" && <TeamManager initialSearch={searchQuery} /> }
-            { activeTab === "alumni" && <AlumniManager /> }
-            { activeTab === "blog" && <BlogManager /> }
-            { activeTab === "gallery" && <GalleryManager /> }
+            {activeTab === "rsvps" && <RsvpsManager /> }
+            {activeTab === "team" && <TeamManager initialSearch={searchQuery} /> }
+            {activeTab === "alumni" && <AlumniManager /> }
+            {activeTab === "blog" && <BlogManager /> }
+            {activeTab === "gallery" && <GalleryManager /> }
             {activeTab === "budget" && <BudgetManager />}
-            { activeTab === "schedule" && <ProductionCalendar /> }
+            {activeTab === "schedule" && <ProductionCalendar /> }
             {activeTab === "letters" && <LetterGenerator />} 
             {activeTab === "conflicts" && <ConflictMapper />}
             {activeTab === "notices" && <NoticesManager />}

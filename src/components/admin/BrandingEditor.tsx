@@ -307,6 +307,80 @@ export default function BrandingEditor() {
           </div>
         </div>
 
+        {/* 🎭 FOUNDERS & DIRECTORATE IDENTITY */}
+        <div className="bg-[#FFF9F0] border-8 border-black p-8 md:p-10 shadow-[16px_16px_0px_#FF5F5F] space-y-8">
+          <div className="border-b-8 border-black pb-4">
+            <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-black bg-[#FF5F5F] text-white px-4 py-2 border-4 border-black inline-block">
+              Founders & Directorate Identity
+            </h2>
+            <p className="font-mono text-xs font-bold uppercase text-black/60 mt-2">
+              Core Founding Directorate Profiles, Stage Quotes & Portraits
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { title: "Main Founder", prefix: "founder", color: "bg-[#FFD166]" },
+              { title: "Co-Founder 1", prefix: "coFounder1", color: "bg-[#06D6A0]" },
+              { title: "Co-Founder 2", prefix: "coFounder2", color: "bg-[#FF5F5F]" },
+            ].map((f) => (
+              <div key={f.prefix} className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_black] space-y-4 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 border-b-2 border-black pb-2">
+                    <span className={`w-3.5 h-3.5 rounded-full border-2 border-black ${f.color}`} />
+                    <h3 className="font-cinzel text-xl font-black uppercase tracking-tight">{f.title}</h3>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-mono font-black uppercase tracking-widest text-black/70 block mb-1">
+                      Full Name
+                    </label>
+                    <input
+                      className="w-full bg-[#FFF9F0] border-2 border-black p-2.5 font-bold text-sm outline-none focus:border-black"
+                      placeholder="Director Name"
+                      value={data[`${f.prefix}Name`] || ""}
+                      onChange={(e) => setData({ ...data, [`${f.prefix}Name`]: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-mono font-black uppercase tracking-widest text-black/70 block mb-1">
+                      Stage Message / Bio
+                    </label>
+                    <textarea
+                      className="w-full bg-[#FFF9F0] border-2 border-black p-2.5 font-medium text-xs h-28 resize-none outline-none focus:border-black font-serif italic"
+                      placeholder="Stage reflection or founding vision..."
+                      value={data[`${f.prefix}Note`] || ""}
+                      onChange={(e) => setData({ ...data, [`${f.prefix}Note`]: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-mono font-black uppercase tracking-widest text-black/70 block mb-1">
+                      Portrait Photo
+                    </label>
+                    <div className="flex items-center gap-4 p-2 bg-gray-50 border-2 border-black">
+                      <Preview url={data[`${f.prefix}Image`]} loading={uploading === `${f.prefix}Image`} />
+                      <div className="flex-1 space-y-2">
+                        <input
+                          className="w-full bg-white border border-black p-1 font-mono text-[9px]"
+                          placeholder="Photo URL"
+                          value={data[`${f.prefix}Image`] || ""}
+                          onChange={(e) => setData({ ...data, [`${f.prefix}Image`]: e.target.value })}
+                        />
+                        <label className="bg-black text-white px-3 py-1 font-mono font-black uppercase text-[9px] cursor-pointer hover:bg-gray-800 transition-colors inline-block border border-black">
+                          UPLOAD
+                          <input type="file" onChange={(e) => handleUpload(e, `${f.prefix}Image`)} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 📟 BOTTOM ROW: STAGE CUES (Ticker) */}
         <div className="bg-[#2D2D2D] border-8 border-black p-8 md:p-12 shadow-[16px_16px_0px_white] text-white flex flex-col md:flex-row gap-8 items-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
