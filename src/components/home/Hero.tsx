@@ -222,7 +222,11 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
           
           {/* Tagline */}
           <div className="p-6 md:p-8 border-b-8 md:border-b-0 md:border-r-8 border-black flex items-center justify-center md:justify-start bg-white relative z-20">
-            <p className="font-mono font-bold text-xs md:text-sm leading-relaxed uppercase text-black text-center md:text-left">
+            <p 
+              data-cms-doc="settings/homepage"
+              data-cms-field="headerTagline"
+              className="font-mono font-bold text-xs md:text-sm leading-relaxed uppercase text-black text-center md:text-left"
+            >
               {tagline}
             </p>
           </div>

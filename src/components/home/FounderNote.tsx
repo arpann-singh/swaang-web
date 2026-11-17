@@ -51,9 +51,23 @@ export default function FounderNote({ data }: { data: any }) {
             
             <div className="relative aspect-square w-full border-4 border-black overflow-hidden bg-gray-200 transition-all duration-700">
                {img ? (
-                 <img src={img} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-700 pointer-events-none" alt={name} />
+                 <img 
+                   src={img} 
+                   data-cms-doc="settings/homepage"
+                   data-cms-field={index === 0 ? "founderImage" : index === 1 ? "coFounder1Image" : "coFounder2Image"}
+                   data-cms-type="image"
+                   className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-700 pointer-events-auto" 
+                   alt={name} 
+                 />
                ) : (
-                 <div className="h-full w-full flex items-center justify-center font-mono font-black text-black opacity-30 text-2xl uppercase -rotate-12 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)]">MISSING</div>
+                 <div 
+                   data-cms-doc="settings/homepage"
+                   data-cms-field={index === 0 ? "founderImage" : index === 1 ? "coFounder1Image" : "coFounder2Image"}
+                   data-cms-type="image"
+                   className="h-full w-full flex items-center justify-center font-mono font-black text-black opacity-30 text-2xl uppercase -rotate-12 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)] cursor-pointer"
+                 >
+                   MISSING
+                 </div>
                )}
             </div>
 
@@ -70,13 +84,21 @@ export default function FounderNote({ data }: { data: any }) {
           </div>
 
           {/* FOUNDER QUOTE / NOTE */}
-          <div className="space-y-4 flex-1 mt-4 relative z-10 select-none">
+          <div className="space-y-4 flex-1 mt-4 relative z-10">
             <div className="flex flex-col gap-2 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_black] relative">
               <div className="absolute -top-4 -right-2 text-6xl text-black opacity-10 font-serif">"</div>
-              <h4 className="text-xl md:text-2xl font-black uppercase tracking-widest text-black leading-none border-b-4 border-black pb-2 mb-2">
+              <h4 
+                data-cms-doc="settings/homepage"
+                data-cms-field={index === 0 ? "founderName" : index === 1 ? "coFounder1Name" : "coFounder2Name"}
+                className="text-xl md:text-2xl font-black uppercase tracking-widest text-black leading-none border-b-4 border-black pb-2 mb-2"
+              >
                 {name || "DIRECTOR"}
               </h4>
-              <p className="text-sm font-mono font-bold text-black leading-relaxed uppercase relative z-10">
+              <p 
+                data-cms-doc="settings/homepage"
+                data-cms-field={index === 0 ? "founderNote" : index === 1 ? "coFounder1Note" : "coFounder2Note"}
+                className="text-sm font-mono font-bold text-black leading-relaxed uppercase relative z-10"
+              >
                 {note || "THE STAGE IS WHERE WE FIND OUR TRUEST SELVES."}
               </p>
             </div>
@@ -171,9 +193,23 @@ export default function FounderNote({ data }: { data: any }) {
                   <div className="relative mb-4 bg-white border-4 border-black p-2 pb-6 shadow-[4px_4px_0px_black] z-20 shrink-0">
                     <div className="relative h-48 w-full border-4 border-black overflow-hidden bg-gray-200">
                        {item.img ? (
-                         <img src={item.img} className="w-full h-full object-cover" alt={item.name} />
+                         <img 
+                           src={item.img} 
+                           data-cms-doc="settings/homepage"
+                           data-cms-field={index === 0 ? "founderImage" : index === 1 ? "coFounder1Image" : "coFounder2Image"}
+                           data-cms-type="image"
+                           className="w-full h-full object-cover pointer-events-auto" 
+                           alt={item.name} 
+                         />
                        ) : (
-                         <div className="h-full w-full flex items-center justify-center font-mono font-black text-black opacity-30 text-xl uppercase -rotate-12 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)]">MISSING</div>
+                         <div 
+                           data-cms-doc="settings/homepage"
+                           data-cms-field={index === 0 ? "founderImage" : index === 1 ? "coFounder1Image" : "coFounder2Image"}
+                           data-cms-type="image"
+                           className="h-full w-full flex items-center justify-center font-mono font-black text-black opacity-30 text-xl uppercase -rotate-12 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)] cursor-pointer"
+                         >
+                           MISSING
+                         </div>
                        )}
                     </div>
                     {/* Role Tag (Typewriter Tape) */}
@@ -185,10 +221,18 @@ export default function FounderNote({ data }: { data: any }) {
                   {/* FOUNDER QUOTE / NOTE */}
                   <div className="flex flex-col gap-2 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_black] relative flex-1">
                     <div className="absolute -top-2 -right-1 text-5xl text-black opacity-10 font-serif">"</div>
-                    <h4 className="text-lg font-black uppercase tracking-widest text-black leading-none border-b-4 border-black pb-2 mb-1 shrink-0">
+                    <h4 
+                      data-cms-doc="settings/homepage"
+                      data-cms-field={index === 0 ? "founderName" : index === 1 ? "coFounder1Name" : "coFounder2Name"}
+                      className="text-lg font-black uppercase tracking-widest text-black leading-none border-b-4 border-black pb-2 mb-1 shrink-0"
+                    >
                       {item.name || "DIRECTOR"}
                     </h4>
-                    <p className="text-[10px] font-mono font-bold text-black leading-relaxed uppercase relative z-10">
+                    <p 
+                      data-cms-doc="settings/homepage"
+                      data-cms-field={index === 0 ? "founderNote" : index === 1 ? "coFounder1Note" : "coFounder2Note"}
+                      className="text-[10px] font-mono font-bold text-black leading-relaxed uppercase relative z-10"
+                    >
                       {item.note || "THE STAGE IS WHERE WE FIND OUR TRUEST SELVES."}
                     </p>
                   </div>

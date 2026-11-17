@@ -30,6 +30,7 @@ import CommandCenter from "@/components/admin/CommandCenter";
 import CommandPalette from "@/components/admin/CommandPalette"; 
 import AlumniManager from "@/components/admin/AlumniManager";
 import BlogManager from "@/components/admin/BlogManager";
+import VisualInspectorTab from "@/components/admin/VisualInspectorTab";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard"); 
@@ -109,6 +110,7 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: "dashboard", label: "Command Center", color: "bg-[#06D6A0]" },
+    { id: "inspector", label: "⚡ Inspector", color: "bg-[#FF5F5F]" },
     { id: "branding", label: "Branding", color: "bg-[#FF5F5F]" },
     { id: "spotlight", label: "Spotlight", color: "bg-[#FFD166]" },
     { id: "timeline", label: "Timeline", color: "bg-[#06D6A0]" },
@@ -220,6 +222,7 @@ export default function AdminDashboard() {
             className="max-w-7xl mx-auto w-full"
           >
             {activeTab === "dashboard" && <CommandCenter stats={aggregatedStats} />}
+            {activeTab === "inspector" && <VisualInspectorTab />}
             {activeTab === "branding" && <BrandingEditor />}
             {activeTab === "spotlight" && <AOTMManager />}
             {activeTab === "timeline" && <TimelineManager />}
