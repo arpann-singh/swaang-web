@@ -10,10 +10,8 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Selected candidate for Live Judging Matrix
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
 
-  // Live Rubric Scoring State (Voice, Acting, Confidence, Improv - 0-10)
   const [scores, setScores] = useState({
     voice: 5,
     acting: 5,
@@ -23,7 +21,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
   const [directorNotes, setDirectorNotes] = useState("");
   const [isSavingScore, setIsSavingScore] = useState(false);
 
-  // Sync Form Live state
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "settings", "auditions"), (docSnap) => {
       if (docSnap.exists()) {
@@ -33,7 +30,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
     return () => unsub();
   }, []);
 
-  // Update selected candidate rubric when selection changes
   useEffect(() => {
     if (!selectedCandidateId) {
       if (auditions.length > 0) {
@@ -74,7 +70,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       await setDoc(doc(db, "settings", "auditions"), { isLive: targetState }, { merge: true });
     } catch (err: any) {
       setIsLive(!targetState);
-      console.error("Firebase Toggle Error:", err);
       alert("Failed to change status: " + err.message);
     }
   };
@@ -109,7 +104,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
           notes: directorNotes,
           evaluatedAt: new Date().toISOString(),
         },
-        // Total backward compatibility for legacy score views
         scores: {
           ...scores,
           total: totalScore,
@@ -128,7 +122,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
     }
   };
 
-  // WhatsApp helper
   const openWhatsApp = (name: string, rawPhone: string) => {
     if (!rawPhone) return;
     const cleanPhone = rawPhone.replace(/\D/g, "");
@@ -139,7 +132,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
     window.open(`https://wa.me/${formattedPhone}?text=${message}`, "_blank");
   };
 
-  // CSV Export
   const exportToCSV = () => {
     if (!auditions || auditions.length === 0) {
       alert("No auditions to export yet!");
@@ -197,7 +189,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
     URL.revokeObjectURL(url);
   };
 
-  // Filtered auditions
   const filteredAuditions = auditions.filter((a) => {
     const matchesSearch =
       (a.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -215,7 +206,6 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
   const selectedCandidate = auditions.find((a) => a.id === selectedCandidateId);
   const totalScoreCalc = scores.voice + scores.acting + scores.confidence + scores.improv;
 
-  // Ranked Leaderboard
   const rankedAuditions = [...auditions]
     .filter((a) => (a.evaluation?.totalScore || a.scores?.total || 0) > 0)
     .sort((a, b) => {
@@ -225,18 +215,18 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
     });
 
   return (
-    <div className="space-y-8 text-left pb-16 w-full">
+    <div className="space-y-8 text-left pb-16 w-full text-zinc-100">
       {/* HEADER */}
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end border-b-8 border-black pb-6 gap-6">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end border-b border-white/10 pb-6 gap-6">
         <div>
-          <h2 className="text-4xl md:text-6xl font-cinzel font-black uppercase tracking-tighter text-black">
+          <h2 className="text-4xl md:text-5xl font-cinzel font-bold tracking-tight text-[#FFF9F0]">
             Casting Desk
           </h2>
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            <span className="font-mono font-black uppercase tracking-[0.2em] bg-black text-[#FFD166] text-[10px] px-2 py-1 border-2 border-black">
-              SYS.AUDITIONS_CONTROL
+            <span className="font-mono text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+              AUDITION OPERATIONS
             </span>
-            <span className="text-[10px] font-mono font-bold uppercase text-black/60 bg-white px-2 py-1 border-2 border-black">
+            <span className="text-xs font-mono text-zinc-400 bg-white/[0.04] px-2 py-0.5 rounded border border-white/10">
               Total Candidates: {auditions.length}
             </span>
           </div>
@@ -245,23 +235,23 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
         {/* CONTROLS */}
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           {/* VIEW SWITCHER */}
-          <div className="flex border-4 border-black bg-white shadow-[4px_4px_0px_black] p-1">
+          <div className="flex p-1 bg-white/[0.04] border border-white/10 rounded-xl">
             <button
               onClick={() => setViewMode("roster")}
-              className={`flex items-center gap-2 px-4 py-2 font-mono font-black text-xs uppercase transition-all ${
-                viewMode === "roster" ? "bg-black text-[#FFD166]" : "text-black hover:bg-gray-100"
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-mono text-xs transition-all ${
+                viewMode === "roster" ? "bg-amber-500 text-black font-bold shadow-sm" : "text-zinc-400 hover:text-white"
               }`}
             >
-              <List size={14} strokeWidth={3} />
-              Roster View
+              <List size={14} />
+              Roster
             </button>
             <button
               onClick={() => setViewMode("judging")}
-              className={`flex items-center gap-2 px-4 py-2 font-mono font-black text-xs uppercase transition-all ${
-                viewMode === "judging" ? "bg-[#FF5F5F] text-white" : "text-black hover:bg-gray-100"
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-mono text-xs transition-all ${
+                viewMode === "judging" ? "bg-amber-500 text-black font-bold shadow-sm" : "text-zinc-400 hover:text-white"
               }`}
             >
-              <Award size={14} strokeWidth={3} />
+              <Award size={14} />
               Judging Matrix
             </button>
           </div>
@@ -269,20 +259,20 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
           {/* FORM LIVE TOGGLE */}
           <button
             onClick={toggleFormLive}
-            className={`flex items-center gap-2 border-4 border-black px-5 py-3 font-mono font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_black] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all ${
-              isLive ? "bg-[#06D6A0] text-black" : "bg-gray-200 text-gray-500"
+            className={`flex items-center gap-2 border px-4 py-2.5 rounded-xl font-mono text-xs font-medium transition-all ${
+              isLive ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : "bg-white/[0.04] text-zinc-400 border-white/10"
             }`}
           >
-            <span className={`w-2.5 h-2.5 rounded-full border border-black ${isLive ? "bg-black animate-pulse" : "bg-gray-400"}`} />
-            {isLive ? "PORTAL LIVE" : "PORTAL CLOSED"}
+            <span className={`w-2 h-2 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-500"}`} />
+            {isLive ? "PORTAL OPEN" : "PORTAL CLOSED"}
           </button>
 
           {/* CSV EXPORT */}
           <button
             onClick={exportToCSV}
-            className="flex items-center gap-2 bg-[#FFD166] text-black border-4 border-black px-5 py-3 font-mono font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_black] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+            className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/15 px-4 py-2.5 rounded-xl font-mono text-xs transition-all shadow-sm"
           >
-            <Download size={14} strokeWidth={3} />
+            <Download size={14} className="text-amber-400" />
             EXPORT CSV
           </button>
         </div>
@@ -294,19 +284,19 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       {viewMode === "roster" && (
         <div className="space-y-6">
           {/* SEARCH & FILTER CONTROLS */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-[#FFF9F0] border-4 border-black p-4 shadow-[6px_6px_0px_black]">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-[#16161A] border border-white/10 p-4 rounded-2xl shadow-sm">
             <div className="relative w-full md:w-80">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/50" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
               <input
                 type="text"
                 placeholder="Search name, phone, role..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-white border-2 border-black font-mono text-xs font-bold uppercase placeholder:normal-case outline-none focus:border-[#FF5F5F]"
+                className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl font-mono text-xs text-white placeholder:text-zinc-500 outline-none focus:border-amber-400/50"
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
               {[
                 { id: "all", label: "ALL" },
                 { id: "pending", label: "PENDING" },
@@ -318,8 +308,10 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                 <button
                   key={f.id}
                   onClick={() => setStatusFilter(f.id)}
-                  className={`px-3 py-1.5 font-mono font-black text-[10px] uppercase border-2 border-black transition-all ${
-                    statusFilter === f.id ? "bg-black text-[#06D6A0] shadow-[2px_2px_0px_#06D6A0]" : "bg-white text-black hover:bg-gray-100"
+                  className={`px-3 py-1.5 font-mono text-[11px] rounded-lg transition-all ${
+                    statusFilter === f.id
+                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold"
+                      : "text-zinc-400 hover:text-white bg-white/[0.02]"
                   }`}
                 >
                   {f.label}
@@ -331,9 +323,9 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
           {/* GRID OF APPLICANTS */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAuditions.length === 0 ? (
-              <div className="col-span-full py-20 text-center border-4 border-dashed border-black/30 bg-white/50 p-8">
-                <p className="font-mono font-black uppercase text-gray-500 text-lg">
-                  No applicant profiles found matching current filters.
+              <div className="col-span-full py-20 text-center border border-dashed border-white/10 rounded-3xl bg-[#16161A]/50 p-8">
+                <p className="font-mono text-zinc-500 text-sm">
+                  No applicant profiles found matching the current filters.
                 </p>
               </div>
             ) : (
@@ -342,30 +334,30 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                 return (
                   <div
                     key={a.id}
-                    className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_black] flex flex-col justify-between hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_black] transition-all"
+                    className="bg-[#16161A] border border-white/10 rounded-3xl p-6 shadow-md hover:border-amber-500/30 flex flex-col justify-between transition-all group"
                   >
                     <div>
                       {/* TOP BADGES */}
                       <div className="flex justify-between items-start mb-4 gap-2">
                         <div>
-                          <h3 className="font-cinzel font-black text-2xl uppercase leading-none tracking-tight">
+                          <h3 className="font-cinzel font-bold text-2xl text-white leading-tight">
                             {a.name}
                           </h3>
-                          <span className="inline-block bg-black text-[#FFD166] px-2 py-0.5 text-[9px] font-mono font-black uppercase tracking-wider mt-2 border border-black">
+                          <span className="inline-block bg-white/[0.05] text-amber-300 px-2.5 py-0.5 text-[10px] font-mono rounded-md mt-1.5 border border-amber-500/20">
                             {a.role || "General Acting"}
                           </span>
                         </div>
                         <span
-                          className={`text-[9px] font-mono font-black uppercase px-2.5 py-1 border-2 border-black shrink-0 ${
+                          className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full border shrink-0 ${
                             a.status === "accepted"
-                              ? "bg-[#06D6A0] text-black"
+                              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
                               : a.status === "Shortlisted"
-                              ? "bg-[#FFD166] text-black"
+                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
                               : a.status === "Round 1 Cleared"
-                              ? "bg-[#06D6A0]/80 text-black"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                               : a.status === "rejected"
-                              ? "bg-[#FF5F5F] text-white"
-                              : "bg-gray-100 text-black"
+                              ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                              : "bg-white/[0.04] text-zinc-400 border-white/10"
                           }`}
                         >
                           {a.status || "Pending"}
@@ -374,12 +366,12 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
 
                       {/* SCORE PILL */}
                       {totalScore !== null && (
-                        <div className="mb-4 bg-[#FFD166]/30 border-2 border-black p-2 flex items-center justify-between font-mono text-xs font-black">
-                          <span className="flex items-center gap-1">
-                            <Star size={14} className="fill-black" />
+                        <div className="mb-4 bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 flex items-center justify-between font-mono text-xs">
+                          <span className="flex items-center gap-1.5 text-amber-300 font-medium">
+                            <Star size={13} className="fill-amber-400 text-amber-400" />
                             PANEL SCORE
                           </span>
-                          <span className="bg-black text-[#FFD166] px-2 py-0.5 text-xs">
+                          <span className="bg-amber-400 text-black px-2 py-0.5 rounded font-bold text-xs">
                             {totalScore} / 40
                           </span>
                         </div>
@@ -390,41 +382,41 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                         {a.phone && (
                           <button
                             onClick={() => openWhatsApp(a.name, a.phone)}
-                            className="bg-[#25D366] text-black border-2 border-black py-1.5 px-2 text-[10px] font-black uppercase flex items-center justify-center gap-1 shadow-[2px_2px_0px_black] hover:shadow-none hover:translate-y-0.5 transition-all"
+                            className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 py-2 px-2.5 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors"
                             title="Send WhatsApp message"
                           >
-                            <MessageSquare size={12} strokeWidth={3} />
+                            <MessageSquare size={13} />
                             WhatsApp
                           </button>
                         )}
                         {a.phone && (
                           <a
                             href={`tel:${a.phone}`}
-                            className="bg-[#FFD166] text-black border-2 border-black py-1.5 px-2 text-[10px] font-black uppercase flex items-center justify-center gap-1 shadow-[2px_2px_0px_black] hover:shadow-none hover:translate-y-0.5 transition-all"
+                            className="bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 border border-white/10 py-2 px-2.5 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors"
                           >
-                            <Phone size={12} strokeWidth={3} />
+                            <Phone size={13} />
                             Call
                           </a>
                         )}
                         {a.email && (
                           <a
                             href={`mailto:${a.email}`}
-                            className="col-span-2 bg-[#FFF9F0] text-black border-2 border-black py-1 px-2 text-[10px] font-bold lowercase truncate flex items-center gap-1.5 shadow-[2px_2px_0px_black]"
+                            className="col-span-2 bg-white/[0.03] hover:bg-white/[0.06] text-zinc-300 border border-white/10 py-1.5 px-3 rounded-xl text-xs truncate flex items-center gap-2 transition-colors"
                           >
-                            <Mail size={12} className="shrink-0" />
+                            <Mail size={12} className="shrink-0 text-zinc-500" />
                             <span className="truncate">{a.email}</span>
                           </a>
                         )}
                       </div>
 
                       {/* LINKS */}
-                      <div className="flex gap-2 mb-4">
+                      <div className="flex gap-2 mb-4 font-mono text-xs">
                         {a.photoLink && (
                           <a
                             href={a.photoLink}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex-1 bg-pink-100 text-black border-2 border-black p-1.5 text-[9px] font-mono font-black uppercase flex items-center justify-center gap-1 hover:bg-pink-200"
+                            className="flex-1 bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/10 py-1.5 rounded-xl text-center transition-colors"
                           >
                             Headshot ⤾
                           </a>
@@ -434,37 +426,37 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                             href={a.portfolio || a.experience}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex-1 bg-blue-100 text-black border-2 border-black p-1.5 text-[9px] font-mono font-black uppercase flex items-center justify-center gap-1 hover:bg-blue-200"
+                            className="flex-1 bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/10 py-1.5 rounded-xl text-center transition-colors"
                           >
                             Portfolio ⤾
                           </a>
                         )}
                       </div>
 
-                      {/* MOTIVATION / REMARKS */}
-                      <div className="bg-gray-50 border-2 border-black/10 p-3 text-xs italic text-black/80 max-h-24 overflow-y-auto mb-4 font-serif">
+                      {/* MOTIVATION / STATEMENT */}
+                      <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3.5 text-xs italic text-zinc-400 max-h-24 overflow-y-auto mb-4 font-serif">
                         "{a.motivation || a.message || "No motivation statement provided."}"
                       </div>
                     </div>
 
                     {/* STATUS ACTION BUTTONS */}
-                    <div className="pt-3 border-t-2 border-black/10 flex flex-col gap-2">
-                      <div className="grid grid-cols-3 gap-1.5">
+                    <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+                      <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
                         <button
                           onClick={() => updateStatus(a.id, "Round 1 Cleared")}
-                          className="bg-[#06D6A0] text-black border-2 border-black py-1.5 font-mono font-black text-[9px] uppercase hover:bg-green-400"
+                          className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 py-1.5 rounded-lg font-bold transition-colors"
                         >
-                          R1 Pass
+                          Pass R1
                         </button>
                         <button
                           onClick={() => updateStatus(a.id, "Shortlisted")}
-                          className="bg-[#FFD166] text-black border-2 border-black py-1.5 font-mono font-black text-[9px] uppercase hover:bg-yellow-400"
+                          className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 py-1.5 rounded-lg font-bold transition-colors"
                         >
                           Shortlist
                         </button>
                         <button
                           onClick={() => updateStatus(a.id, "rejected")}
-                          className="bg-gray-200 text-black border-2 border-black py-1.5 font-mono font-black text-[9px] uppercase hover:bg-[#FF5F5F] hover:text-white"
+                          className="bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 py-1.5 rounded-lg font-bold transition-colors"
                         >
                           Reject
                         </button>
@@ -476,13 +468,13 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                             setSelectedCandidateId(a.id);
                             setViewMode("judging");
                           }}
-                          className="text-[10px] font-mono font-black uppercase underline hover:text-[#FF5F5F]"
+                          className="text-xs font-mono text-amber-400 hover:text-amber-300 underline"
                         >
-                          Open in Judge Matrix ➔
+                          Judge in Matrix ➔
                         </button>
                         <button
                           onClick={() => deleteAudition(a.id)}
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-zinc-500 hover:text-rose-400 p-1 transition-colors"
                           title="Delete"
                         >
                           <Trash2 size={14} />
@@ -503,14 +495,14 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       {viewMode === "judging" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* CANDIDATE SELECTOR LIST (COL 1-4) */}
-          <div className="lg:col-span-4 bg-white border-8 border-black p-6 shadow-[12px_12px_0px_black] max-h-[85vh] overflow-y-auto custom-scrollbar flex flex-col">
-            <div className="border-b-4 border-black pb-3 mb-4">
-              <h3 className="font-cinzel font-black text-xl uppercase tracking-tight flex items-center gap-2">
-                <UserCheck className="text-[#06D6A0]" />
+          <div className="lg:col-span-4 bg-[#16161A] border border-white/10 rounded-3xl p-6 shadow-md max-h-[85vh] overflow-y-auto custom-scrollbar flex flex-col">
+            <div className="border-b border-white/10 pb-3 mb-4">
+              <h3 className="font-cinzel font-bold text-xl text-[#FFF9F0] flex items-center gap-2">
+                <UserCheck className="text-amber-400" />
                 Audition Queue
               </h3>
-              <p className="font-mono text-[10px] text-black/60 uppercase">
-                Select candidate to evaluate
+              <p className="font-mono text-[10px] text-zinc-400">
+                Select applicant to score in real time
               </p>
             </div>
 
@@ -522,28 +514,28 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                   <button
                     key={a.id}
                     onClick={() => setSelectedCandidateId(a.id)}
-                    className={`w-full text-left p-3.5 border-4 border-black transition-all ${
+                    className={`w-full text-left p-3.5 rounded-2xl border transition-all ${
                       isSelected
-                        ? "bg-[#2D2D2D] text-white shadow-[4px_4px_0px_#06D6A0] translate-x-1"
-                        : "bg-white text-black hover:bg-[#FFD166] shadow-[2px_2px_0px_black]"
+                        ? "bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm"
+                        : "bg-white/[0.02] border-white/5 text-zinc-300 hover:bg-white/[0.05]"
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-cinzel font-black text-base uppercase leading-tight">
+                        <h4 className="font-cinzel font-bold text-base text-white leading-tight">
                           {a.name}
                         </h4>
-                        <p className={`font-mono text-[9px] uppercase mt-0.5 ${isSelected ? "text-[#06D6A0]" : "text-black/60"}`}>
+                        <p className={`font-mono text-[10px] mt-0.5 ${isSelected ? "text-amber-400" : "text-zinc-500"}`}>
                           {a.role || "General"}
                         </p>
                       </div>
                       <div className="text-right">
                         {totalScore !== null ? (
-                          <span className="font-mono font-black text-xs bg-[#FFD166] text-black px-2 py-0.5 border border-black inline-block">
+                          <span className="font-mono font-bold text-xs bg-amber-400 text-black px-2 py-0.5 rounded">
                             {totalScore}/40
                           </span>
                         ) : (
-                          <span className="font-mono text-[9px] uppercase text-gray-400">UNSCORED</span>
+                          <span className="font-mono text-[10px] text-zinc-500">UNSCORED</span>
                         )}
                       </div>
                     </div>
@@ -554,46 +546,46 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
           </div>
 
           {/* ACTIVE JUDGING RUBRIC & SLIDERS (COL 5-8) */}
-          <div className="lg:col-span-5 bg-[#FFF9F0] border-8 border-black p-6 md:p-8 shadow-[12px_12px_0px_#FFD166]">
+          <div className="lg:col-span-5 bg-[#16161A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-md">
             {selectedCandidate ? (
               <div className="space-y-6">
-                <div className="border-b-4 border-black pb-4 flex justify-between items-start">
+                <div className="border-b border-white/10 pb-4 flex justify-between items-start">
                   <div>
-                    <span className="bg-black text-[#FFD166] px-2 py-0.5 font-mono text-[10px] font-black uppercase border border-black">
-                      ACTIVE CANDIDATE
+                    <span className="bg-amber-500/15 text-amber-300 px-2.5 py-0.5 font-mono text-[10px] rounded-full border border-amber-500/30">
+                      CURRENT APPLICANT
                     </span>
-                    <h3 className="font-cinzel text-3xl md:text-4xl font-black uppercase tracking-tight mt-2">
+                    <h3 className="font-cinzel text-3xl font-bold text-[#FFF9F0] mt-2">
                       {selectedCandidate.name}
                     </h3>
-                    <p className="font-mono text-xs text-black/70">
-                      Applied For: <strong>{selectedCandidate.role || "General Acting"}</strong>
+                    <p className="font-mono text-xs text-zinc-400">
+                      Role Target: <strong className="text-zinc-200">{selectedCandidate.role || "General Acting"}</strong>
                     </p>
                   </div>
 
-                  <div className="bg-black text-[#06D6A0] p-3 border-4 border-black text-center shadow-[4px_4px_0px_white]">
-                    <span className="block font-mono text-[9px] text-white uppercase">TOTAL</span>
-                    <span className="font-mono text-3xl font-black leading-none">{totalScoreCalc}</span>
-                    <span className="block font-mono text-[9px] text-white/50">/40</span>
+                  <div className="bg-[#121215] border border-amber-500/30 rounded-2xl p-3 text-center shadow-md">
+                    <span className="block font-mono text-[9px] text-zinc-400 uppercase">SCORE</span>
+                    <span className="font-mono text-3xl font-bold text-amber-400 leading-none">{totalScoreCalc}</span>
+                    <span className="block font-mono text-[9px] text-zinc-500">/40</span>
                   </div>
                 </div>
 
                 {/* SLIDERS MATRIX */}
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {[
                     { id: "voice", label: "Voice & Diction", desc: "Clarity, projection, pitch modulation" },
                     { id: "acting", label: "Acting & Emotional Range", desc: "Character depth, conviction, realism" },
                     { id: "confidence", label: "Confidence & Presence", desc: "Stage awareness, posture, eye contact" },
                     { id: "improv", label: "Improvisation & Adaptability", desc: "Response to cues, spontaneity" },
                   ].map((metric) => (
-                    <div key={metric.id} className="bg-white border-4 border-black p-3.5 shadow-[4px_4px_0px_black]">
+                    <div key={metric.id} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4">
                       <div className="flex justify-between items-center mb-1">
                         <div>
-                          <label className="font-mono font-black text-xs uppercase tracking-tight text-black block">
+                          <label className="font-mono text-xs font-bold text-zinc-200 block">
                             {metric.label}
                           </label>
-                          <span className="font-mono text-[9px] text-black/50">{metric.desc}</span>
+                          <span className="font-mono text-[10px] text-zinc-500">{metric.desc}</span>
                         </div>
-                        <span className="font-mono font-black text-base text-[#FF5F5F] bg-[#FFF9F0] px-2.5 py-0.5 border-2 border-black">
+                        <span className="font-mono font-bold text-sm text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
                           {scores[metric.id as keyof typeof scores]} / 10
                         </span>
                       </div>
@@ -606,7 +598,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                         onChange={(e) =>
                           setScores({ ...scores, [metric.id]: parseInt(e.target.value) })
                         }
-                        className="w-full h-3 bg-gray-200 border-2 border-black appearance-none cursor-pointer accent-[#2D2D2D] mt-2"
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-400 mt-2"
                       />
                     </div>
                   ))}
@@ -614,43 +606,43 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
 
                 {/* DIRECTOR'S NOTES */}
                 <div>
-                  <label className="text-[10px] font-mono font-black uppercase tracking-widest text-black block mb-1">
-                    Director / Panel Remarks
+                  <label className="text-xs font-mono font-medium text-zinc-300 block mb-1.5">
+                    Director / Panel Observations
                   </label>
                   <textarea
-                    placeholder="e.g. Exceptional vocal strength; consider for Main Lead antagonist in Street Play..."
+                    placeholder="e.g. Exceptional vocal range; consider for Main Lead in Street Play..."
                     value={directorNotes}
                     onChange={(e) => setDirectorNotes(e.target.value)}
-                    className="w-full bg-white border-4 border-black p-3 font-mono text-xs h-24 resize-none outline-none focus:border-[#FF5F5F]"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3 font-mono text-xs text-white h-24 resize-none outline-none focus:border-amber-400/50"
                   />
                 </div>
 
                 {/* SAVE & STATUS BUTTONS */}
-                <div className="space-y-3 pt-2 border-t-4 border-black">
+                <div className="space-y-3 pt-2 border-t border-white/10">
                   <button
                     onClick={() => saveEvaluation()}
                     disabled={isSavingScore}
-                    className="w-full bg-[#06D6A0] text-black border-4 border-black py-3 font-mono font-black text-sm uppercase shadow-[4px_4px_0px_black] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50"
+                    className="w-full bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50"
                   >
                     {isSavingScore ? "SAVING..." : "COMMIT EVALUATION SCORE"}
                   </button>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2 font-mono text-[10px]">
                     <button
                       onClick={() => saveEvaluation("Round 1 Cleared")}
-                      className="bg-[#FFD166] text-black border-2 border-black py-2 font-mono font-black text-[10px] uppercase hover:bg-yellow-400"
+                      className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 py-2 rounded-lg font-bold transition-colors"
                     >
                       + Pass Round 1
                     </button>
                     <button
                       onClick={() => saveEvaluation("Shortlisted")}
-                      className="bg-black text-[#06D6A0] border-2 border-black py-2 font-mono font-black text-[10px] uppercase hover:bg-gray-800"
+                      className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 py-2 rounded-lg font-bold transition-colors"
                     >
                       + Shortlist
                     </button>
                     <button
                       onClick={() => saveEvaluation("rejected")}
-                      className="bg-[#FF5F5F] text-white border-2 border-black py-2 font-mono font-black text-[10px] uppercase hover:bg-red-600"
+                      className="bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 py-2 rounded-lg font-bold transition-colors"
                     >
                       + Reject
                     </button>
@@ -658,26 +650,26 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                 </div>
               </div>
             ) : (
-              <div className="py-20 text-center font-mono font-bold text-gray-500 uppercase">
-                Select a candidate from the queue to start grading
+              <div className="py-20 text-center font-mono text-zinc-500 text-sm">
+                Select an applicant from the queue to start grading
               </div>
             )}
           </div>
 
           {/* REALTIME RANKED LEADERBOARD (COL 9-12) */}
-          <div className="lg:col-span-3 bg-white border-8 border-black p-6 shadow-[12px_12px_0px_black]">
-            <div className="border-b-4 border-black pb-3 mb-4">
-              <h3 className="font-cinzel font-black text-lg uppercase tracking-tight flex items-center gap-2">
-                <Award className="text-[#FFD166]" />
+          <div className="lg:col-span-3 bg-[#16161A] border border-white/10 rounded-3xl p-6 shadow-md">
+            <div className="border-b border-white/10 pb-3 mb-4">
+              <h3 className="font-cinzel font-bold text-lg text-[#FFF9F0] flex items-center gap-2">
+                <Award className="text-amber-400" />
                 Live Standings
               </h3>
-              <p className="font-mono text-[9px] text-black/60 uppercase">Ranked by composite score</p>
+              <p className="font-mono text-[9px] text-zinc-400 uppercase">Ranked by panel score</p>
             </div>
 
             <div className="space-y-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
               {rankedAuditions.length === 0 ? (
-                <p className="font-mono text-xs text-gray-400 italic py-6 text-center">
-                  No candidates scored yet.
+                <p className="font-mono text-xs text-zinc-500 italic py-6 text-center">
+                  No applicants scored yet.
                 </p>
               ) : (
                 rankedAuditions.map((candidate, idx) => {
@@ -686,28 +678,28 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                     <div
                       key={candidate.id}
                       onClick={() => setSelectedCandidateId(candidate.id)}
-                      className={`p-2.5 border-2 border-black flex items-center justify-between cursor-pointer transition-all ${
+                      className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                         candidate.id === selectedCandidateId
-                          ? "bg-[#FFD166] shadow-[2px_2px_0px_black]"
-                          : "bg-gray-50 hover:bg-gray-100"
+                          ? "bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm"
+                          : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05]"
                       }`}
                     >
-                      <div className="flex items-center gap-2 truncate">
-                        <span className={`w-5 h-5 flex items-center justify-center font-mono font-black text-[10px] border border-black ${
-                          idx === 0 ? "bg-[#FFD166] text-black" : idx === 1 ? "bg-gray-300 text-black" : idx === 2 ? "bg-amber-600 text-white" : "bg-black text-white"
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono font-bold text-[10px] ${
+                          idx === 0 ? "bg-amber-400 text-black" : idx === 1 ? "bg-zinc-300 text-black" : idx === 2 ? "bg-amber-700 text-white" : "bg-white/10 text-zinc-300"
                         }`}>
                           {idx + 1}
                         </span>
                         <div className="truncate">
-                          <p className="font-mono font-black text-xs uppercase truncate leading-tight">
+                          <p className="font-mono font-bold text-xs text-white truncate leading-tight">
                             {candidate.name}
                           </p>
-                          <p className="font-mono text-[8px] text-black/50 uppercase">
+                          <p className="font-mono text-[9px] text-zinc-400">
                             {candidate.status || "Pending"}
                           </p>
                         </div>
                       </div>
-                      <span className="font-mono font-black text-xs shrink-0 bg-black text-white px-2 py-0.5 border border-black ml-2">
+                      <span className="font-mono font-bold text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 ml-2 shrink-0">
                         {score}
                       </span>
                     </div>

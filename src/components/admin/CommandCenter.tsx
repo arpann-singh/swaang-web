@@ -71,7 +71,6 @@ export default function CommandCenter({ stats, onJump }: { stats: any; onJump?: 
         },
       };
 
-      // Fetch critical single docs
       const [homepageSnap, brandingSnap, auditionResourcesSnap, broadcastSnap] = await Promise.all([
         getDoc(doc(db, "settings", "homepage")),
         getDoc(doc(db, "settings", "site_config")),
@@ -86,7 +85,6 @@ export default function CommandCenter({ stats, onJump }: { stats: any; onJump?: 
         broadcast: broadcastSnap.data() || null,
       };
 
-      // Fetch collections
       for (const col of ["events", "production_archive", "team", "expenses", "messages", "auditions", "timeline"]) {
         try {
           const snap = await getDocs(collection(db, col));
@@ -97,7 +95,6 @@ export default function CommandCenter({ stats, onJump }: { stats: any; onJump?: 
         }
       }
 
-      // Create and trigger download
       const jsonStr = JSON.stringify(backupData, null, 2);
       const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -119,23 +116,23 @@ export default function CommandCenter({ stats, onJump }: { stats: any; onJump?: 
   };
 
   return (
-    <div className="space-y-8 text-left pb-16 w-full">
+    <div className="space-y-8 text-left pb-16 w-full text-zinc-100">
       {/* HEADER */}
-      <div className="border-b-8 border-[#FFF9F0]/20 pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="border-b border-white/10 pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-4xl md:text-6xl font-cinzel font-black tracking-tighter uppercase text-[#FFF9F0]">
+          <h2 className="text-4xl md:text-5xl font-cinzel font-bold tracking-tight text-[#FFF9F0]">
             Master Hub
           </h2>
           <div className="flex flex-wrap items-center gap-3 mt-2">
-            <span className="text-[10px] md:text-xs font-mono font-black uppercase tracking-[0.4em] text-[#06D6A0]">
-              Swaang Operations Grid
+            <span className="text-xs font-mono font-medium tracking-wider text-amber-400">
+              Operations & Production Center
             </span>
-            <span className="flex items-center gap-1.5 bg-black/60 text-[#06D6A0] text-[9px] font-mono font-bold uppercase px-2.5 py-1 border border-[#06D6A0]/40">
-              <span className="w-2 h-2 rounded-full bg-[#06D6A0] animate-pulse" />
-              DB LIVE
+            <span className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-medium px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              FIRESTORE SYNC
             </span>
-            <span className="text-[9px] font-mono font-bold uppercase text-white/50 bg-black/40 px-2 py-1 border border-white/10">
-              SYS_REV_2026.4
+            <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.04] px-2 py-0.5 rounded border border-white/10">
+              SYS.RELEASE_2026
             </span>
           </div>
         </div>
@@ -145,143 +142,148 @@ export default function CommandCenter({ stats, onJump }: { stats: any; onJump?: 
           <button
             onClick={handleSystemBackup}
             disabled={backupLoading}
-            className="flex items-center gap-2 bg-[#FFF9F0] text-black border-4 border-black px-5 py-3 font-mono font-black text-xs uppercase shadow-[4px_4px_0px_#06D6A0] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50"
+            className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/15 px-4 py-2.5 rounded-xl font-mono text-xs font-medium transition-all shadow-sm hover:border-amber-400/40 disabled:opacity-50"
             title="Download full JSON export of Firestore settings and records"
           >
-            <Download size={16} strokeWidth={3} className={backupLoading ? "animate-bounce" : ""} />
-            {backupLoading ? "CREATING DUMP..." : "BACKUP DATABASE (JSON)"}
+            <Download size={14} className={backupLoading ? "animate-bounce text-amber-400" : "text-amber-400"} />
+            {backupLoading ? "CREATING BACKUP..." : "BACKUP DATABASE (JSON)"}
           </button>
         </div>
       </div>
 
       {lastBackup && (
-        <div className="bg-[#06D6A0]/20 border-2 border-[#06D6A0] text-[#06D6A0] px-4 py-2 font-mono text-xs font-bold uppercase flex items-center justify-between">
+        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-4 py-2.5 rounded-xl font-mono text-xs flex items-center justify-between">
           <span>✓ SYSTEM BACKUP EXPORTED SUCCESSFULLY AT {lastBackup}</span>
-          <span className="text-[10px] text-white/70">SAVED LOCALLY</span>
+          <span className="text-[10px] text-emerald-400/60 uppercase">DOWNLOAD COMPLETE</span>
         </div>
       )}
 
       {/* QUICK LAUNCH SHORTCUTS BAR */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { tab: "auditions", label: "Judge Auditions", color: "bg-[#FFD166]", icon: "🎭" },
-          { tab: "archive", label: "Production Archive", color: "bg-[#FF5F5F]", icon: "🎬" },
-          { tab: "budget", label: "Manage Finances", color: "bg-[#06D6A0]", icon: "💰" },
-          { tab: "notices", label: "Issue Notice", color: "bg-[#FFF9F0]", icon: "📢" },
+          { tab: "auditions", label: "Judge Auditions", accent: "text-amber-400", border: "hover:border-amber-500/40", icon: "🎭" },
+          { tab: "archive", label: "Production Archive", accent: "text-rose-400", border: "hover:border-rose-500/40", icon: "🎬" },
+          { tab: "budget", label: "Manage Finances", accent: "text-emerald-400", border: "hover:border-emerald-500/40", icon: "💰" },
+          { tab: "notices", label: "Issue Notice", accent: "text-sky-400", border: "hover:border-sky-500/40", icon: "📢" },
         ].map((item) => (
           <button
             key={item.tab}
             onClick={() => onJump && onJump(item.tab)}
-            className={`${item.color} text-black border-4 border-black p-3.5 flex items-center justify-between shadow-[4px_4px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all group`}
+            className={`bg-[#16161A] hover:bg-[#1C1C22] text-zinc-200 border border-white/10 ${item.border} p-4 rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md transition-all group`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="text-xl">{item.icon}</span>
-              <span className="font-mono font-black uppercase text-xs tracking-tight">{item.label}</span>
+              <span className="font-mono text-xs font-bold text-zinc-100 group-hover:text-white transition-colors">{item.label}</span>
             </div>
-            <ArrowRight size={14} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight size={14} className="text-zinc-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
           </button>
         ))}
       </div>
 
       {/* BENTO GRID OF CORE METRICS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[minmax(14rem,auto)]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[minmax(13rem,auto)]">
         {/* BIG PRODUCTION CARD */}
-        <div className="md:col-span-2 lg:col-span-2 lg:row-span-2 bg-black text-white border-8 border-[#FFD166] p-8 md:p-12 flex flex-col justify-between relative overflow-hidden group hover:shadow-[8px_8px_0px_#FFD166] transition-all shadow-[16px_16px_0px_#FFD166]">
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,209,102,0.1)_25%,transparent_25%,transparent_50%,rgba(255,209,102,0.1)_50%,rgba(255,209,102,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px] pointer-events-none opacity-20" />
-          <div className="absolute -right-10 -bottom-10 text-[18rem] opacity-5 text-white font-black leading-none group-hover:scale-110 transition-transform pointer-events-none">
+        <div className="md:col-span-2 lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-[#1C1B20] via-[#151518] to-[#101012] border border-amber-500/30 rounded-3xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden group hover:border-amber-500/50 shadow-xl transition-all">
+          <div className="absolute -right-8 -bottom-8 text-[16rem] opacity-[0.03] text-amber-400 font-serif select-none pointer-events-none group-hover:scale-105 transition-transform duration-700">
             🎭
           </div>
-          <div className="relative z-10 flex justify-between items-start mb-8">
-            <div className="w-16 h-16 bg-[#FFD166] flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_black] group-hover:shadow-none group-hover:translate-y-1 transition-all">
-              <PlayCircle size={32} className="text-black" />
+          <div className="relative z-10 flex justify-between items-start mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-sm">
+              <PlayCircle size={26} />
             </div>
-            <span className="font-mono font-black uppercase text-[10px] tracking-[0.3em] bg-[#FFD166] text-black px-4 py-2 border-2 border-black">
-              Live Status
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-300 px-3 py-1 rounded-full border border-amber-500/30">
+              Active Stage
             </span>
           </div>
           <div className="relative z-10 mt-auto">
-            <h3 className="font-cinzel text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-none mb-4 break-words group-hover:text-[#FFD166] transition-colors">
+            <h3 className="font-cinzel text-3xl md:text-5xl font-bold tracking-tight text-[#FFF9F0] mb-2 group-hover:text-amber-200 transition-colors">
               {stats.activeShow}
             </h3>
-            <p className="font-mono font-black uppercase text-[10px] tracking-widest text-[#FFD166] opacity-80">
-              &gt; Current Mainstage Production
+            <p className="font-mono text-xs uppercase tracking-wider text-amber-400/80">
+              Current Mainstage Production
             </p>
           </div>
         </div>
 
         {/* CALL TIME CARD */}
-        <div className="md:col-span-1 lg:col-span-2 bg-[#FF5F5F] text-black border-8 border-black shadow-[12px_12px_0px_black] p-6 md:p-8 flex flex-col justify-between hover:-translate-y-2 hover:shadow-[16px_16px_0px_black] transition-all group">
+        <div className="md:col-span-1 lg:col-span-2 bg-gradient-to-br from-[#24171B] to-[#16161A] border border-rose-500/25 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-lg hover:border-rose-500/40 transition-all group">
           <div className="flex justify-between items-start mb-6">
-            <div className="bg-black text-[#FF5F5F] p-4 border-4 border-black group-hover:scale-110 transition-transform shadow-[4px_4px_0px_white]">
-              <Clock size={28} strokeWidth={4} />
+            <div className="w-11 h-11 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-300">
+              <Clock size={22} />
             </div>
-            <span className="font-mono font-black uppercase text-[10px] tracking-widest bg-white px-2 py-1 border-2 border-black">
-              Next Up
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-rose-300 bg-rose-500/15 px-2.5 py-1 rounded-full border border-rose-500/25">
+              Next Call
             </span>
           </div>
           <div className="mt-auto">
-            <p className="text-3xl lg:text-4xl font-black tracking-tighter leading-tight mb-2 break-words">
+            <p className="text-2xl lg:text-3xl font-bold tracking-tight text-white mb-1.5 leading-snug">
               {stats.nextCall}
             </p>
-            <p className="font-mono font-black uppercase text-[10px] tracking-widest opacity-80">
-              &gt; Next Scheduled Call
+            <p className="font-mono text-[11px] uppercase tracking-wider text-rose-300/70">
+              Stage Rehearsal & Assembly
             </p>
           </div>
         </div>
 
         {/* CREW STAT CARD */}
-        <div className="md:col-span-1 bg-[#06D6A0] text-black border-8 border-black shadow-[12px_12px_0px_black] p-6 md:p-8 flex flex-col justify-between hover:-translate-y-2 hover:shadow-[16px_16px_0px_black] transition-all group">
-          <div className="flex justify-between items-start mb-6">
-            <div className="bg-black text-[#06D6A0] p-4 border-4 border-black group-hover:scale-110 transition-transform shadow-[4px_4px_0px_white]">
-              <Users size={28} strokeWidth={4} />
+        <div className="md:col-span-1 bg-[#16161A] border border-white/10 hover:border-emerald-500/30 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-lg transition-all group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <Users size={20} />
             </div>
+            <span className="text-[10px] font-mono text-zinc-400 uppercase">ACTIVE</span>
           </div>
           <div className="mt-auto">
-            <p className="font-mono text-7xl font-black tracking-tighter leading-none mb-2 group-hover:scale-105 origin-left transition-transform">
+            <p className="font-mono text-5xl font-bold tracking-tight text-white mb-1">
               {stats.crewCount}
             </p>
-            <p className="font-mono font-black uppercase text-[10px] tracking-widest opacity-80">
-              &gt; Total Active Crew
+            <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+              Total Roster Crew
             </p>
           </div>
         </div>
 
         {/* INBOX STAT CARD */}
-        <div className="md:col-span-1 bg-[#FFF9F0] text-black border-8 border-black shadow-[12px_12px_0px_black] p-6 md:p-8 flex flex-col justify-between hover:-translate-y-2 hover:shadow-[16px_16px_0px_black] transition-all group">
-          <div className="flex justify-between items-start mb-6">
-            <div className="bg-black text-[#FFF9F0] p-4 border-4 border-black group-hover:scale-110 transition-transform shadow-[4px_4px_0px_#FFD166]">
-              <Mail size={28} strokeWidth={4} />
+        <div className="md:col-span-1 bg-[#16161A] border border-white/10 hover:border-sky-500/30 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-lg transition-all group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
+              <Mail size={20} />
             </div>
+            <span className="text-[10px] font-mono text-zinc-400 uppercase">INQUIRIES</span>
           </div>
           <div className="mt-auto">
-            <p className="font-mono text-7xl font-black tracking-tighter leading-none mb-2 group-hover:scale-105 origin-left transition-transform">
+            <p className="font-mono text-5xl font-bold tracking-tight text-white mb-1">
               {stats.unreadCount}
             </p>
-            <p className="font-mono font-black uppercase text-[10px] tracking-widest opacity-80">
-              &gt; Unread Inquiries
+            <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+              Unread Inquiries
             </p>
           </div>
         </div>
       </div>
 
-      {/* 🚨 EMERGENCY BROADCAST & HOMEPAGE BANNER CONTROLLER */}
-      <div className="bg-[#2D2D2D] border-8 border-black p-6 md:p-8 shadow-[12px_12px_0px_#FF5F5F] text-white">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b-4 border-white/20 pb-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className={`p-3 border-4 border-black ${broadcast.enabled ? "bg-[#FF5F5F] text-white animate-pulse" : "bg-gray-700 text-gray-400"}`}>
-              <Radio size={24} strokeWidth={3} />
+      {/* 🚨 PUBLIC BROADCAST BANNER CONTROLLER */}
+      <div className="bg-[#16161A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-5 mb-6">
+          <div className="flex items-center gap-3.5">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-colors ${
+              broadcast.enabled ? "bg-rose-500/20 text-rose-400 border-rose-500/40" : "bg-white/[0.04] text-zinc-400 border-white/10"
+            }`}>
+              <Radio size={22} className={broadcast.enabled ? "animate-pulse" : ""} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl md:text-2xl font-cinzel font-black uppercase tracking-tight">
-                  Public Broadcast Banner
+                <h3 className="text-xl font-cinzel font-bold text-[#FFF9F0]">
+                  Sitewide Announcement Banner
                 </h3>
-                <span className={`text-[9px] font-mono font-black uppercase px-2 py-0.5 border-2 border-black ${broadcast.enabled ? "bg-[#FF5F5F] text-white" : "bg-gray-600 text-gray-300"}`}>
-                  {broadcast.enabled ? "LIVE ON WEBSITE" : "OFFLINE"}
+                <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
+                  broadcast.enabled ? "bg-rose-500/20 text-rose-300 border-rose-500/30" : "bg-white/[0.04] text-zinc-400 border-white/10"
+                }`}>
+                  {broadcast.enabled ? "LIVE ON PORTAL" : "OFFLINE"}
                 </span>
               </div>
-              <p className="font-mono text-xs text-white/60 mt-0.5">
-                Instant sitewide announcement bar rendered across the public web portal
+              <p className="font-mono text-xs text-zinc-400 mt-0.5">
+                Pushes an immediate high-priority alert across all public website pages
               </p>
             </div>
           </div>
@@ -289,18 +291,18 @@ export default function CommandCenter({ stats, onJump }: { stats: any; onJump?: 
           <div className="flex items-center gap-3 w-full md:w-auto">
             <button
               onClick={() => setBroadcast({ ...broadcast, enabled: !broadcast.enabled })}
-              className={`px-4 py-2 border-4 border-black font-mono font-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_black] transition-all ${
-                broadcast.enabled ? "bg-[#06D6A0] text-black" : "bg-gray-600 text-white"
+              className={`px-4 py-2 rounded-xl font-mono text-xs font-semibold uppercase tracking-wider border transition-all ${
+                broadcast.enabled ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : "bg-white/[0.04] text-zinc-400 border-white/10 hover:text-white"
               }`}
             >
-              {broadcast.enabled ? "SWITCH OFF" : "ENABLE BROADCAST"}
+              {broadcast.enabled ? "DISABLE" : "ENABLE BANNER"}
             </button>
             <button
               onClick={handleSaveBroadcast}
               disabled={broadcastSaving}
-              className="bg-[#FFD166] text-black border-4 border-black px-6 py-2 font-mono font-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_black] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50"
+              className="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2 rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-md disabled:opacity-50"
             >
-              {broadcastSaving ? "SAVING..." : broadcastSaved ? "✓ SYNCED" : "PUBLISH ALERT"}
+              {broadcastSaving ? "SYNCING..." : broadcastSaved ? "✓ PUBLISHED" : "PUBLISH ALERT"}
             </button>
           </div>
         </div>
@@ -308,76 +310,80 @@ export default function CommandCenter({ stats, onJump }: { stats: any; onJump?: 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div>
-              <label className="text-[10px] font-mono font-black uppercase tracking-widest text-[#FFD166] block mb-1">
-                Announcement Headline / Notice Text
+              <label className="text-xs font-mono font-medium text-zinc-300 block mb-1.5">
+                Headline / Announcement Content
               </label>
               <input
                 type="text"
-                placeholder="e.g. AUDITION REGISTRATIONS EXTENDED TILL 11:59 PM TONIGHT | VENUE: OAT"
+                placeholder="e.g. AUDITIONS EXTENDED TILL 11:59 PM TONIGHT | REHEARSAL VENUE SHIFTED TO OAT"
                 value={broadcast.message || ""}
                 onChange={(e) => setBroadcast({ ...broadcast, message: e.target.value })}
-                className="w-full bg-black border-4 border-white p-3 font-mono font-bold text-sm text-[#06D6A0] focus:border-[#FFD166] outline-none"
+                className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3 font-mono text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-amber-400/50 outline-none transition-colors"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono font-black uppercase tracking-widest text-white/70 block mb-1">
-                  Optional Action Button Text
+                <label className="text-xs font-mono font-medium text-zinc-400 block mb-1.5">
+                  Action Link Text (Optional)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. READ NOTICE ➔"
+                  placeholder="e.g. VIEW AUDITION DETAILS ➔"
                   value={broadcast.linkText || ""}
                   onChange={(e) => setBroadcast({ ...broadcast, linkText: e.target.value })}
-                  className="w-full bg-black border-2 border-white/60 p-2.5 font-mono text-xs text-white focus:border-[#FFD166] outline-none"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2.5 font-mono text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-amber-400/50 outline-none transition-colors"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono font-black uppercase tracking-widest text-white/70 block mb-1">
+                <label className="text-xs font-mono font-medium text-zinc-400 block mb-1.5">
                   Target Destination URL / Path
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. /auditions/resources or https://..."
+                  placeholder="e.g. /auditions/resources"
                   value={broadcast.linkUrl || ""}
                   onChange={(e) => setBroadcast({ ...broadcast, linkUrl: e.target.value })}
-                  className="w-full bg-black border-2 border-white/60 p-2.5 font-mono text-xs text-white focus:border-[#FFD166] outline-none"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2.5 font-mono text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-amber-400/50 outline-none transition-colors"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-black/60 border-4 border-white/20 p-4 flex flex-col justify-between">
+          <div className="bg-[#101014] border border-white/10 rounded-2xl p-5 flex flex-col justify-between">
             <div>
-              <p className="text-[10px] font-mono font-black uppercase tracking-widest text-[#FF5F5F] mb-2">
-                Banner Style
+              <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-2.5">
+                Banner Urgency Style
               </p>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: "alert", label: "URGENT (RED)", bg: "bg-[#FF5F5F] text-white" },
-                  { id: "info", label: "NOTICE (YELLOW)", bg: "bg-[#FFD166] text-black" },
-                  { id: "success", label: "UPDATE (GREEN)", bg: "bg-[#06D6A0] text-black" },
+                  { id: "alert", label: "URGENT", style: "bg-rose-500/20 text-rose-300 border-rose-500/40" },
+                  { id: "info", label: "NOTICE", style: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
+                  { id: "success", label: "UPDATE", style: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
                 ].map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setBroadcast({ ...broadcast, type: s.id })}
-                    className={`flex-1 py-1.5 px-2 text-[9px] font-mono font-black uppercase border-2 border-black transition-all ${
-                      broadcast.type === s.id ? `${s.bg} scale-105 shadow-[2px_2px_0px_white]` : "bg-gray-800 text-gray-400 opacity-60"
+                    className={`py-2 px-2 text-[10px] font-mono font-bold uppercase rounded-lg border transition-all ${
+                      broadcast.type === s.id ? `${s.style} shadow-sm font-black` : "bg-white/[0.02] text-zinc-500 border-white/5 hover:text-zinc-300"
                     }`}
                   >
-                    {s.label.split(" ")[0]}
+                    {s.label}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-white/10">
-              <p className="text-[9px] font-mono uppercase text-white/40 mb-1">PREVIEW</p>
-              <div className={`p-2.5 border-2 border-black font-mono text-[10px] font-black uppercase truncate ${
-                broadcast.type === "alert" ? "bg-[#FF5F5F] text-white" : broadcast.type === "success" ? "bg-[#06D6A0] text-black" : "bg-[#FFD166] text-black"
+              <p className="text-[10px] font-mono uppercase text-zinc-500 mb-1.5">LIVE PREVIEW</p>
+              <div className={`p-3 rounded-xl border font-mono text-xs truncate ${
+                broadcast.type === "alert"
+                  ? "bg-rose-500/10 text-rose-200 border-rose-500/30"
+                  : broadcast.type === "success"
+                  ? "bg-emerald-500/10 text-emerald-200 border-emerald-500/30"
+                  : "bg-amber-500/10 text-amber-200 border-amber-500/30"
               }`}>
-                {broadcast.message || "NO ANNOUNCEMENT ACTIVE"}
+                {broadcast.message || "No announcement is currently active"}
               </div>
             </div>
           </div>
