@@ -128,3 +128,176 @@
   transform: translate(4px, 4px);
   box-shadow: 0px 0px 0px #000;
 }
+
+/* =========================================================================
+   🎭 SWAANG STUDIO ADMIN THEME ENGINE (DARK / LIGHT DUAL ATELIER)
+   ========================================================================= */
+
+.admin-theme-dark {
+  --adm-bg: #0E0E12;
+  --adm-sidebar: #121216;
+  --adm-card: #16161B;
+  --adm-card-inner: rgba(255, 255, 255, 0.03);
+  --adm-border: rgba(255, 255, 255, 0.1);
+  --adm-border-subtle: rgba(255, 255, 255, 0.06);
+  --adm-text-head: #FFF9F0;
+  --adm-text-body: #E4E4E7;
+  --adm-text-muted: #A1A1AA;
+  --adm-text-faint: #71717A;
+  --adm-input-bg: rgba(255, 255, 255, 0.04);
+  --adm-input-border: rgba(255, 255, 255, 0.12);
+  --adm-accent-gold: #F59E0B;
+  --adm-accent-emerald: #10B981;
+  --adm-accent-rose: #F43F5E;
+  --adm-card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  --adm-scroll-thumb: rgba(255, 255, 255, 0.15);
+  --adm-scroll-track: #0E0E12;
+}
+
+.admin-theme-light {
+  --adm-bg: #F8F6F0;
+  --adm-sidebar: #FFFFFF;
+  --adm-card: #FFFFFF;
+  --adm-card-inner: #FBF9F5;
+  --adm-border: #E5E0D5;
+  --adm-border-subtle: #EDE9E0;
+  --adm-text-head: #18181B;
+  --adm-text-body: #27272A;
+  --adm-text-muted: #52525B;
+  --adm-text-faint: #71717A;
+  --adm-input-bg: #FFFFFF;
+  --adm-input-border: #DCD6CA;
+  --adm-accent-gold: #D97706;
+  --adm-accent-emerald: #059669;
+  --adm-accent-rose: #E11D48;
+  --adm-card-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06), 0 0 0 1px #E5E0D5;
+  --adm-scroll-thumb: rgba(0, 0, 0, 0.15);
+  --adm-scroll-track: #F8F6F0;
+}
+
+/* Base admin shell */
+.admin-root {
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-text-body) !important;
+}
+
+/* Studio scrollbars for admin */
+.admin-root ::-webkit-scrollbar,
+.admin-root .custom-scrollbar::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.admin-root ::-webkit-scrollbar-track,
+.admin-root .custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--adm-scroll-track) !important;
+  border: none !important;
+}
+
+.admin-root ::-webkit-scrollbar-thumb,
+.admin-root .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--adm-scroll-thumb) !important;
+  border-radius: 9999px !important;
+  border: none !important;
+}
+
+/* Normalize all chunky borders and blocky shadows across all admin pages */
+.admin-root .border-8,
+.admin-root .border-4 {
+  border-width: 1px !important;
+}
+
+.admin-root .border-2 {
+  border-width: 1px !important;
+}
+
+.admin-root [class*="border-black"],
+.admin-root [class*="border-[var(--border-primary)]"] {
+  border-color: var(--adm-border) !important;
+}
+
+.admin-root [class*="shadow-["] {
+  box-shadow: var(--adm-card-shadow) !important;
+}
+
+.admin-root .rounded-\[3rem\],
+.admin-root .rounded-\[3\.5rem\],
+.admin-root .rounded-\[2\.5rem\],
+.admin-root .rounded-\[2rem\] {
+  border-radius: 1.25rem !important;
+}
+
+/* DARK MODE CARD OVERRIDES (Convert harsh white cards to dark studio cards) */
+.admin-theme-dark .admin-root .bg-white,
+.admin-theme-dark .admin-root .bg-\[\#FFF9F0\],
+.admin-theme-dark .admin-root .bg-gray-50,
+.admin-theme-dark .admin-root .bg-\[var\(--bg-primary\)\] {
+  background-color: var(--adm-card) !important;
+  color: var(--adm-text-body) !important;
+  border-color: var(--adm-border) !important;
+}
+
+.admin-theme-dark .admin-root .text-black,
+.admin-theme-dark .admin-root .text-\[var\(--text-primary\)\] {
+  color: var(--adm-text-body) !important;
+}
+
+.admin-theme-dark .admin-root h1,
+.admin-theme-dark .admin-root h2,
+.admin-theme-dark .admin-root h3,
+.admin-theme-dark .admin-root h4 {
+  color: var(--adm-text-head) !important;
+}
+
+.admin-theme-dark .admin-root input,
+.admin-theme-dark .admin-root textarea,
+.admin-theme-dark .admin-root select {
+  background-color: var(--adm-input-bg) !important;
+  border-color: var(--adm-input-border) !important;
+  color: var(--adm-text-head) !important;
+  border-radius: 0.75rem !important;
+}
+
+/* LIGHT MODE CARD OVERRIDES (Convert dark cards to crisp warm atelier cards) */
+.admin-theme-light .admin-root .bg-\[\#16161A\],
+.admin-theme-light .admin-root .bg-\[\#16161B\],
+.admin-theme-light .admin-root .bg-\[\#141418\],
+.admin-theme-light .admin-root .bg-\[\#121215\],
+.admin-theme-light .admin-root .bg-\[\#101014\],
+.admin-theme-light .admin-root .bg-\[\#1C1B20\],
+.admin-theme-light .admin-root .bg-\[\#24171B\],
+.admin-theme-light .admin-root .bg-\[\#2D2D2D\],
+.admin-theme-light .admin-root .bg-black {
+  background-color: var(--adm-card) !important;
+  color: var(--adm-text-body) !important;
+  border-color: var(--adm-border) !important;
+}
+
+.admin-theme-light .admin-root .text-white,
+.admin-theme-light .admin-root .text-\[\#FFF9F0\],
+.admin-theme-light .admin-root .text-zinc-100,
+.admin-theme-light .admin-root .text-zinc-200 {
+  color: var(--adm-text-head) !important;
+}
+
+.admin-theme-light .admin-root .text-zinc-300,
+.admin-theme-light .admin-root .text-zinc-400 {
+  color: var(--adm-text-muted) !important;
+}
+
+.admin-theme-light .admin-root h1,
+.admin-theme-light .admin-root h2,
+.admin-theme-light .admin-root h3,
+.admin-theme-light .admin-root h4 {
+  color: var(--adm-text-head) !important;
+}
+
+.admin-theme-light .admin-root input,
+.admin-theme-light .admin-root textarea,
+.admin-theme-light .admin-root select {
+  background-color: var(--adm-input-bg) !important;
+  border-color: var(--adm-input-border) !important;
+  color: var(--adm-text-head) !important;
+  border-radius: 0.75rem !important;
+}
+

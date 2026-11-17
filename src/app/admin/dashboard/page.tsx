@@ -18,7 +18,9 @@ import {
   LayoutGrid, 
   Sparkles,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Sun,
+  Moon
 } from "lucide-react";
 
 // --- EXISTING COMPONENTS ---
@@ -54,6 +56,7 @@ export default function AdminDashboard() {
   const [sidebarFilter, setSidebarFilter] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   const [siteConfig, setSiteConfig] = useState<any>({});
   const [messages, setMessages] = useState<any[]>([]);
@@ -63,6 +66,20 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true); 
   const router = useRouter();
+
+  // Load persisted theme
+  useEffect(() => {
+    const saved = localStorage.getItem("swaang_admin_theme") as "dark" | "light" | null;
+    if (saved) {
+      setTheme(saved);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("swaang_admin_theme", next);
+  };
 
   useEffect(() => {
     let unsubs: (() => void)[] = [];
@@ -196,24 +213,24 @@ export default function AdminDashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0E0E11] flex flex-col items-center justify-center font-mono font-bold tracking-widest text-zinc-300">
+      <div className={`admin-root ${theme === "dark" ? "admin-theme-dark" : "admin-theme-light"} min-h-screen flex flex-col items-center justify-center font-mono font-bold tracking-widest`}>
         <div className="w-12 h-12 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mb-4" />
-        <span className="text-xs uppercase tracking-[0.3em] text-zinc-400">VERIFYING CLEARANCE...</span>
+        <span className="text-xs uppercase tracking-[0.3em] opacity-60">VERIFYING CLEARANCE...</span>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0E0E11] flex flex-col items-center justify-center font-mono font-bold tracking-widest text-zinc-300">
+      <div className={`admin-root ${theme === "dark" ? "admin-theme-dark" : "admin-theme-light"} min-h-screen flex flex-col items-center justify-center font-mono font-bold tracking-widest`}>
         <div className="w-12 h-12 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mb-4" />
-        <span className="text-xs uppercase tracking-[0.3em] text-zinc-400">INITIALIZING DASHBOARD...</span>
+        <span className="text-xs uppercase tracking-[0.3em] opacity-60">INITIALIZING DASHBOARD...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col xl:flex-row h-screen w-full bg-[#0E0E11] overflow-hidden font-sans text-zinc-100">
+    <div className={`admin-root ${theme === "dark" ? "admin-theme-dark" : "admin-theme-light"} flex flex-col xl:flex-row h-screen w-full overflow-hidden font-sans transition-colors duration-300`}>
       
       <CommandPalette 
         onJump={handleJump} 
@@ -224,29 +241,40 @@ export default function AdminDashboard() {
       />
 
       {/* 📱 MINIMAL MOBILE TOP BAR */}
-      <header className="xl:hidden w-full bg-[#141418]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 flex justify-between items-center z-30 shrink-0">
+      <header className="xl:hidden w-full bg-[var(--adm-sidebar)] border-b border-[var(--adm-border)] px-4 py-3 flex justify-between items-center z-30 shrink-0">
         <div className="flex items-center gap-2.5">
-          <span className="font-cinzel text-xl font-bold tracking-wider text-[#FFF9F0]">SWAANG</span>
-          <span className="px-2 py-0.5 font-mono text-[9px] font-bold uppercase rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/30">
+          <span className="font-cinzel text-xl font-bold tracking-wider text-[var(--adm-text-head)]">SWAANG</span>
+          <span className="px-2 py-0.5 font-mono text-[9px] font-bold uppercase rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30">
             {currentTabObj?.label || "STUDIO"}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 font-mono text-[9px] font-medium text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          {/* Theme Switcher Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-body)] hover:text-amber-500 transition-colors"
+            title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
+          >
+            {theme === "dark" ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
+          </button>
+
+          <span className="flex items-center gap-1.5 font-mono text-[9px] font-medium text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             LIVE
           </span>
+
           <button 
             onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-            className="p-2 rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 hover:text-white transition-colors"
+            className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-body)] transition-colors"
             title="Open command palette (Ctrl+K)"
           >
             <Terminal size={14} />
           </button>
+          
           <button 
             onClick={() => signOut(auth)} 
-            className="p-2 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition-colors"
+            className="p-2 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors"
             title="Log Out"
           >
             <LogOut size={14} />
@@ -257,13 +285,13 @@ export default function AdminDashboard() {
       {/* 📱 FIXED BOTTOM COMMAND DOCK (THE THUMB ZONE) */}
       <nav 
         aria-label="Mobile Navigation Dock"
-        className="xl:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#141418]/95 backdrop-blur-lg border-t border-white/10 z-40 flex items-stretch justify-around px-2"
+        className="xl:hidden fixed bottom-0 left-0 right-0 h-16 bg-[var(--adm-sidebar)]/95 backdrop-blur-lg border-t border-[var(--adm-border)] z-40 flex items-stretch justify-around px-2"
       >
         {/* 1. Master Hub */}
         <button 
           onClick={() => handleJump("dashboard")} 
           className={`flex-1 flex flex-col items-center justify-center font-mono transition-all rounded-xl my-1.5 ${
-            activeTab === "dashboard" ? "bg-amber-500/15 text-amber-300" : "text-zinc-400 hover:text-zinc-200"
+            activeTab === "dashboard" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
           }`}
         >
           <Compass size={18} />
@@ -274,7 +302,7 @@ export default function AdminDashboard() {
         <button 
           onClick={() => handleJump("auditions")} 
           className={`flex-1 flex flex-col items-center justify-center font-mono relative transition-all rounded-xl my-1.5 ${
-            activeTab === "auditions" ? "bg-amber-500/15 text-amber-300" : "text-zinc-400 hover:text-zinc-200"
+            activeTab === "auditions" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
           }`}
         >
           <UserCheck size={18} />
@@ -290,7 +318,7 @@ export default function AdminDashboard() {
         <button 
           onClick={() => handleJump("schedule")} 
           className={`flex-1 flex flex-col items-center justify-center font-mono transition-all rounded-xl my-1.5 ${
-            activeTab === "schedule" ? "bg-amber-500/15 text-amber-300" : "text-zinc-400 hover:text-zinc-200"
+            activeTab === "schedule" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
           }`}
         >
           <Clock size={18} />
@@ -301,7 +329,7 @@ export default function AdminDashboard() {
         <button 
           onClick={() => handleJump("inbox")} 
           className={`flex-1 flex flex-col items-center justify-center font-mono relative transition-all rounded-xl my-1.5 ${
-            activeTab === "inbox" ? "bg-amber-500/15 text-amber-300" : "text-zinc-400 hover:text-zinc-200"
+            activeTab === "inbox" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
           }`}
         >
           <Mail size={18} />
@@ -317,7 +345,7 @@ export default function AdminDashboard() {
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
           className={`flex-1 flex flex-col items-center justify-center font-mono transition-all rounded-xl my-1.5 ${
-            mobileMenuOpen ? "bg-amber-500 text-black font-bold" : "text-zinc-400 hover:text-zinc-200"
+            mobileMenuOpen ? "bg-amber-500 text-black font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
           }`}
         >
           <LayoutGrid size={18} />
@@ -334,7 +362,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="xl:hidden fixed inset-0 bg-black/80 z-50 backdrop-blur-sm"
+              className="xl:hidden fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
             />
 
             <motion.div
@@ -342,46 +370,46 @@ export default function AdminDashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="xl:hidden fixed bottom-0 left-0 right-0 max-h-[85vh] bg-[#16161A] border-t border-white/15 rounded-t-3xl z-50 p-6 overflow-y-auto custom-scrollbar shadow-2xl text-zinc-100 flex flex-col justify-between"
+              className="xl:hidden fixed bottom-0 left-0 right-0 max-h-[85vh] bg-[var(--adm-card)] border-t border-[var(--adm-border)] rounded-t-3xl z-50 p-6 overflow-y-auto custom-scrollbar shadow-2xl flex flex-col justify-between"
             >
               <div>
                 <div 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4 cursor-pointer hover:bg-white/40"
+                  className="w-12 h-1 bg-[var(--adm-text-muted)]/30 rounded-full mx-auto mb-4 cursor-pointer hover:bg-[var(--adm-text-muted)]"
                 />
 
-                <div className="flex justify-between items-center border-b border-white/10 pb-4 mb-4">
+                <div className="flex justify-between items-center border-b border-[var(--adm-border)] pb-4 mb-4">
                   <div>
-                    <h3 className="font-cinzel text-2xl font-bold uppercase text-[#FFF9F0]">
+                    <h3 className="font-cinzel text-2xl font-bold uppercase text-[var(--adm-text-head)]">
                       All Modules
                     </h3>
-                    <p className="font-mono text-[10px] text-zinc-400">
-                      Full Swaang Production & Editorial Suite
+                    <p className="font-mono text-[10px] text-[var(--adm-text-muted)]">
+                      Swaang Production & Editorial Operations Grid
                     </p>
                   </div>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-zinc-400 hover:text-white"
+                    className="p-1.5 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
                   >
                     <X size={18} />
                   </button>
                 </div>
 
                 <div className="relative mb-6">
-                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--adm-text-muted)]" />
                   <input
                     type="text"
-                    placeholder="Search any module or tool..."
+                    placeholder="Search any tool or category..."
                     value={sidebarFilter}
                     onChange={(e) => setSidebarFilter(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl font-mono text-xs text-white placeholder:text-zinc-500 outline-none focus:border-amber-400/50"
+                    className="w-full pl-9 pr-3 py-2.5 bg-[var(--adm-input-bg)] border border-[var(--adm-border)] rounded-xl font-mono text-xs text-[var(--adm-text-head)] outline-none focus:border-amber-400/50"
                   />
                 </div>
 
                 <div className="space-y-6">
                   {filteredCategories.map((cat) => (
                     <div key={cat.title}>
-                      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-400/70 mb-2.5">
+                      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-500 mb-2.5">
                         // {cat.title}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
@@ -393,8 +421,8 @@ export default function AdminDashboard() {
                               onClick={() => handleJump(tab.id)}
                               className={`p-3 rounded-xl border font-mono text-xs text-left transition-all flex items-center justify-between ${
                                 isActive
-                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm"
-                                  : "bg-white/[0.03] text-zinc-300 hover:text-white hover:bg-white/[0.06] border-white/5"
+                                  ? "bg-amber-500/15 text-amber-500 border-amber-500/40 font-bold shadow-sm"
+                                  : "bg-[var(--adm-card-inner)] text-[var(--adm-text-body)] hover:text-[var(--adm-text-head)] border-[var(--adm-border-subtle)]"
                               }`}
                             >
                               <span className="truncate">{tab.label}</span>
@@ -412,14 +440,20 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-white/10 mt-8">
-                <div className="flex items-center justify-between mb-3 font-mono text-xs text-zinc-400">
+              <div className="pt-6 border-t border-[var(--adm-border)] mt-8">
+                <div className="flex items-center justify-between mb-3 font-mono text-xs text-[var(--adm-text-muted)]">
                   <span className="truncate pr-2">{currentUser?.email}</span>
-                  <span className="text-emerald-400 text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">ADMIN</span>
+                  <button
+                    onClick={toggleTheme}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-xs text-[var(--adm-text-head)]"
+                  >
+                    {theme === "dark" ? <Sun size={12} className="text-amber-400" /> : <Moon size={12} className="text-indigo-600" />}
+                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                  </button>
                 </div>
                 <button
                   onClick={() => signOut(auth)}
-                  className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 transition-colors"
+                  className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase bg-rose-500/15 text-rose-500 border border-rose-500/30 hover:bg-rose-500/25 transition-colors"
                 >
                   SECURE SIGN OUT
                 </button>
@@ -429,45 +463,56 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* 💻 DESKTOP SLEEK ATELIER SIDEBAR */}
-      <aside className="hidden xl:flex w-72 bg-[#121215] border-r border-white/10 flex-col shrink-0 h-full relative z-40 text-zinc-300 justify-between">
+      {/* 💻 DESKTOP ATELIER SIDEBAR */}
+      <aside className="hidden xl:flex w-72 bg-[var(--adm-sidebar)] border-r border-[var(--adm-border)] flex-col shrink-0 h-full relative z-40 text-[var(--adm-text-body)] justify-between transition-colors">
         
         {/* BRAND HEADER & LIVE STATUS */}
-        <div className="p-6 pb-4 border-b border-white/10">
+        <div className="p-6 pb-4 border-b border-[var(--adm-border)]">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="font-cinzel text-3xl font-bold tracking-wider text-[#FFF9F0]">
+              <h2 className="font-cinzel text-3xl font-bold tracking-wider text-[var(--adm-text-head)]">
                 SWAANG
               </h2>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
                   STUDIO CMS
                 </span>
-                <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-500">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   LIVE
                 </span>
               </div>
             </div>
 
-            <button 
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-              className="p-2 rounded-lg border border-white/10 bg-white/[0.04] text-zinc-400 hover:text-white transition-colors"
-              title="Open Omnibar (Ctrl+K)"
-            >
-              <Terminal size={14} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              {/* Sun/Moon Toggle */}
+              <button 
+                onClick={toggleTheme}
+                className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-muted)] hover:text-amber-500 transition-colors"
+                title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
+              >
+                {theme === "dark" ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
+              </button>
+
+              <button 
+                onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
+                className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)] transition-colors"
+                title="Open Omnibar (Ctrl+K)"
+              >
+                <Terminal size={14} />
+              </button>
+            </div>
           </div>
 
           {/* SIDEBAR INSTANT FILTER */}
           <div className="relative mt-4">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--adm-text-muted)]" />
             <input
               type="text"
               placeholder="Search tools..."
               value={sidebarFilter}
               onChange={(e) => setSidebarFilter(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl font-mono text-xs text-white placeholder:text-zinc-500 outline-none focus:border-amber-400/50 transition-colors"
+              className="w-full pl-8 pr-3 py-2 bg-[var(--adm-input-bg)] border border-[var(--adm-border)] rounded-xl font-mono text-xs text-[var(--adm-text-head)] placeholder:text-[var(--adm-text-muted)] outline-none focus:border-amber-400/50 transition-colors"
             />
           </div>
         </div>
@@ -476,7 +521,7 @@ export default function AdminDashboard() {
         <nav className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-6">
           {filteredCategories.map((cat) => (
             <div key={cat.title} className="space-y-1.5">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-500 px-2">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-wider text-[var(--adm-text-muted)] px-2">
                 {cat.title}
               </p>
               <div className="space-y-1">
@@ -488,8 +533,8 @@ export default function AdminDashboard() {
                       onClick={() => handleJump(tab.id)}
                       className={`w-full text-left px-3 py-2 rounded-xl font-mono text-xs transition-all flex items-center justify-between ${
                         isActive 
-                          ? "bg-gradient-to-r from-amber-500/20 to-amber-500/5 text-amber-300 border border-amber-500/40 shadow-sm" 
-                          : "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border border-transparent"
+                          ? "bg-amber-500/15 text-amber-500 font-bold border border-amber-500/30 shadow-sm" 
+                          : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)] hover:bg-[var(--adm-card-inner)] border border-transparent"
                       }`}
                     >
                       <span className="truncate">{tab.label}</span>
@@ -507,31 +552,41 @@ export default function AdminDashboard() {
         </nav>
         
         {/* FOOTER USER CARD */}
-        <div className="p-4 border-t border-white/10 bg-[#16161A]/60">
+        <div className="p-4 border-t border-[var(--adm-border)] bg-[var(--adm-card-inner)]">
           <div className="flex items-center justify-between mb-2">
             <div className="truncate pr-2">
-              <span className="block font-mono text-[8px] font-bold text-zinc-500 uppercase">AUTHENTICATED</span>
-              <p className="font-mono text-xs font-medium text-zinc-200 truncate leading-tight">
+              <span className="block font-mono text-[8px] font-bold text-[var(--adm-text-muted)] uppercase">AUTHENTICATED</span>
+              <p className="font-mono text-xs font-medium text-[var(--adm-text-head)] truncate leading-tight">
                 {currentUser?.email || "admin@swaang.club"}
               </p>
             </div>
-            <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-mono font-bold uppercase px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
+            <span className="bg-emerald-500/10 text-emerald-500 text-[8px] font-mono font-bold uppercase px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
               LEVEL 1
             </span>
           </div>
 
-          <button 
-            onClick={() => signOut(auth)} 
-            className="w-full py-2 rounded-lg font-mono text-[10px] font-bold uppercase text-zinc-400 hover:text-rose-300 hover:bg-rose-500/10 border border-white/5 hover:border-rose-500/30 transition-all flex items-center justify-center gap-1.5 mt-2"
-          >
-            <LogOut size={12} />
-            SIGN OUT
-          </button>
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              onClick={toggleTheme}
+              className="flex-1 py-1.5 rounded-lg font-mono text-[10px] font-bold uppercase text-[var(--adm-text-body)] hover:text-amber-500 bg-[var(--adm-card)] border border-[var(--adm-border)] transition-all flex items-center justify-center gap-1.5"
+            >
+              {theme === "dark" ? <Sun size={12} className="text-amber-400" /> : <Moon size={12} className="text-indigo-600" />}
+              <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+            </button>
+
+            <button 
+              onClick={() => signOut(auth)} 
+              className="py-1.5 px-3 rounded-lg font-mono text-[10px] font-bold uppercase text-rose-500 hover:bg-rose-500/10 border border-rose-500/30 transition-all flex items-center justify-center gap-1"
+              title="Sign Out"
+            >
+              <LogOut size={12} />
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* 🚀 MAIN CONTENT AREA */}
-      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-10 pb-28 xl:pb-10 custom-scrollbar bg-[#0E0E11] text-zinc-100">
+      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-10 pb-28 xl:pb-10 custom-scrollbar bg-[var(--adm-bg)] text-[var(--adm-text-body)] transition-colors">
         <AnimatePresence mode="wait">
           <motion.div 
             key={activeTab} 
