@@ -1,20 +1,38 @@
 "use client";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, X, Star, Film, GraduationCap, Award, Camera, Clapperboard, Sparkles } from "lucide-react";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  X, 
+  Star, 
+  Film, 
+  GraduationCap, 
+  Award, 
+  Camera, 
+  Clapperboard, 
+  Play, 
+  Pause, 
+  Sparkles,
+  Sliders,
+  Maximize2
+} from "lucide-react";
 import Link from "next/link";
 
 export default function Timeline({ timeline = [] }: { timeline: any[] }) {
   const [activeStory, setActiveStory] = useState<any | null>(null);
   const [selectedYear, setSelectedYear] = useState<string>("ALL");
+  const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
+  const [currentFrameIndex, setCurrentFrameIndex] = useState<number>(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Category Icon & Color Mapping
-  const categoryMap: Record<string, { icon: any; color: string; label: string }> = {
-    milestone: { icon: Star, color: "bg-[#FFD166] text-black", label: "MILESTONE" },
-    play: { icon: Film, color: "bg-[#FF5F5F] text-white", label: "PRODUCTION" },
-    workshop: { icon: GraduationCap, color: "bg-[#06D6A0] text-black", label: "WORKSHOP" },
-    achievement: { icon: Award, color: "bg-black text-[#06D6A0]", label: "ACCOLADE" },
+  const categoryMap: Record<string, { icon: any; color: string; bgBadge: string; label: string }> = {
+    milestone: { icon: Star, color: "text-[#FFD166]", bgBadge: "bg-[#FFD166] text-black", label: "MILESTONE" },
+    play: { icon: Film, color: "text-[#FF5F5F]", bgBadge: "bg-[#FF5F5F] text-white", label: "PRODUCTION" },
+    workshop: { icon: GraduationCap, color: "text-[#06D6A0]", bgBadge: "bg-[#06D6A0] text-black", label: "WORKSHOP" },
+    achievement: { icon: Award, color: "text-[#06D6A0]", bgBadge: "bg-black text-[#06D6A0]", label: "ACCOLADE" },
   };
 
   // Lock scrolling when modal is open
@@ -24,7 +42,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
     return () => { document.body.style.overflow = "auto"; };
   }, [activeStory]);
 
-  // Extract all years in descending order
+  // Extract all distinct years descending
   const years = useMemo(() => {
     const set = new Set<string>();
     timeline.forEach((item) => {
@@ -46,41 +64,83 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
     });
   }, [timeline, selectedYear]);
 
-  // Horizontal Reel Scroll Handlers
+  // Scroll handler with index update
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
-      const offset = direction === "left" ? -460 : 460;
+      const cardWidth = 440;
+      const offset = direction === "left" ? -cardWidth : cardWidth;
       scrollContainerRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
+
+  // Jump to specific index or year
+  const jumpToYear = (year: string) => {
+    setSelectedYear(year);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  };
+
+  // Auto-play cinema reel
+  useEffect(() => {
+    if (isAutoPlaying) {
+      autoPlayIntervalRef.current = setInterval(() => {
+        if (scrollContainerRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+          if (scrollLeft + clientWidth >= scrollWidth - 50) {
+            scrollContainerRef.current.scrollTo({ left: 0, behavior: "smooth" });
+          } else {
+            scrollContainerRef.current.scrollBy({ left: 440, behavior: "smooth" });
+          }
+        }
+      }, 3500);
+    } else if (autoPlayIntervalRef.current) {
+      clearInterval(autoPlayIntervalRef.current);
+    }
+
+    return () => {
+      if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
+    };
+  }, [isAutoPlaying]);
+
+  // Track current frame index on scroll
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const scrollLeft = scrollContainerRef.current.scrollLeft;
+      const approxIndex = Math.round(scrollLeft / 440) + 1;
+      setCurrentFrameIndex(Math.min(Math.max(approxIndex, 1), filteredEvents.length || 1));
     }
   };
 
   if (!timeline || timeline.length === 0) return null;
 
   return (
-    <section id="journey" className="py-24 md:py-32 bg-transparent text-black relative border-b-8 border-black overflow-hidden">
+    <section id="journey" className="py-24 md:py-36 bg-[#FFF9F0] text-black relative border-b-8 border-black overflow-hidden selection:bg-[#FF5F5F] selection:text-white">
       
-      {/* Background Watermark */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-16 opacity-[0.03] select-none pointer-events-none overflow-hidden -rotate-2">
-        <h1 className="text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter">
-          PRODUCTION REEL // 35MM NEGATIVES // ARCHIVES // PRODUCTION REEL
+      {/* 🏛️ BACKGROUND THEATRE WATERMARK */}
+      <div className="absolute inset-0 flex flex-col justify-center gap-20 opacity-[0.03] select-none pointer-events-none overflow-hidden -rotate-3 z-0">
+        <h1 className="text-[16vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black">
+          CELLULOID REEL // 35MM NEGATIVES // PRODUCTION TIMELINE //
         </h1>
-        <h1 className="text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter -ml-32">
-          10 YEARS ON STAGE // 2014 - 2024 // 10 YEARS ON STAGE
+        <h1 className="text-[16vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black -ml-48">
+          A DECADE OF NUKKAD & THEATRE // 2014 - 2024 // SWAANG
         </h1>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
-        {/* 🎬 THEATRICAL HEADER */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+        {/* ============================================================== */}
+        {/* 🎬 THEATRICAL HEADER & CINEMA PROJECTOR HUD                     */}
+        {/* ============================================================== */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
           <div>
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
               <span className="bg-black text-[#FFD166] px-4 py-1.5 border-2 border-black font-mono font-black uppercase text-[11px] tracking-[0.3em] shadow-[4px_4px_0px_#FF5F5F] flex items-center gap-2">
                 <Clapperboard size={14} className="text-[#FF5F5F]" />
                 ACT // 02 • THE PRODUCTION REEL
               </span>
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-black/60 hidden sm:inline-block">
-                35MM CELLULOID CHRONOLOGY
+              <span className="bg-[#06D6A0] text-black border-2 border-black px-3 py-1 font-mono font-black text-[10px] uppercase tracking-wider shadow-[2px_2px_0px_black]">
+                EST. 2014 • 10-YEAR ARCHIVE
               </span>
             </div>
 
@@ -89,76 +149,124 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
             </h2>
           </div>
 
-          {/* Reel Nav Controls */}
-          <div className="flex items-center gap-4">
+          {/* 🎛️ CINEMA PROJECTOR CONTROL HUD */}
+          <div className="bg-black text-[#FFF9F0] border-4 border-black p-4 md:p-5 shadow-[8px_8px_0px_#FF5F5F] flex flex-wrap items-center gap-4 lg:gap-6 font-mono">
+            
+            {/* Timecode & Frame Indicator */}
+            <div className="flex flex-col">
+              <span className="text-[9px] uppercase tracking-[0.3em] text-[#06D6A0] font-black">
+                PROJECTOR_FEED // LIVE
+              </span>
+              <div className="flex items-center gap-2 text-xs md:text-sm font-black tracking-widest text-white">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#FF5F5F] animate-pulse" />
+                FRAME [{String(currentFrameIndex).padStart(2, "0")} / {String(filteredEvents.length).padStart(2, "0")}]
+              </div>
+            </div>
+
+            <div className="w-[2px] h-10 bg-white/20 hidden sm:block" />
+
+            {/* Auto-Play Toggle */}
             <button
-              onClick={() => scroll("left")}
-              aria-label="Scroll left"
-              className="w-14 h-14 bg-white border-4 border-black flex items-center justify-center font-black shadow-[4px_4px_0px_black] hover:bg-[#FFD166] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-y-1 active:shadow-none transition-all"
+              onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+              className={`px-4 py-2.5 border-2 border-black font-black uppercase text-xs tracking-wider flex items-center gap-2 transition-all shadow-[2px_2px_0px_white] active:translate-y-0.5 active:shadow-none ${
+                isAutoPlaying 
+                  ? "bg-[#FF5F5F] text-white" 
+                  : "bg-[#FFD166] text-black hover:bg-yellow-400"
+              }`}
             >
-              <ChevronLeft size={28} strokeWidth={3} />
+              {isAutoPlaying ? <Pause size={14} /> : <Play size={14} />}
+              <span>{isAutoPlaying ? "PAUSE REEL" : "PLAY REEL"}</span>
             </button>
-            <button
-              onClick={() => scroll("right")}
-              aria-label="Scroll right"
-              className="w-14 h-14 bg-black text-white border-4 border-black flex items-center justify-center font-black shadow-[4px_4px_0px_#06D6A0] hover:bg-[#06D6A0] hover:text-black hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-y-1 active:shadow-none transition-all"
-            >
-              <ChevronRight size={28} strokeWidth={3} />
-            </button>
+
+            {/* Advance Arrows */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => scroll("left")}
+                aria-label="Previous Frame"
+                className="w-10 h-10 bg-white text-black border-2 border-black flex items-center justify-center font-black hover:bg-[#FFD166] active:translate-y-0.5 transition-all shadow-[2px_2px_0px_white]"
+              >
+                <ChevronLeft size={20} strokeWidth={3} />
+              </button>
+              <button
+                onClick={() => scroll("right")}
+                aria-label="Next Frame"
+                className="w-10 h-10 bg-white text-black border-2 border-black flex items-center justify-center font-black hover:bg-[#06D6A0] active:translate-y-0.5 transition-all shadow-[2px_2px_0px_white]"
+              >
+                <ChevronRight size={20} strokeWidth={3} />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 🏷️ YEAR FILTER STRIP */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-          <span className="font-mono font-black text-xs uppercase tracking-widest text-black/60 mr-2 shrink-0">
-            FILTER ERA:
-          </span>
+        {/* ============================================================== */}
+        {/* 🏷️ TACTILE YEAR SCRUBBER STRIP                                 */}
+        {/* ============================================================== */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-4 border-black pb-4">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            <span className="font-mono font-black text-xs uppercase tracking-widest text-black/70 mr-2 shrink-0">
+              ERA DIAL:
+            </span>
 
-          <button
-            onClick={() => setSelectedYear("ALL")}
-            className={`px-5 py-2 font-mono font-black text-xs uppercase tracking-widest border-2 border-black transition-all shrink-0 ${
-              selectedYear === "ALL"
-                ? "bg-black text-[#06D6A0] shadow-[3px_3px_0px_black] -translate-y-0.5"
-                : "bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_black]"
-            }`}
-          >
-            ALL YEARS ({timeline.length})
-          </button>
+            <button
+              onClick={() => setSelectedYear("ALL")}
+              className={`px-4 py-1.5 font-mono font-black text-xs uppercase tracking-widest border-2 border-black transition-all shrink-0 ${
+                selectedYear === "ALL"
+                  ? "bg-black text-[#06D6A0] shadow-[3px_3px_0px_black] -translate-y-0.5"
+                  : "bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_black]"
+              }`}
+            >
+              ALL ERAS ({timeline.length})
+            </button>
 
-          {years.map((yr) => {
-            const count = timeline.filter((i) => String(i.year) === yr).length;
-            const isSelected = selectedYear === yr;
-            return (
-              <button
-                key={yr}
-                onClick={() => setSelectedYear(yr)}
-                className={`px-4 py-2 font-mono font-black text-xs uppercase tracking-widest border-2 border-black transition-all shrink-0 ${
-                  isSelected
-                    ? "bg-[#FF5F5F] text-white shadow-[3px_3px_0px_black] -translate-y-0.5"
-                    : "bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_black]"
-                }`}
-              >
-                {yr} ({count})
-              </button>
-            );
-          })}
+            {years.map((yr) => {
+              const count = timeline.filter((i) => String(i.year) === yr).length;
+              const isSelected = selectedYear === yr;
+              return (
+                <button
+                  key={yr}
+                  onClick={() => jumpToYear(yr)}
+                  className={`px-3.5 py-1.5 font-mono font-black text-xs uppercase tracking-widest border-2 border-black transition-all shrink-0 ${
+                    isSelected
+                      ? "bg-[#FF5F5F] text-white shadow-[3px_3px_0px_black] -translate-y-0.5"
+                      : "bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_black]"
+                  }`}
+                >
+                  {yr} <span className="opacity-60 text-[10px]">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="font-mono text-[11px] font-black uppercase tracking-widest text-black/60 hidden md:block">
+            DRAG OR ARROW KEYS TO SCRUB REEL ➔
+          </div>
         </div>
+
       </div>
 
       {/* ============================================================== */}
-      {/* 🎞️ THE 35MM CELLULOID FILMSTRIP REEL                           */}
+      {/* 🎞️ MASTER 35MM CELLULOID LIGHTBOX EDITING TABLE                */}
       {/* ============================================================== */}
-      <div className="w-full bg-[#161616] border-y-8 border-black py-4 relative shadow-[inset_0_8px_16px_rgba(0,0,0,0.6)]">
+      <div className="w-full bg-[#111111] border-y-8 border-black py-6 relative shadow-[inset_0_12px_24px_rgba(0,0,0,0.8)]">
         
-        {/* TOP SPROCKET HOLE STRIP */}
-        <div className="w-full border-b-2 border-white/20 pb-3 mb-6 px-4 flex items-center justify-between overflow-hidden select-none">
-          <div className="flex gap-4 md:gap-6 items-center whitespace-nowrap overflow-hidden">
-            {Array.from({ length: 36 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <div className="w-4 h-6 bg-[#FFF9F0] border border-black/40 rounded-sm shadow-inner shrink-0" />
-                {i % 4 === 0 && (
-                  <span className="font-mono font-bold text-[9px] uppercase tracking-[0.3em] text-[#FFF9F0]/60 shrink-0">
-                    KODAK 400TX // 35MM SAFETY FILM
+        {/* Subtle Lightbox Acrylic Measuring Grid Overlay */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-10"
+          style={{
+            backgroundImage: "linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)",
+            backgroundSize: "60px 60px"
+          }}
+        />
+
+        {/* 🎬 TOP PERFORATED FILM SPROCKET STRIP */}
+        <div className="w-full border-b-2 border-white/20 pb-4 mb-6 px-4 flex items-center justify-between overflow-hidden select-none relative z-10">
+          <div className="flex gap-4 md:gap-8 items-center whitespace-nowrap overflow-hidden">
+            {Array.from({ length: 40 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-5">
+                <div className="w-4 h-6 bg-[#EBE5D8] border-2 border-black rounded-[3px] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)] shrink-0" />
+                {i % 3 === 0 && (
+                  <span className="font-mono font-bold text-[9px] uppercase tracking-[0.35em] text-[#FFD166]/70 shrink-0">
+                    EASTMAN 5222 • 35MM PANCHROMATIC • EMULSION #{2014 + (i % 11)}
                   </span>
                 )}
               </div>
@@ -166,10 +274,11 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
           </div>
         </div>
 
-        {/* 📼 HORIZONTAL FILM REEL (Scrollable / Draggable) */}
+        {/* 📼 HORIZONTAL FILM REEL (Scrollable / Draggable Cards) */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-8 overflow-x-auto px-6 md:px-12 py-4 no-scrollbar scroll-smooth cursor-grab active:cursor-grabbing"
+          onScroll={handleScroll}
+          className="flex gap-10 overflow-x-auto px-6 md:px-16 py-6 no-scrollbar scroll-smooth cursor-grab active:cursor-grabbing relative z-10"
           style={{ scrollSnapType: "x mandatory" }}
         >
           {filteredEvents.map((item, index) => {
@@ -180,74 +289,90 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
             return (
               <motion.div
                 key={item.id || index}
-                whileHover={{ scale: 1.02, y: -6 }}
-                transition={{ type: "spring", stiffness: 350, damping: 15 }}
-                style={{ scrollSnapAlign: "start" }}
-                className="w-[320px] sm:w-[380px] md:w-[420px] shrink-0 bg-[#FFF9F0] border-4 md:border-8 border-black p-5 md:p-6 shadow-[10px_10px_0px_#FF5F5F] flex flex-col justify-between relative group cursor-pointer"
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 350, damping: 18 }}
+                style={{ scrollSnapAlign: "center" }}
                 onClick={() => setActiveStory(item)}
+                className="w-[330px] sm:w-[400px] md:w-[440px] shrink-0 bg-[#FFF9F0] border-4 md:border-8 border-black p-6 md:p-7 shadow-[12px_12px_0px_#FF5F5F] flex flex-col justify-between relative group cursor-pointer"
               >
-                {/* Vintage Frame Counter Tag */}
-                <div className="flex items-center justify-between pb-4 border-b-4 border-black mb-4 font-mono font-black text-xs uppercase tracking-wider">
-                  <span className="bg-black text-white px-2.5 py-1 text-[10px]">
-                    FRAME #{String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-[#FF5F5F] flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-[#FF5F5F] animate-pulse" />
-                    ACT // {item.year || "ARCHIVE"}
+                {/* 📌 SLIDE MOUNT HEADER BAR */}
+                <div className="flex items-center justify-between pb-4 border-b-4 border-black mb-5 font-mono">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-black" />
+                    <span className="bg-black text-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider">
+                      EXPOSURE #{String(index + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  <span className="bg-[#FFD166] text-black border-2 border-black px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_black]">
+                    ACT // {item.year || "LEGACY"}
                   </span>
                 </div>
 
-                {/* 📸 35MM NEGATIVE / STILL PHOTO BOX */}
-                <div className="relative aspect-[16/10] w-full bg-black border-4 border-black overflow-hidden mb-5 shadow-[4px_4px_0px_black] group-hover:shadow-[6px_6px_0px_black] transition-all">
+                {/* 📸 35MM NEGATIVE / STILL PHOTO APERTURE */}
+                <div className="relative aspect-[16/11] w-full bg-black border-4 border-black overflow-hidden mb-5 shadow-[6px_6px_0px_black] group-hover:shadow-[8px_8px_0px_#06D6A0] transition-all">
                   {photo ? (
-                    <img
-                      src={photo}
-                      alt={item.event || item.title}
-                      className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                    />
+                    <>
+                      <img
+                        src={photo}
+                        alt={item.event || item.title}
+                        className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
+                      />
+                      {/* Film Grain & Scanline Overlay */}
+                      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_50%,rgba(0,0,0,0.15)_50%)] bg-[length:100%_4px] pointer-events-none opacity-40 group-hover:opacity-10 transition-opacity" />
+                    </>
                   ) : (
-                    <div className="w-full h-full bg-[#202020] flex flex-col items-center justify-center p-6 text-center text-white relative">
-                      <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_8px,rgba(255,255,255,0.04)_8px,rgba(255,255,255,0.04)_16px)]" />
-                      <CatIcon size={36} className="text-[#FFD166] mb-2 relative z-10" />
+                    <div className="w-full h-full bg-[#1E1E1E] flex flex-col items-center justify-center p-6 text-center text-white relative">
+                      <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.03)_10px,rgba(255,255,255,0.03)_20px)]" />
+                      <CatIcon size={40} className="text-[#FFD166] mb-3 relative z-10" />
                       <span className="font-mono font-black text-xs uppercase tracking-widest text-[#FFF9F0] relative z-10">
                         {cat.label} ARCHIVE
                       </span>
                       <span className="font-mono text-[9px] uppercase tracking-wider text-gray-400 mt-1 relative z-10">
-                        NO NEGATIVE STILL ATTACHED
+                        RAW ARCHIVAL NEGATIVE
                       </span>
                     </div>
                   )}
 
-                  {/* Category Pill Over Image */}
-                  <div className={`absolute top-3 left-3 ${cat.color} border-2 border-black px-3 py-1 font-mono font-black text-[9px] uppercase tracking-widest shadow-[3px_3px_0px_black] flex items-center gap-1.5 z-10`}>
+                  {/* Floating Category Badge */}
+                  <div className={`absolute top-3 left-3 ${cat.bgBadge} border-2 border-black px-3 py-1 font-mono font-black text-[9px] uppercase tracking-widest shadow-[3px_3px_0px_black] flex items-center gap-1.5 z-20 group-hover:scale-105 transition-transform`}>
                     <CatIcon size={12} strokeWidth={3} />
                     {cat.label}
                   </div>
 
-                  {/* Date badge */}
+                  {/* Date Tag */}
                   {item.date && (
-                    <div className="absolute bottom-3 right-3 bg-black text-white px-2.5 py-1 font-mono font-bold text-[9px] uppercase tracking-wider border border-white/40 z-10">
+                    <div className="absolute bottom-3 right-3 bg-black text-[#06D6A0] px-3 py-1 font-mono font-black text-[9px] uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_white] z-20">
                       {item.date}
                     </div>
                   )}
+
+                  {/* Hover Inspect Loupe Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-30 pointer-events-none">
+                    <span className="bg-[#FFD166] text-black border-2 border-black px-4 py-2 font-mono font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_black] transform translate-y-2 group-hover:translate-y-0 transition-transform flex items-center gap-2">
+                      <Camera size={14} /> INSPECT NEGATIVE
+                    </span>
+                  </div>
                 </div>
 
-                {/* 📝 METADATA & TITLE */}
-                <div className="flex-1 flex flex-col justify-between">
+                {/* 📝 STORY & DIRECTOR NOTE */}
+                <div className="flex-1 flex flex-col justify-between text-left">
                   <div>
                     <h3 className="font-black text-2xl md:text-3xl uppercase tracking-tight text-black leading-tight line-clamp-2 mb-3 group-hover:text-[#FF5F5F] transition-colors">
                       {item.event || item.title || "Untitled Milestone"}
                     </h3>
 
-                    <p className="font-mono font-bold text-xs text-black/75 leading-relaxed line-clamp-3 mb-6 bg-white border-2 border-black p-3 shadow-[2px_2px_0px_black]">
-                      {item.description || item.content || "Archival milestone preserved in the Swaang dramatic repository."}
-                    </p>
+                    <div className="relative pl-3 border-l-4 border-black mb-5">
+                      <p className="font-mono font-bold text-xs text-black/80 leading-relaxed line-clamp-3 uppercase">
+                        {item.description || item.content || "Archival milestone preserved in the official Swaang historical registry."}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Frame Action Bar */}
-                  <div className="pt-2 flex items-center justify-between border-t-2 border-black border-dashed">
-                    <span className="font-mono font-black text-[10px] uppercase tracking-widest text-black/60">
-                      ▶ 35MM NEGATIVE
+                  {/* Slide Mount Footer Action Bar */}
+                  <div className="pt-3 flex items-center justify-between border-t-2 border-black border-dashed font-mono">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-black/50">
+                      REF: SW-{item.year || "2014"}
                     </span>
 
                     <button
@@ -255,10 +380,10 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                         e.stopPropagation();
                         setActiveStory(item);
                       }}
-                      className="bg-black text-[#FFD166] border-2 border-black px-3.5 py-1.5 font-mono font-black text-[10px] uppercase tracking-wider shadow-[2px_2px_0px_black] group-hover:bg-[#FFD166] group-hover:text-black group-hover:shadow-[3px_3px_0px_black] transition-all flex items-center gap-1.5"
+                      className="bg-black text-white border-2 border-black px-3.5 py-1.5 font-mono font-black text-[10px] uppercase tracking-wider shadow-[2px_2px_0px_black] group-hover:bg-[#06D6A0] group-hover:text-black group-hover:shadow-[3px_3px_0px_black] transition-all flex items-center gap-1.5"
                     >
-                      <Camera size={12} />
-                      INSPECT 🔍
+                      <Maximize2 size={11} />
+                      VIEW STORY
                     </button>
                   </div>
                 </div>
@@ -267,14 +392,14 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
           })}
         </div>
 
-        {/* BOTTOM SPROCKET HOLE STRIP */}
-        <div className="w-full border-t-2 border-white/20 pt-3 mt-6 px-4 flex items-center justify-between overflow-hidden select-none">
-          <div className="flex gap-4 md:gap-6 items-center whitespace-nowrap overflow-hidden">
-            {Array.from({ length: 36 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <div className="w-4 h-6 bg-[#FFF9F0] border border-black/40 rounded-sm shadow-inner shrink-0" />
-                <span className="font-mono font-black text-[10px] uppercase tracking-widest text-[#FFF9F0]/60 shrink-0">
-                  ▶ {i + 1}A
+        {/* 🎬 BOTTOM PERFORATED FILM SPROCKET STRIP */}
+        <div className="w-full border-t-2 border-white/20 pt-4 mt-6 px-4 flex items-center justify-between overflow-hidden select-none relative z-10">
+          <div className="flex gap-4 md:gap-8 items-center whitespace-nowrap overflow-hidden">
+            {Array.from({ length: 40 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-5">
+                <div className="w-4 h-6 bg-[#EBE5D8] border-2 border-black rounded-[3px] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)] shrink-0" />
+                <span className="font-mono font-black text-[10px] uppercase tracking-widest text-white/50 shrink-0">
+                  ▲ {i + 1}A • SWAANG NEGATIVES
                 </span>
               </div>
             ))}
@@ -282,23 +407,30 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
         </div>
       </div>
 
-      {/* 🚀 BOTTOM CALL TO ACTION */}
-      <div className="max-w-7xl mx-auto px-6 mt-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <p className="font-mono font-bold text-xs md:text-sm uppercase tracking-wider text-black text-center sm:text-left">
-          EXPLORE OVER 10 YEARS OF STREET REVOLUTION, INTER-COLLEGIATE TROPHIES & STAGE PRODUCTIONS.
-        </p>
+      {/* ============================================================== */}
+      {/* 🚀 BOTTOM CALL TO ACTION                                       */}
+      {/* ============================================================== */}
+      <div className="max-w-7xl mx-auto px-6 mt-14 flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
+        <div>
+          <span className="bg-black text-[#FFD166] px-3 py-1 font-mono font-black text-[10px] uppercase tracking-widest border border-black shadow-[2px_2px_0px_black] inline-block mb-2">
+            REPOSITORY SUMMARY
+          </span>
+          <p className="font-mono font-bold text-xs md:text-sm uppercase tracking-wider text-black max-w-xl">
+            10 YEARS OF STREET THEATRE, REVOLUTIONARY NUKKADS & NATIONAL CHAMPIONSHIPS ACROSS INDIA.
+          </p>
+        </div>
 
         <Link
           href="/journey"
-          className="group inline-flex items-center gap-3 bg-black text-[#06D6A0] border-4 border-black px-8 py-4 font-mono font-black uppercase text-xs md:text-sm tracking-widest shadow-[6px_6px_0px_#FF5F5F] hover:bg-[#FF5F5F] hover:text-white hover:shadow-[8px_8px_0px_black] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all shrink-0"
+          className="group inline-flex items-center gap-3 bg-black text-[#06D6A0] border-4 border-black px-8 py-5 font-mono font-black uppercase text-xs md:text-sm tracking-widest shadow-[8px_8px_0px_#FF5F5F] hover:bg-[#FF5F5F] hover:text-white hover:shadow-[10px_10px_0px_black] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all shrink-0"
         >
-          <span>OPEN FULL ARCHIVES (50+ EVENTS)</span>
-          <ChevronRight size={18} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+          <span>OPEN FULL ARCHIVE DIRECTORY (50+ PLAYS)</span>
+          <ChevronRight size={20} strokeWidth={3} className="group-hover:translate-x-1.5 transition-transform" />
         </Link>
       </div>
 
       {/* ============================================================== */}
-      {/* 🖼️ ARCHIVAL DETAIL MODAL (Lightbox Inspection)                */}
+      {/* 🖼️ ARCHIVAL DETAIL MODAL (Lightbox Negative Inspection)        */}
       {/* ============================================================== */}
       <AnimatePresence>
         {activeStory && (
@@ -308,7 +440,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setActiveStory(null)}
-              className="absolute inset-0 bg-black/85 backdrop-blur-sm cursor-pointer"
+              className="absolute inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
             />
 
             <motion.div
@@ -330,7 +462,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                     ACT // {activeStory.year || "ARCHIVE"}
                   </span>
                   {activeStory.date && (
-                    <span className="bg-[#FFD166] text-black border-2 border-black px-4 py-1.5 font-mono font-black text-xs uppercase tracking-widest">
+                    <span className="bg-[#FFD166] text-black border-2 border-black px-4 py-1.5 font-mono font-black text-xs uppercase tracking-widest shadow-[2px_2px_0px_black]">
                       {activeStory.date}
                     </span>
                   )}
