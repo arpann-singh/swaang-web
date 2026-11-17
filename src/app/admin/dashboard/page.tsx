@@ -6,7 +6,19 @@ import { doc, onSnapshot, collection, query, orderBy } from "firebase/firestore"
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Menu, X, LogOut, Terminal, ShieldCheck } from "lucide-react";
+import { 
+  Search, 
+  X, 
+  LogOut, 
+  Terminal, 
+  Compass, 
+  UserCheck, 
+  Clock, 
+  Mail, 
+  LayoutGrid, 
+  Sparkles,
+  ArrowRight
+} from "lucide-react";
 
 // --- EXISTING COMPONENTS ---
 import BrandingEditor from "@/components/admin/BrandingEditor";
@@ -172,8 +184,9 @@ export default function AdminDashboard() {
 
   // Flat list for CommandPalette compatibility
   const flatTabs = tabCategories.flatMap(c => c.tabs);
+  const currentTabObj = flatTabs.find(t => t.id === activeTab);
 
-  // Filtered categories based on sidebar search input
+  // Filtered categories based on search input
   const filteredCategories = tabCategories.map(cat => ({
     ...cat,
     tabs: cat.tabs.filter(t => 
@@ -212,109 +225,215 @@ export default function AdminDashboard() {
         auditions={auditions || []}
       />
 
-      {/* 📱 MOBILE HEADER BAR */}
-      <header className="xl:hidden w-full bg-[#FFD166] border-b-8 border-black px-4 py-3 flex justify-between items-center z-50 shadow-[0px_4px_0px_black] shrink-0 text-black">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 border-4 border-black bg-white shadow-[2px_2px_0px_black] active:translate-y-0.5"
-            aria-label="Toggle navigation drawer"
-          >
-            {mobileMenuOpen ? <X size={20} strokeWidth={4} /> : <Menu size={20} strokeWidth={4} />}
-          </button>
-          <div>
-            <h2 className="font-cinzel text-2xl font-black uppercase tracking-tight leading-none">SWAANG</h2>
-            <span className="text-[8px] font-mono font-black uppercase bg-black text-[#06D6A0] px-1.5 py-0.5">ADMIN</span>
-          </div>
+      {/* 📱 MINIMAL MOBILE TOP BAR */}
+      <header className="xl:hidden w-full bg-[#FFD166] border-b-4 border-black px-4 py-2.5 flex justify-between items-center z-30 shadow-[0px_4px_0px_black] shrink-0 text-black">
+        <div className="flex items-center gap-2.5">
+          <h2 className="font-cinzel text-xl font-black uppercase tracking-tight leading-none">SWAANG</h2>
+          <span className={`px-2 py-0.5 font-mono text-[9px] font-black uppercase border border-black ${currentTabObj?.color || "bg-white"} shadow-[1px_1px_0px_black]`}>
+            {currentTabObj?.label || "SYS"}
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1 font-mono text-[8px] font-bold uppercase text-black/70 bg-white/70 px-1.5 py-0.5 border border-black">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06D6A0] animate-pulse" />
+            LIVE
+          </span>
           <button 
             onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-            className="p-2 border-2 border-black bg-white shadow-[2px_2px_0px_black]"
+            className="p-1.5 border-2 border-black bg-white shadow-[2px_2px_0px_black] active:translate-y-0.5"
             title="Open command palette (Ctrl+K)"
           >
-            <Terminal size={16} strokeWidth={3} />
+            <Terminal size={14} strokeWidth={3} />
           </button>
           <button 
             onClick={() => signOut(auth)} 
-            className="px-3 py-1.5 border-2 border-black font-mono font-black uppercase text-[10px] bg-[#FF5F5F] text-white shadow-[2px_2px_0px_black]"
+            className="p-1.5 border-2 border-black bg-[#FF5F5F] text-white shadow-[2px_2px_0px_black] active:translate-y-0.5"
+            title="Log Out"
           >
-            Log Out
+            <LogOut size={14} strokeWidth={3} />
           </button>
         </div>
       </header>
 
-      {/* 📱 MOBILE NAVIGATION DRAWER (SLIDE-OVER) */}
+      {/* 📱 FIXED BOTTOM COMMAND DOCK (THE THUMB ZONE) */}
+      <nav 
+        aria-label="Mobile Navigation Dock"
+        className="xl:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#FFD166] border-t-4 border-black z-40 flex items-stretch justify-around shadow-[0px_-4px_0px_black] pb-safe"
+      >
+        {/* 1. Master Hub */}
+        <button 
+          onClick={() => handleJump("dashboard")} 
+          className={`flex-1 flex flex-col items-center justify-center border-r-2 border-black font-mono transition-all ${
+            activeTab === "dashboard" ? "bg-black text-[#06D6A0]" : "text-black hover:bg-yellow-300"
+          }`}
+        >
+          <Compass size={18} strokeWidth={2.5} />
+          <span className="text-[9px] font-black uppercase mt-0.5">Hub</span>
+        </button>
+        
+        {/* 2. Auditions (Casting) */}
+        <button 
+          onClick={() => handleJump("auditions")} 
+          className={`flex-1 flex flex-col items-center justify-center border-r-2 border-black font-mono relative transition-all ${
+            activeTab === "auditions" ? "bg-black text-[#FFD166]" : "text-black hover:bg-yellow-300"
+          }`}
+        >
+          <UserCheck size={18} strokeWidth={2.5} />
+          <span className="text-[9px] font-black uppercase mt-0.5">Casting</span>
+          {pendingAuditionsCount > 0 && (
+            <span className="absolute top-1 right-2 bg-[#FF5F5F] text-white text-[8px] font-black px-1.5 py-0.2 rounded-full border border-black animate-pulse">
+              {pendingAuditionsCount}
+            </span>
+          )}
+        </button>
+
+        {/* 3. Schedule / Call Times */}
+        <button 
+          onClick={() => handleJump("schedule")} 
+          className={`flex-1 flex flex-col items-center justify-center border-r-2 border-black font-mono transition-all ${
+            activeTab === "schedule" ? "bg-black text-[#FF5F5F]" : "text-black hover:bg-yellow-300"
+          }`}
+        >
+          <Clock size={18} strokeWidth={2.5} />
+          <span className="text-[9px] font-black uppercase mt-0.5">Calls</span>
+        </button>
+
+        {/* 4. Inbox */}
+        <button 
+          onClick={() => handleJump("inbox")} 
+          className={`flex-1 flex flex-col items-center justify-center border-r-2 border-black font-mono relative transition-all ${
+            activeTab === "inbox" ? "bg-black text-[#06D6A0]" : "text-black hover:bg-yellow-300"
+          }`}
+        >
+          <Mail size={18} strokeWidth={2.5} />
+          <span className="text-[9px] font-black uppercase mt-0.5">Inbox</span>
+          {messages.length > 0 && (
+            <span className="absolute top-1 right-2 bg-[#FF5F5F] text-white text-[8px] font-black px-1.5 py-0.2 rounded-full border border-black">
+              {messages.length}
+            </span>
+          )}
+        </button>
+
+        {/* 5. Modules Grid (Triggers Full Quick-Sheet) */}
+        <button 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+          className={`flex-1 flex flex-col items-center justify-center font-mono transition-all ${
+            mobileMenuOpen ? "bg-[#FF5F5F] text-white" : "bg-[#06D6A0] text-black hover:bg-emerald-300"
+          }`}
+        >
+          <LayoutGrid size={18} strokeWidth={2.5} />
+          <span className="text-[9px] font-black uppercase mt-0.5">22 Apps</span>
+        </button>
+      </nav>
+
+      {/* 📱 MOBILE QUICK-SHEET MODAL (SLIDE-UP DRAWER) */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: -300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -300 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="xl:hidden fixed inset-y-0 left-0 w-80 bg-[#FFD166] z-50 border-r-8 border-black p-6 overflow-y-auto custom-scrollbar flex flex-col justify-between shadow-[16px_0px_0px_black] text-black"
-          >
-            <div>
-              <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-4">
-                <div>
-                  <h3 className="font-cinzel text-3xl font-black uppercase leading-none">SWAANG</h3>
-                  <p className="font-mono text-[9px] font-black uppercase bg-black text-[#06D6A0] px-2 py-0.5 mt-1 inline-block">
-                    OPERATIONS GRID
-                  </p>
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="xl:hidden fixed inset-0 bg-black/70 z-50 backdrop-blur-xs"
+            />
+
+            {/* Bottom Sheet */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 240 }}
+              className="xl:hidden fixed bottom-0 left-0 right-0 max-h-[85vh] bg-[#FFF9F0] border-t-8 border-x-4 border-black rounded-t-[2.5rem] z-50 p-6 overflow-y-auto custom-scrollbar shadow-[0px_-8px_0px_black] text-black flex flex-col justify-between"
+            >
+              <div>
+                {/* Pull Handle & Header */}
+                <div 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-16 h-1.5 bg-black/40 rounded-full mx-auto mb-4 cursor-pointer hover:bg-black"
+                />
+
+                <div className="flex justify-between items-center border-b-4 border-black pb-3 mb-4">
+                  <div>
+                    <h3 className="font-cinzel text-2xl font-black uppercase leading-none">
+                      All Modules (22)
+                    </h3>
+                    <p className="font-mono text-[9px] font-bold uppercase text-black/60 mt-0.5">
+                      Swaang Full Operations Suite
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-1.5 border-2 border-black bg-white"
+                  >
+                    <X size={18} strokeWidth={3} />
+                  </button>
+                </div>
+
+                {/* Quick Search */}
+                <div className="relative mb-6">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/50" />
+                  <input
+                    type="text"
+                    placeholder="Search any tool or category..."
+                    value={sidebarFilter}
+                    onChange={(e) => setSidebarFilter(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2 bg-white border-2 border-black font-mono text-xs font-bold uppercase outline-none focus:border-black"
+                  />
+                </div>
+
+                {/* Categorized Tools Grid */}
+                <div className="space-y-6">
+                  {filteredCategories.map((cat) => (
+                    <div key={cat.title}>
+                      <p className="font-mono text-[10px] font-black uppercase tracking-wider text-black/60 mb-2">
+                        // {cat.title}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {cat.tabs.map((tab) => {
+                          const isActive = activeTab === tab.id;
+                          return (
+                            <button
+                              key={tab.id}
+                              onClick={() => handleJump(tab.id)}
+                              className={`p-3 border-2 border-black font-mono font-black text-left text-xs uppercase flex items-center justify-between transition-all ${
+                                isActive
+                                  ? `${tab.color} text-black border-4 shadow-none translate-x-1`
+                                  : "bg-white text-black shadow-[3px_3px_0px_black] hover:bg-gray-100"
+                              }`}
+                            >
+                              <span className="truncate">{tab.label}</span>
+                              {tab.badge && tab.badge > 0 ? (
+                                <span className="bg-[#FF5F5F] text-white text-[8px] font-black px-1.5 py-0.5 rounded-full ml-1 shrink-0">
+                                  {tab.badge}
+                                </span>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* User Identity Footer */}
+              <div className="pt-6 border-t-4 border-black mt-8">
+                <div className="flex items-center justify-between mb-3 font-mono text-xs">
+                  <span className="text-black/60 font-bold uppercase">ADMIN: {currentUser?.email}</span>
+                  <span className="bg-[#06D6A0] text-black px-1.5 py-0.5 font-black text-[9px] border border-black">AUTH OK</span>
                 </div>
                 <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 border-2 border-black bg-white"
+                  onClick={() => signOut(auth)}
+                  className="w-full py-3 border-4 border-black font-mono font-black uppercase text-xs bg-[#FF5F5F] text-white shadow-[4px_4px_0px_black]"
                 >
-                  <X size={18} strokeWidth={3} />
+                  SECURE SIGN OUT
                 </button>
               </div>
-
-              {/* TABS BY CATEGORY */}
-              <div className="space-y-6">
-                {tabCategories.map((cat) => (
-                  <div key={cat.title}>
-                    <p className="font-mono text-[9px] font-black uppercase tracking-wider text-black/60 mb-2">
-                      // {cat.title}
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {cat.tabs.map((tab) => {
-                        const isActive = activeTab === tab.id;
-                        return (
-                          <button
-                            key={tab.id}
-                            onClick={() => handleJump(tab.id)}
-                            className={`p-2.5 border-2 border-black font-mono font-black text-left text-xs uppercase flex items-center justify-between transition-all ${
-                              isActive
-                                ? "bg-black text-[#FFD166] shadow-none translate-x-1"
-                                : "bg-white text-black shadow-[2px_2px_0px_black] hover:bg-gray-100"
-                            }`}
-                          >
-                            <span className="truncate">{tab.label}</span>
-                            {tab.badge && tab.badge > 0 && (
-                              <span className="bg-[#FF5F5F] text-white text-[8px] font-black px-1.5 py-0.5 rounded-full ml-1 shrink-0">
-                                {tab.badge}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-6 border-t-4 border-black mt-6">
-              <button
-                onClick={() => signOut(auth)}
-                className="w-full py-3 border-4 border-black font-mono font-black uppercase text-xs bg-[#FF5F5F] text-white shadow-[4px_4px_0px_black]"
-              >
-                SECURE SIGN OUT
-              </button>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -419,8 +538,8 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* 🚀 MAIN CONTENT AREA */}
-      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-10 custom-scrollbar bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] text-black">
+      {/* 🚀 MAIN CONTENT AREA (with pb-24 for mobile thumb dock padding) */}
+      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-10 pb-28 xl:pb-10 custom-scrollbar bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] text-black">
         <AnimatePresence mode="wait">
           <motion.div 
             key={activeTab} 
