@@ -9,49 +9,51 @@ import {
   Award, 
   Camera, 
   ChevronRight, 
+  Clapperboard, 
   Calendar,
-  Sparkles,
-  Layers
+  Maximize2,
+  FolderOpen,
+  ArrowRight
 } from "lucide-react";
 import Link from "next/link";
 
 export default function Timeline({ timeline = [] }: { timeline: any[] }) {
-  const [activeStory, setActiveStory] = useState<any | null>(null);
   const [selectedYear, setSelectedYear] = useState<string>("ALL");
+  const [activeStory, setActiveStory] = useState<any | null>(null); // For fullscreen lightbox modal
 
   // Category Icon & Badge Mapping
-  const categoryMap: Record<string, { icon: any; color: string; badge: string; shadow: string; label: string }> = {
+  const categoryMap: Record<string, { icon: any; color: string; badge: string; border: string; label: string }> = {
     milestone: { 
       icon: Star, 
-      color: "bg-[#FFD166] text-black", 
+      color: "text-[#FFD166]", 
       badge: "bg-[#FFD166] text-black", 
-      shadow: "shadow-[8px_8px_0px_#FFD166]",
+      border: "border-[#FFD166]",
       label: "MILESTONE" 
     },
     play: { 
       icon: Film, 
-      color: "bg-[#FF5F5F] text-white", 
+      color: "text-[#FF5F5F]", 
       badge: "bg-[#FF5F5F] text-white", 
-      shadow: "shadow-[8px_8px_0px_#FF5F5F]",
+      border: "border-[#FF5F5F]",
       label: "PRODUCTION" 
     },
     workshop: { 
       icon: GraduationCap, 
-      color: "bg-[#06D6A0] text-black", 
+      color: "text-[#06D6A0]", 
       badge: "bg-[#06D6A0] text-black", 
-      shadow: "shadow-[8px_8px_0px_#06D6A0]",
+      border: "border-[#06D6A0]",
       label: "WORKSHOP" 
     },
     achievement: { 
       icon: Award, 
-      color: "bg-black text-[#06D6A0]", 
+      color: "text-[#06D6A0]", 
       badge: "bg-black text-[#06D6A0]", 
-      shadow: "shadow-[8px_8px_0px_black]",
+      border: "border-black",
       label: "ACCOLADE" 
     },
   };
 
-  // Lock scrolling when modal is open
+  // Lock scrolling when lightbox modal is open
   useEffect(() => {
     if (activeStory) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "auto";
@@ -67,7 +69,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
     return Array.from(set).sort((a, b) => b.localeCompare(a));
   }, [timeline]);
 
-  // Filter and sort items chronologically (descending)
+  // Filter items based on year
   const filteredEvents = useMemo(() => {
     let list = [...timeline];
     if (selectedYear !== "ALL") {
@@ -80,56 +82,87 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
     });
   }, [timeline, selectedYear]);
 
+  // Selected event for the hero display (defaults to first in list)
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+
+  useEffect(() => {
+    if (filteredEvents.length > 0) {
+      // If current selectedEventId not in filtered list, reset to first
+      const exists = filteredEvents.some(e => (e.id || e.event) === selectedEventId);
+      if (!exists) {
+        setSelectedEventId(filteredEvents[0].id || filteredEvents[0].event || "0");
+      }
+    }
+  }, [filteredEvents, selectedEventId]);
+
+  const currentEvent = useMemo(() => {
+    return filteredEvents.find(e => (e.id || e.event) === selectedEventId) || filteredEvents[0] || null;
+  }, [filteredEvents, selectedEventId]);
+
   if (!timeline || timeline.length === 0) return null;
 
+  const currentCat = currentEvent ? (categoryMap[currentEvent.category] || categoryMap.milestone) : categoryMap.milestone;
+  const CurrentCatIcon = currentCat.icon;
+  const currentPhoto = currentEvent ? (currentEvent.photo1 || currentEvent.photo2 || currentEvent.image || currentEvent.photo) : null;
+
   return (
-    <section id="journey" className="py-24 md:py-40 bg-[#FFF9F0] text-black relative border-b-8 border-black overflow-hidden selection:bg-[#FF5F5F] selection:text-white">
+    <section id="journey" className="py-20 md:py-28 bg-[#FFF9F0] text-black relative border-b-8 border-black overflow-hidden selection:bg-[#FF5F5F] selection:text-white">
       
-      {/* 🎭 THEATRICAL WATERMARK */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-28 opacity-[0.03] select-none pointer-events-none overflow-hidden -rotate-3 z-0">
+      {/* 🏛️ BACKGROUND WATERMARK */}
+      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.03] select-none pointer-events-none overflow-hidden -rotate-2 z-0">
         <h1 className="text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black">
-          THE ROADMAP // 10 YEARS OF RESISTANCE // CHRONOLOGY //
+          THE DOSSIER // 10-YEAR ARCHIVE // PRODUCTION CHRONICLES //
         </h1>
         <h1 className="text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black -ml-40">
-          NUKKAD TO NATIONAL THEATRE // 2014 - 2024 // SWAANG
+          NUKKAD TO STAGE // SWAANG HISTORICAL REGISTRY //
         </h1>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* ============================================================== */}
-        {/* 🎬 THEATRICAL HEADER & ERA FILTER STRIP                         */}
+        {/* 🎬 SECTION HEADER                                              */}
         {/* ============================================================== */}
-        <div className="mb-20 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b-8 border-black pb-10">
-          <div className="max-w-3xl">
-            <span className="bg-[#FFD166] text-black px-6 py-2 border-4 border-black font-mono font-black uppercase text-xs tracking-[0.3em] shadow-[4px_4px_0px_black] inline-block mb-6">
-              ACT // 02 • THE CHRONICLES
-            </span>
-            <h2 className="text-[11vw] sm:text-7xl md:text-8xl lg:text-[7.5rem] font-black uppercase tracking-tighter text-black leading-[0.85]">
-              THE <br />
-              <span className="text-white" style={{ WebkitTextStroke: "2.5px black" }}>JOURNEY</span>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b-8 border-black pb-8">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="bg-[#FFD166] text-black px-4 py-1.5 border-2 border-black font-mono font-black uppercase text-[11px] tracking-[0.3em] shadow-[3px_3px_0px_black] flex items-center gap-2">
+                <Clapperboard size={14} className="text-[#FF5F5F]" />
+                ACT // 02 • THE CHRONICLES
+              </span>
+              <span className="bg-black text-[#06D6A0] px-3 py-1 font-mono font-black text-[10px] uppercase tracking-wider hidden sm:inline-block">
+                10-YEAR HISTORICAL DOSSIER
+              </span>
+            </div>
+
+            <h2 className="text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black">
+              THE <span className="text-white" style={{ WebkitTextStroke: "2.5px black" }}>JOURNEY</span>
             </h2>
           </div>
 
-          <div className="md:max-w-xs space-y-4">
-            <p className="font-mono font-bold text-xs md:text-sm leading-relaxed uppercase bg-white border-4 border-black p-4 shadow-[6px_6px_0px_black] text-black">
-              10 YEARS OF RAW STREET THEATRE, PROSCENIUM TRIUMPHS & NATIONAL CHAMPIONSHIPS.
-            </p>
-          </div>
+          <Link
+            href="/journey"
+            className="group inline-flex items-center gap-2 bg-black text-[#FFD166] border-4 border-black px-6 py-3 font-mono font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_#FF5F5F] hover:bg-[#FF5F5F] hover:text-white hover:shadow-[6px_6px_0px_black] active:translate-y-0.5 active:shadow-none transition-all self-start md:self-end"
+          >
+            <span>FULL ARCHIVES DIRECTORY</span>
+            <ChevronRight size={16} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
 
-        {/* 🏷️ TACTILE ERA FILTER BUTTONS */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-6 mb-16 no-scrollbar">
-          <span className="font-mono font-black text-xs uppercase tracking-widest text-black/70 mr-2 shrink-0">
-            FILTER BY ERA:
+        {/* ============================================================== */}
+        {/* 🏷️ YEAR FILTER PILLS                                           */}
+        {/* ============================================================== */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+          <span className="font-mono font-black text-xs uppercase tracking-widest text-black/60 mr-2 shrink-0">
+            ERA:
           </span>
 
           <button
             onClick={() => setSelectedYear("ALL")}
-            className={`px-5 py-2.5 font-mono font-black text-xs uppercase tracking-widest border-4 border-black transition-all shrink-0 ${
+            className={`px-4 py-2 font-mono font-black text-xs uppercase tracking-widest border-2 md:border-4 border-black transition-all shrink-0 ${
               selectedYear === "ALL"
-                ? "bg-black text-[#06D6A0] shadow-[4px_4px_0px_#06D6A0] -translate-y-1"
-                : "bg-white text-black hover:bg-gray-100 shadow-[4px_4px_0px_black]"
+                ? "bg-black text-[#06D6A0] shadow-[3px_3px_0px_black] -translate-y-0.5"
+                : "bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_black]"
             }`}
           >
             ALL YEARS ({timeline.length})
@@ -142,10 +175,10 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
               <button
                 key={yr}
                 onClick={() => setSelectedYear(yr)}
-                className={`px-4 py-2.5 font-mono font-black text-xs uppercase tracking-widest border-4 border-black transition-all shrink-0 ${
+                className={`px-3.5 py-2 font-mono font-black text-xs uppercase tracking-widest border-2 md:border-4 border-black transition-all shrink-0 ${
                   isSelected
-                    ? "bg-[#FF5F5F] text-white shadow-[4px_4px_0px_black] -translate-y-1"
-                    : "bg-white text-black hover:bg-gray-100 shadow-[4px_4px_0px_black]"
+                    ? "bg-[#FF5F5F] text-white shadow-[3px_3px_0px_black] -translate-y-0.5"
+                    : "bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_black]"
                 }`}
               >
                 {yr} <span className="text-[10px] opacity-70">({count})</span>
@@ -155,147 +188,183 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
         </div>
 
         {/* ============================================================== */}
-        {/* 🛣️ VERTICAL NEO-BRUTALIST ROADMAP SPIDER                        */}
+        {/* 🗂️ MASTER-DETAIL SPLIT-SCREEN DOSSIER                           */}
         {/* ============================================================== */}
-        <div className="relative">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* CENTER TIMELINE SPINE (Desktop: center, Mobile: left aligned) */}
-          <div className="absolute top-0 bottom-0 left-6 md:left-1/2 -translate-x-1/2 w-3 bg-black z-0 shadow-[2px_0px_0px_rgba(0,0,0,0.1)]" />
+          {/* ========================================= */}
+          {/* LEFT COLUMN: INTERACTIVE MILESTONE LIST   */}
+          {/* ========================================= */}
+          <div className="lg:col-span-5 flex flex-col">
+            
+            {/* Header / Counter */}
+            <div className="bg-black text-white px-4 py-3 border-4 border-black font-mono font-black text-xs uppercase tracking-widest flex items-center justify-between shadow-[4px_4px_0px_#FFD166] mb-3">
+              <span className="flex items-center gap-2">
+                <FolderOpen size={14} className="text-[#06D6A0]" />
+                TIMELINE INDEX
+              </span>
+              <span className="text-[#FFD166]">
+                {filteredEvents.length} RECORDS
+              </span>
+            </div>
 
-          {/* ROADMAP NODES */}
-          <div className="space-y-16 md:space-y-24 relative z-10">
-            {filteredEvents.map((item, index) => {
-              const cat = categoryMap[item.category] || categoryMap.milestone;
-              const CatIcon = cat.icon;
-              const isEven = index % 2 === 0;
-              const photo = item.photo1 || item.photo2 || item.image || item.photo;
+            {/* Scrollable List Container (Fixed Height) */}
+            <div className="max-h-[500px] md:max-h-[560px] overflow-y-auto pr-2 space-y-3 swaang-scrollbar">
+              {filteredEvents.map((item, index) => {
+                const isSelected = (item.id || item.event) === selectedEventId;
+                const cat = categoryMap[item.category] || categoryMap.milestone;
+                const CatIcon = cat.icon;
 
-              return (
-                <div 
-                  key={item.id || index}
-                  className={`relative flex flex-col md:flex-row items-start ${
-                    isEven ? "md:flex-row" : "md:flex-row-reverse"
-                  } gap-8 md:gap-16 pl-14 md:pl-0`}
-                >
-                  {/* 📍 CENTER ROADMAP STAMP NODE */}
-                  <div className="absolute left-6 md:left-1/2 -translate-x-1/2 top-4 z-20">
-                    <motion.div 
-                      whileHover={{ scale: 1.15, rotate: isEven ? 12 : -12 }}
-                      transition={{ type: "spring", stiffness: 350, damping: 12 }}
-                      className={`w-12 h-12 md:w-14 md:h-14 ${cat.badge} border-4 border-black flex items-center justify-center font-black shadow-[4px_4px_0px_black] cursor-pointer`}
-                      onClick={() => setActiveStory(item)}
-                    >
-                      <CatIcon size={22} strokeWidth={2.5} />
-                    </motion.div>
-                  </div>
-
-                  {/* 📋 PLAYBILL CARD CONTENT (Alternating 50% width on Desktop) */}
-                  <motion.div
-                    initial={{ opacity: 0, x: isEven ? -40 : 40, y: 20 }}
-                    whileInView={{ opacity: 1, x: 0, y: 0 }}
-                    viewport={{ once: true, margin: "-60px" }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="w-full md:w-[calc(50%-4rem)] group cursor-pointer"
-                    onClick={() => setActiveStory(item)}
+                return (
+                  <button
+                    key={item.id || index}
+                    onClick={() => setSelectedEventId(item.id || item.event)}
+                    className={`w-full text-left p-4 border-4 border-black font-mono transition-all flex items-center justify-between gap-3 group ${
+                      isSelected
+                        ? "bg-black text-white shadow-[6px_6px_0px_#FF5F5F] -translate-y-1"
+                        : "bg-white text-black hover:bg-yellow-50 hover:shadow-[4px_4px_0px_black]"
+                    }`}
                   >
-                    <div className={`bg-white border-4 md:border-8 border-black p-6 md:p-8 shadow-[8px_8px_0px_black] group-hover:shadow-[14px_14px_0px_#FF5F5F] group-hover:-translate-y-1.5 transition-all duration-300 relative flex flex-col justify-between`}>
-                      
-                      {/* Top Bar / Metadata */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-black pb-4 mb-6">
-                        <div className="flex items-center gap-2">
-                          <span className={`${cat.badge} px-3 py-1 font-mono font-black text-[10px] md:text-xs uppercase tracking-widest border-2 border-black shadow-[2px_2px_0px_black]`}>
-                            {cat.label}
-                          </span>
-                        </div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Node Icon */}
+                      <div className={`w-8 h-8 ${isSelected ? "bg-[#FF5F5F] text-white" : cat.badge} border-2 border-black flex items-center justify-center font-black shrink-0 shadow-[2px_2px_0px_black]`}>
+                        <CatIcon size={14} strokeWidth={2.5} />
+                      </div>
 
+                      {/* Title & Date */}
+                      <div className="min-w-0">
                         <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-black uppercase tracking-wider ${isSelected ? "text-[#06D6A0]" : "text-black/60"}`}>
+                            {item.year || "2014"}
+                          </span>
                           {item.date && (
-                            <span className="font-mono font-bold text-[10px] md:text-xs uppercase tracking-wider text-black bg-gray-100 px-2 py-0.5 border border-black">
-                              {item.date}
+                            <span className="text-[9px] opacity-60 truncate">
+                              • {item.date}
                             </span>
                           )}
-                          <span className="bg-black text-[#FFD166] px-3 py-1 font-mono font-black text-[11px] md:text-xs uppercase tracking-widest">
-                            ACT // {item.year || "HISTORIC"}
-                          </span>
                         </div>
+                        <h4 className="font-bold text-sm md:text-base uppercase tracking-tight truncate leading-tight mt-0.5">
+                          {item.event || item.title || "Untitled Milestone"}
+                        </h4>
                       </div>
-
-                      {/* 📸 OPTIONAL ARCHIVAL PHOTO */}
-                      {photo && (
-                        <div className="relative aspect-[16/10] w-full bg-black border-4 border-black overflow-hidden mb-6 shadow-[4px_4px_0px_black] group-hover:shadow-[6px_6px_0px_black] transition-all">
-                          <img
-                            src={photo}
-                            alt={item.event || item.title}
-                            className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                          />
-                          <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest border border-white/40">
-                            ARCHIVE NEGATIVE
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Milestone Title */}
-                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-black leading-tight mb-4 group-hover:text-[#FF5F5F] transition-colors">
-                        {item.event || item.title || "Untitled Milestone"}
-                      </h3>
-
-                      {/* Description Excerpt */}
-                      <div className="relative pl-4 border-l-4 border-black mb-6">
-                        <p className="font-mono font-bold text-xs md:text-sm text-black/80 leading-relaxed uppercase line-clamp-3">
-                          {item.description || item.content || "Archival milestone preserved in the official Swaang historical registry."}
-                        </p>
-                      </div>
-
-                      {/* Card Footer Action */}
-                      <div className="pt-4 border-t-2 border-dashed border-black flex items-center justify-between font-mono">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-black/50">
-                          RECORD ID: #{String(index + 1).padStart(2, "0")}
-                        </span>
-
-                        <span className="inline-flex items-center gap-1.5 font-black uppercase text-xs text-black group-hover:text-[#FF5F5F] group-hover:translate-x-1 transition-all">
-                          <span>INSPECT MEMORY</span>
-                          <ChevronRight size={16} strokeWidth={3} />
-                        </span>
-                      </div>
-
                     </div>
-                  </motion.div>
 
-                  {/* EMPTY HALF ON DESKTOP FOR PROPER ZIGZAG SPACING */}
-                  <div className="hidden md:block md:w-[calc(50%-4rem)]" />
+                    <ArrowRight 
+                      size={18} 
+                      className={`shrink-0 transition-transform ${isSelected ? "text-[#FFD166] translate-x-1" : "text-black/30 group-hover:text-black group-hover:translate-x-1"}`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ========================================= */}
+          {/* RIGHT COLUMN: HERO SHOWCASE CARD          */}
+          {/* ========================================= */}
+          <div className="lg:col-span-7">
+            {currentEvent ? (
+              <motion.div
+                key={currentEvent.id || currentEvent.event}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="bg-white border-4 md:border-8 border-black p-6 md:p-8 shadow-[12px_12px_0px_black] flex flex-col justify-between relative"
+              >
+                {/* Top Badge Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-black pb-4 mb-6 font-mono">
+                  <div className="flex items-center gap-2">
+                    <span className={`${currentCat.badge} px-3.5 py-1 text-xs font-black uppercase tracking-widest border-2 border-black shadow-[2px_2px_0px_black] flex items-center gap-1.5`}>
+                      <CurrentCatIcon size={13} strokeWidth={3} />
+                      {currentCat.label}
+                    </span>
+                    <span className="bg-black text-[#FFD166] px-3 py-1 text-xs font-black uppercase tracking-widest">
+                      ACT // {currentEvent.year || "2014"}
+                    </span>
+                  </div>
+
+                  {currentEvent.date && (
+                    <span className="bg-[#FFF9F0] text-black border-2 border-black px-3 py-1 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_black]">
+                      {currentEvent.date}
+                    </span>
+                  )}
                 </div>
-              );
-            })}
+
+                {/* Archival Visual Window */}
+                <div className="relative aspect-[16/9] w-full bg-black border-4 border-black overflow-hidden mb-6 shadow-[6px_6px_0px_black] group">
+                  {currentPhoto ? (
+                    <>
+                      <img
+                        src={currentPhoto}
+                        alt={currentEvent.event || currentEvent.title}
+                        className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700"
+                      />
+                      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px] pointer-events-none opacity-30" />
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-[#1A1A1A] flex flex-col items-center justify-center p-6 text-center text-white relative">
+                      <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.03)_10px,rgba(255,255,255,0.03)_20px)]" />
+                      <CurrentCatIcon size={44} className="text-[#FFD166] mb-3 relative z-10" />
+                      <span className="font-mono font-black text-sm uppercase tracking-widest text-[#FFF9F0] relative z-10">
+                        {currentCat.label} ARCHIVE RECORD
+                      </span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-gray-400 mt-1 relative z-10">
+                        HISTORICAL DATA ENTRY
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Quick Inspect Button on Photo */}
+                  <button
+                    onClick={() => setActiveStory(currentEvent)}
+                    className="absolute bottom-3 right-3 bg-black/90 text-[#FFD166] hover:bg-[#FF5F5F] hover:text-white border-2 border-white px-3.5 py-1.5 font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_black] transition-all flex items-center gap-1.5"
+                  >
+                    <Maximize2 size={13} />
+                    FULLSCREEN 🔍
+                  </button>
+                </div>
+
+                {/* Event Heading */}
+                <h3 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-black leading-tight mb-4">
+                  {currentEvent.event || currentEvent.title || "Untitled Milestone"}
+                </h3>
+
+                {/* Narrative / Excerpt */}
+                <div className="relative pl-4 border-l-4 border-[#06D6A0] mb-6">
+                  <p className="font-mono font-bold text-xs sm:text-sm leading-relaxed text-black/85 uppercase">
+                    {currentEvent.description || currentEvent.content || "Archival milestone preserved in the official Swaang historical registry."}
+                  </p>
+                </div>
+
+                {/* Action Bar */}
+                <div className="pt-4 border-t-4 border-black border-dashed flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 font-mono">
+                  <span className="text-xs font-black uppercase tracking-widest text-black/60">
+                    SWAANG ARCHIVE REF: #{currentEvent.year || "2014"}
+                  </span>
+
+                  <button
+                    onClick={() => setActiveStory(currentEvent)}
+                    className="bg-black text-white hover:bg-[#FFD166] hover:text-black border-2 border-black px-6 py-3 font-mono font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_black] hover:shadow-[6px_6px_0px_black] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2"
+                  >
+                    <Camera size={14} />
+                    <span>INSPECT FULL STORY</span>
+                  </button>
+                </div>
+
+              </motion.div>
+            ) : (
+              <div className="bg-white border-8 border-black p-12 text-center font-mono font-black uppercase">
+                Select an event from the timeline index.
+              </div>
+            )}
           </div>
 
-        </div>
-
-        {/* ============================================================== */}
-        {/* 🚀 BOTTOM SECTION CALL TO ACTION                               */}
-        {/* ============================================================== */}
-        <div className="mt-24 pt-12 border-t-8 border-black flex flex-col sm:flex-row items-center justify-between gap-8">
-          <div className="max-w-xl text-center sm:text-left">
-            <span className="bg-[#06D6A0] text-black px-4 py-1.5 font-mono font-black text-xs uppercase tracking-widest border-2 border-black shadow-[3px_3px_0px_black] inline-block mb-3">
-              10-YEAR PRODUCTION ARCHIVE
-            </span>
-            <p className="font-mono font-bold text-xs md:text-sm uppercase tracking-wider text-black">
-              EXPLORE EVERY SCRIPT, NATIONAL ACCOLADE, AND STREET CAMPAIGN DOCUMENTED SINCE 2014.
-            </p>
-          </div>
-
-          <Link
-            href="/journey"
-            className="group inline-flex items-center gap-4 bg-black text-[#FFD166] border-4 border-black px-8 py-5 font-mono font-black uppercase text-xs md:text-sm tracking-widest shadow-[8px_8px_0px_#FF5F5F] hover:bg-[#FF5F5F] hover:text-white hover:shadow-[10px_10px_0px_black] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all shrink-0"
-          >
-            <span>VIEW COMPLETE CHRONICLES DIRECTORY</span>
-            <ChevronRight size={20} strokeWidth={3} className="group-hover:translate-x-1.5 transition-transform" />
-          </Link>
         </div>
 
       </div>
 
       {/* ============================================================== */}
-      {/* 🖼️ ARCHIVAL DETAIL MODAL (Lightbox Inspection)                */}
+      {/* 🖼️ ARCHIVAL FULLSCREEN MODAL                                   */}
       {/* ============================================================== */}
       <AnimatePresence>
         {activeStory && (
@@ -333,7 +402,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                   )}
                   {activeStory.category && (
                     <span className="bg-white text-black border-2 border-black px-4 py-1.5 font-mono font-black text-xs uppercase tracking-widest shadow-[2px_2px_0px_black]">
-                      {activeStory.category.toUpperCase()}
+                      CATEGORY: {activeStory.category.toUpperCase()}
                     </span>
                   )}
                 </div>
