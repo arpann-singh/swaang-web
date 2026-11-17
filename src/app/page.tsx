@@ -15,7 +15,6 @@ import Ensemble from "@/components/home/Ensemble";
 
 // 🔥 FIXED: Added the missing imports for your new interactive components
 import TwisterMarquee from "@/components/home/TwisterMarquee";
-import SectionDivider from "@/components/SectionDivider";
 
 export default function Home() {
   const [data, setData] = useState<any>({});
@@ -100,18 +99,11 @@ export default function Home() {
           <StageNotices notices={notices} />
         </div>
         
-        <SectionDivider number="ACT // 01" title="THE BLUEPRINT" tagline="MEET THE ARCHITECTS & ADVISORS" />
         <FacultyBlueprint />
         <FounderNote data={data} />
         <Spotlight aotm={aotm} />
-        
-        <SectionDivider number="ACT // 02" title="THE CHRONICLES" tagline="FROM STREET SQUARES TO NATIONAL THEATRE // EST. 2014" />
         <Timeline timeline={timeline} />
-
-        <SectionDivider number="ACT // 03" title="THE REPERTOIRE" tagline="50+ PLAYS WRITTEN, DIRECTED & PERFORMED" />
         <Productions events={events} />
-
-        <SectionDivider number="ACT // 04" title="THE ENSEMBLE" tagline="ACTORS, PLAYWRIGHTS, DIRECTORS & STAGE CREW" />
         <Ensemble team={team} />
 
           {/* 🔥 NEW INTERACTIVE ELEMENTS */}
