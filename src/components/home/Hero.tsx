@@ -10,6 +10,23 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
   const [isAuditionLive, setIsAuditionLive] = useState(false);
   const [isChanting, setIsChanting] = useState(false);
   const [drumBeatCount, setDrumBeatCount] = useState(0);
+  const [isCinemaOpen, setIsCinemaOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsCinemaOpen(false);
+    };
+    if (isCinemaOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isCinemaOpen]);
 
   useEffect(() => {
     // Listen for active notices
@@ -90,6 +107,23 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center overflow-hidden z-40 bg-[#FFF9F0] selection:bg-[#FF5F5F] selection:text-white pt-24 md:pt-36 pb-16 px-4 md:px-8">
       
+      {/* 🎬 AMBIENT STREET THEATRE FILM TEXTURE (Zero-disturbance Projection) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className="w-full h-full object-cover opacity-[0.14] md:opacity-[0.18] grayscale contrast-125 brightness-95 mix-blend-multiply scale-105"
+        >
+          <source src="/video/hero-bg.mp4" type="video/mp4" />
+        </video>
+        {/* Vintage Film Scanline & Grain Texture overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(#000000_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.07] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FFF9F0]/80 via-transparent to-[#FFF9F0] pointer-events-none" />
+      </div>
+
       {/* 📜 BACKGROUND POSTER GRAIN & STENCIL WATERMARK */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex flex-col justify-between items-center opacity-[0.06] select-none">
         <h1 className="text-[28vw] font-black uppercase tracking-tighter text-black -mt-16 rotate-[-5deg]">
@@ -130,8 +164,8 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
       <div className="w-full max-w-7xl mx-auto relative z-20 flex flex-col items-center">
         
         {/* TOP ALERT STRIP */}
-        <div className="w-full bg-white border-8 border-black shadow-[8px_8px_0px_black] px-4 md:px-6 py-3 flex items-center justify-between mb-8 overflow-hidden">
-          <div className="flex items-center gap-3 overflow-hidden flex-1 mr-4">
+        <div className="w-full bg-white border-8 border-black shadow-[8px_8px_0px_black] px-4 md:px-6 py-3 flex items-center justify-between mb-8 overflow-hidden gap-2">
+          <div className="flex items-center gap-3 overflow-hidden flex-1 mr-2">
             <span className="w-6 h-6 bg-[#FF5F5F] border-2 border-black flex items-center justify-center font-black text-xs text-white shrink-0 animate-pulse">
               !
             </span>
@@ -150,20 +184,33 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
             </div>
           </div>
 
-          {/* Dafli Sound Trigger */}
-          <button
-            onClick={playDafliRhythm}
-            className="flex items-center gap-2 bg-[#FFD166] hover:bg-[#FF5F5F] hover:text-white border-4 border-black px-3.5 py-1.5 font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer shrink-0"
-            title="Click to strike the Nukkad Natak Dafli"
-          >
-            <span>🪘</span>
-            <span className="hidden sm:inline">SOUND THE DAFli</span>
-            {drumBeatCount > 0 && (
-              <span className="bg-black text-[#FFD166] px-1.5 py-0.2 text-[10px]">
-                {drumBeatCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* 🎬 30s Street Reel Glimpse Button */}
+            <button
+              onClick={() => setIsCinemaOpen(true)}
+              className="flex items-center gap-2 bg-black hover:bg-[#FF5F5F] text-[#06D6A0] hover:text-white border-4 border-black px-3 py-1.5 font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              title="Watch 30s Street Theatre Glimpse"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#FF5F5F] animate-ping" />
+              <span>▶</span>
+              <span className="hidden sm:inline">30s REEL</span>
+            </button>
+
+            {/* Dafli Sound Trigger */}
+            <button
+              onClick={playDafliRhythm}
+              className="flex items-center gap-2 bg-[#FFD166] hover:bg-[#FF5F5F] hover:text-white border-4 border-black px-3.5 py-1.5 font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              title="Click to strike the Nukkad Natak Dafli"
+            >
+              <span>🪘</span>
+              <span className="hidden sm:inline">SOUND DAFli</span>
+              {drumBeatCount > 0 && (
+                <span className="bg-black text-[#FFD166] px-1.5 py-0.2 text-[10px]">
+                  {drumBeatCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* 🎭 CENTRAL REVOLUTION STAGE (WHEAT-PASTE POSTER GRID) */}
@@ -273,8 +320,22 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
             </p>
           </div>
 
+          {/* 📼 MINIMAL STREET ARCHIVE BADGE / GLIMPSE TRIGGER */}
+          <div className="mt-4 flex items-center justify-center gap-3 relative z-10">
+            <button
+              onClick={() => setIsCinemaOpen(true)}
+              className="group flex items-center gap-2.5 bg-white/95 hover:bg-black text-black hover:text-[#06D6A0] border-2 border-black px-3.5 py-1.5 font-mono font-black text-[10px] md:text-xs uppercase tracking-widest shadow-[3px_3px_0px_black] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#FF5F5F] animate-ping" />
+              <span>WATCH ARCHIVE GLIMPSE</span>
+              <span className="font-mono text-[9px] text-[#FF5F5F] group-hover:text-white bg-black/5 group-hover:bg-white/10 px-1.5 py-0.5">
+                [0:30]
+              </span>
+            </button>
+          </div>
+
           {/* DUAL ACTION BUTTON ROW */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-lg px-4 relative z-10">
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-lg px-4 relative z-10">
             
             {/* Primary Action: Enter the Circle / Audition */}
             <Link 
@@ -299,6 +360,71 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
         </div>
 
       </div>
+
+      {/* 🎬 FULLSCREEN NEO-BRUTALIST CINEMA MODAL */}
+      <AnimatePresence>
+        {isCinemaOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-6 md:p-10 bg-black/90 backdrop-blur-md"
+            onClick={() => setIsCinemaOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-4xl bg-[#FFF9F0] border-8 border-black shadow-[16px_16px_0px_#FFD166] overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header Bar */}
+              <div className="bg-[#FFD166] border-b-6 border-black px-4 py-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 font-mono font-black text-xs uppercase tracking-wider text-black">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F5F] animate-ping" />
+                  <span>ACT I // SWAANG STREET REEL // 24 FPS</span>
+                </div>
+                <button
+                  onClick={() => setIsCinemaOpen(false)}
+                  className="bg-black hover:bg-[#FF5F5F] text-[#06D6A0] hover:text-white border-2 border-black px-3 py-1 font-mono font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                >
+                  ✕ CLOSE [ESC]
+                </button>
+              </div>
+
+              {/* Video Player Frame */}
+              <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
+                <video
+                  autoPlay
+                  controls
+                  playsInline
+                  className="w-full h-full object-contain"
+                >
+                  <source src="/video/hero-bg.mp4" type="video/mp4" />
+                  Your browser does not support video playback.
+                </video>
+              </div>
+
+              {/* Modal Footer Bar */}
+              <div className="bg-white border-t-6 border-black px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-black font-mono">
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-wider">
+                  ॥ आवाज़ हमारी, रंगमंच आपका ॥ SSTC BHILAI ARCHIVE
+                </span>
+                <Link
+                  href="/events"
+                  onClick={() => setIsCinemaOpen(false)}
+                  className="text-[10px] md:text-xs font-black uppercase tracking-widest text-[#FF5F5F] hover:underline flex items-center gap-1"
+                >
+                  <span>SEE ALL PRODUCTIONS</span>
+                  <span>➜</span>
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </section>
   );
