@@ -5,18 +5,67 @@ import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, doc } from "firebase/firestore";
 
+interface FilmFrame {
+  id: string;
+  frameNumber: string;
+  type: "video" | "image";
+  src: string;
+  title: string;
+  actTag: string;
+  caption: string;
+}
+
+const FILMSTRIP_FRAMES: FilmFrame[] = [
+  {
+    id: "frame-24",
+    frameNumber: "24",
+    type: "video",
+    src: "/video/hero-bg.mp4",
+    title: "DAFLI & CHANT",
+    actTag: "ACT I // CALL TO CROWD",
+    caption: "The sonic pulse of street theatre. The wooden Dafli rhythm calls hundreds of students into the central quadrangle.",
+  },
+  {
+    id: "frame-24A",
+    frameNumber: "24A",
+    type: "image",
+    src: "https://images.unsplash.com/photo-1514306191717-452ec28c7814?auto=format&fit=crop&w=1200&q=80",
+    title: "THE OPEN CIRCLE",
+    actTag: "ACT II // 360° STAGE",
+    caption: "No fourth wall. The audience forms a tight, breathing ring as the actors step right into the center.",
+  },
+  {
+    id: "frame-25",
+    frameNumber: "25",
+    type: "image",
+    src: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?auto=format&fit=crop&w=1200&q=80",
+    title: "BOL KI LAB",
+    actTag: "ACT III // MONOLOGUE",
+    caption: "High voltage intensity. Words delivered with visceral emotion, confronting dogma and societal hypocrisy.",
+  },
+  {
+    id: "frame-25A",
+    frameNumber: "25A",
+    type: "image",
+    src: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=1200&q=80",
+    title: "THE ENSEMBLE",
+    actTag: "ACT IV // FINALE BOW",
+    caption: "Sweat, gulal, and unison. The collective heartbeat of Swaang after an exhausting 45-minute street showcase.",
+  },
+];
+
 export default function Hero({ data, activeNoticesCount = 0 }: { data: any, activeNoticesCount?: number }) {
   const [activeNotice, setActiveNotice] = useState<any>(null);
   const [isAuditionLive, setIsAuditionLive] = useState(false);
   const [isChanting, setIsChanting] = useState(false);
   const [drumBeatCount, setDrumBeatCount] = useState(0);
-  const [isCinemaOpen, setIsCinemaOpen] = useState(false);
+  const [selectedFrame, setSelectedFrame] = useState<FilmFrame | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsCinemaOpen(false);
+      if (e.key === "Escape") setSelectedFrame(null);
     };
-    if (isCinemaOpen) {
+    if (selectedFrame) {
       window.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden";
     } else {
@@ -26,7 +75,7 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [isCinemaOpen]);
+  }, [selectedFrame]);
 
   useEffect(() => {
     // Listen for active notices
@@ -107,23 +156,6 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center overflow-hidden z-40 bg-[#FFF9F0] selection:bg-[#FF5F5F] selection:text-white pt-24 md:pt-36 pb-16 px-4 md:px-8">
       
-      {/* 🎬 AMBIENT STREET THEATRE FILM TEXTURE (Zero-disturbance Projection) */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          className="w-full h-full object-cover opacity-[0.14] md:opacity-[0.18] grayscale contrast-125 brightness-95 mix-blend-multiply scale-105"
-        >
-          <source src="/video/hero-bg.mp4" type="video/mp4" />
-        </video>
-        {/* Vintage Film Scanline & Grain Texture overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(#000000_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.07] pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FFF9F0]/80 via-transparent to-[#FFF9F0] pointer-events-none" />
-      </div>
-
       {/* 📜 BACKGROUND POSTER GRAIN & STENCIL WATERMARK */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex flex-col justify-between items-center opacity-[0.06] select-none">
         <h1 className="text-[28vw] font-black uppercase tracking-tighter text-black -mt-16 rotate-[-5deg]">
@@ -185,25 +217,14 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* 🎬 30s Street Reel Glimpse Button */}
-            <button
-              onClick={() => setIsCinemaOpen(true)}
-              className="flex items-center gap-2 bg-black hover:bg-[#FF5F5F] text-[#06D6A0] hover:text-white border-4 border-black px-3 py-1.5 font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-              title="Watch 30s Street Theatre Glimpse"
-            >
-              <span className="w-2 h-2 rounded-full bg-[#FF5F5F] animate-ping" />
-              <span>▶</span>
-              <span className="hidden sm:inline">30s REEL</span>
-            </button>
-
             {/* Dafli Sound Trigger */}
             <button
               onClick={playDafliRhythm}
-              className="flex items-center gap-2 bg-[#FFD166] hover:bg-[#FF5F5F] hover:text-white border-4 border-black px-3.5 py-1.5 font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              className="flex items-center gap-2 bg-[#FFD166] hover:bg-[#FF5F5F] hover:text-white border-4 border-black px-3.5 py-1.5 font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer shrink-0"
               title="Click to strike the Nukkad Natak Dafli"
             >
               <span>🪘</span>
-              <span className="hidden sm:inline">SOUND DAFli</span>
+              <span className="hidden sm:inline">SOUND THE DAFli</span>
               {drumBeatCount > 0 && (
                 <span className="bg-black text-[#FFD166] px-1.5 py-0.2 text-[10px]">
                   {drumBeatCount}
@@ -320,22 +341,108 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
             </p>
           </div>
 
-          {/* 📼 MINIMAL STREET ARCHIVE BADGE / GLIMPSE TRIGGER */}
-          <div className="mt-4 flex items-center justify-center gap-3 relative z-10">
-            <button
-              onClick={() => setIsCinemaOpen(true)}
-              className="group flex items-center gap-2.5 bg-white/95 hover:bg-black text-black hover:text-[#06D6A0] border-2 border-black px-3.5 py-1.5 font-mono font-black text-[10px] md:text-xs uppercase tracking-widest shadow-[3px_3px_0px_black] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
-            >
-              <span className="w-2 h-2 rounded-full bg-[#FF5F5F] animate-ping" />
-              <span>WATCH ARCHIVE GLIMPSE</span>
-              <span className="font-mono text-[9px] text-[#FF5F5F] group-hover:text-white bg-black/5 group-hover:bg-white/10 px-1.5 py-0.5">
-                [0:30]
-              </span>
-            </button>
+          {/* 🎞️ OPTION 2: THE ANALOG 35MM STREET THEATRE FILMSTRIP / CONTACT SHEET */}
+          <div className="w-full max-w-4xl mx-auto mt-8 mb-6 px-2 relative z-10">
+            <div className="bg-[#121214] border-4 md:border-6 border-black shadow-[8px_8px_0px_black] md:shadow-[12px_12px_0px_black] overflow-hidden text-[#E4E4E7]">
+              
+              {/* TOP SPROCKET HOLE TRACK & ANALOG EDGE MARKINGS */}
+              <div className="bg-[#09090b] border-b-2 border-white/10 px-3 py-1.5 flex items-center justify-between select-none overflow-hidden">
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                  {Array.from({ length: 18 }).map((_, i) => (
+                    <div key={`sp-t-${i}`} className="w-2.5 h-3 bg-black border border-white/20 rounded-[2px] shrink-0" />
+                  ))}
+                </div>
+                <div className="hidden sm:flex items-center gap-3 font-mono text-[9px] uppercase tracking-widest text-[#FFD166] shrink-0 font-bold ml-2">
+                  <span>▶ 24A</span>
+                  <span>KODAK TRI-X 400</span>
+                  <span>SAFETY FILM</span>
+                  <span>SWAANG-REEL-35MM</span>
+                </div>
+              </div>
+
+              {/* THE 4 NEGATIVE FILM FRAMES */}
+              <div className="p-3 md:p-4 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 bg-[#121214]">
+                {FILMSTRIP_FRAMES.map((frame) => (
+                  <motion.div
+                    key={frame.id}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                    onClick={() => setSelectedFrame(frame)}
+                    className="group relative cursor-pointer bg-black border-2 border-white/20 hover:border-[#FFD166] p-1.5 flex flex-col justify-between transition-colors shadow-sm"
+                  >
+                    {/* Top Frame Stamp */}
+                    <div className="flex items-center justify-between px-1 py-0.5 font-mono text-[8px] text-white/60 group-hover:text-[#FFD166] transition-colors uppercase">
+                      <span>#{frame.frameNumber}</span>
+                      <span className="text-[#FF5F5F] font-bold">{frame.type === "video" ? "● LIVE REEL" : "PROOF"}</span>
+                    </div>
+
+                    {/* Media Viewport */}
+                    <div className="relative aspect-[4/3] w-full bg-black overflow-hidden border border-white/10 my-1">
+                      {frame.type === "video" ? (
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-500"
+                        >
+                          <source src={frame.src} type="video/mp4" />
+                        </video>
+                      ) : (
+                        <img
+                          src={frame.src}
+                          alt={frame.title}
+                          className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-500"
+                          onError={(e) => {
+                            e.currentTarget.src = "/faculty-backbone.jpg";
+                          }}
+                        />
+                      )}
+
+                      {/* CRT Scanline Overlay */}
+                      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_50%,rgba(0,0,0,0.15)_50%)] bg-[length:100%_4px] pointer-events-none opacity-40 group-hover:opacity-10 transition-opacity" />
+
+                      {/* Hover Expand Cue */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
+                        <span className="bg-[#FFD166] text-black border border-black font-mono font-black text-[9px] uppercase px-2 py-1 shadow-[2px_2px_0px_black]">
+                          {frame.type === "video" ? "PLAY REEL ▶" : "INSPECT 🔍"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Frame Stamp */}
+                    <div className="px-1 pt-1 pb-0.5 text-left">
+                      <h5 className="font-mono font-black text-[10px] uppercase text-white truncate group-hover:text-[#FFD166] transition-colors">
+                        {frame.title}
+                      </h5>
+                      <p className="font-mono text-[8px] text-white/50 uppercase truncate">
+                        {frame.actTag}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* BOTTOM SPROCKET HOLE TRACK */}
+              <div className="bg-[#09090b] border-t-2 border-white/10 px-3 py-1.5 flex items-center justify-between select-none overflow-hidden">
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                  {Array.from({ length: 18 }).map((_, i) => (
+                    <div key={`sp-b-${i}`} className="w-2.5 h-3 bg-black border border-white/20 rounded-[2px] shrink-0" />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 font-mono text-[8px] uppercase tracking-widest text-white/60 shrink-0 font-bold ml-2">
+                  <span className="w-2 h-2 rounded-full bg-[#06D6A0] inline-block animate-pulse" />
+                  <span className="hidden sm:inline">CLICK ANY 35MM NEGATIVE TO INSPECT FULL PROOF</span>
+                  <span className="sm:hidden">TAP PROOF TO EXPAND</span>
+                </div>
+              </div>
+
+            </div>
           </div>
 
           {/* DUAL ACTION BUTTON ROW */}
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-lg px-4 relative z-10">
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-lg px-4 relative z-10">
             
             {/* Primary Action: Enter the Circle / Audition */}
             <Link 
@@ -361,16 +468,16 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
 
       </div>
 
-      {/* 🎬 FULLSCREEN NEO-BRUTALIST CINEMA MODAL */}
+      {/* 🎬 FULLSCREEN NEO-BRUTALIST CINEMA & PROOF LIGHTBOX MODAL */}
       <AnimatePresence>
-        {isCinemaOpen && (
+        {selectedFrame && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-6 md:p-10 bg-black/90 backdrop-blur-md"
-            onClick={() => setIsCinemaOpen(false)}
+            onClick={() => setSelectedFrame(null)}
           >
             <motion.div
               initial={{ scale: 0.92, y: 20 }}
@@ -384,40 +491,53 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
               <div className="bg-[#FFD166] border-b-6 border-black px-4 py-2.5 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 font-mono font-black text-xs uppercase tracking-wider text-black">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F5F] animate-ping" />
-                  <span>ACT I // SWAANG STREET REEL // 24 FPS</span>
+                  <span>FRAME #{selectedFrame.frameNumber} // {selectedFrame.actTag}</span>
                 </div>
                 <button
-                  onClick={() => setIsCinemaOpen(false)}
+                  onClick={() => setSelectedFrame(null)}
                   className="bg-black hover:bg-[#FF5F5F] text-[#06D6A0] hover:text-white border-2 border-black px-3 py-1 font-mono font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_black] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
                 >
                   ✕ CLOSE [ESC]
                 </button>
               </div>
 
-              {/* Video Player Frame */}
+              {/* Media Viewport */}
               <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
-                <video
-                  autoPlay
-                  controls
-                  playsInline
-                  className="w-full h-full object-contain"
-                >
-                  <source src="/video/hero-bg.mp4" type="video/mp4" />
-                  Your browser does not support video playback.
-                </video>
+                {selectedFrame.type === "video" ? (
+                  <video
+                    autoPlay
+                    controls
+                    playsInline
+                    className="w-full h-full object-contain"
+                  >
+                    <source src={selectedFrame.src} type="video/mp4" />
+                    Your browser does not support video playback.
+                  </video>
+                ) : (
+                  <img
+                    src={selectedFrame.src}
+                    alt={selectedFrame.title}
+                    className="w-full h-full object-contain"
+                  />
+                )}
               </div>
 
               {/* Modal Footer Bar */}
-              <div className="bg-white border-t-6 border-black px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-black font-mono">
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-wider">
-                  ॥ आवाज़ हमारी, रंगमंच आपका ॥ SSTC BHILAI ARCHIVE
-                </span>
+              <div className="bg-white border-t-6 border-black px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-black font-mono">
+                <div className="flex flex-col text-left">
+                  <span className="font-black text-sm uppercase tracking-tight text-black">
+                    {selectedFrame.title}
+                  </span>
+                  <span className="text-[11px] text-black/70 font-bold max-w-xl">
+                    {selectedFrame.caption}
+                  </span>
+                </div>
                 <Link
                   href="/events"
-                  onClick={() => setIsCinemaOpen(false)}
-                  className="text-[10px] md:text-xs font-black uppercase tracking-widest text-[#FF5F5F] hover:underline flex items-center gap-1"
+                  onClick={() => setSelectedFrame(null)}
+                  className="shrink-0 bg-[#FF5F5F] hover:bg-black text-white px-3 py-1.5 border-2 border-black text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_black] transition-all flex items-center gap-1.5"
                 >
-                  <span>SEE ALL PRODUCTIONS</span>
+                  <span>ALL PRODUCTIONS</span>
                   <span>➜</span>
                 </Link>
               </div>
