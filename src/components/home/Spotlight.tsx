@@ -66,9 +66,6 @@ export default function Spotlight({ aotm }: { aotm: any }) {
             
             {/* The Solid Image */}
             <img 
-              data-cms-doc="settings/aotm"
-              data-cms-field="photo"
-              data-cms-type="image"
               src={aotm.photo} 
               className="absolute inset-0 w-full h-full object-cover grayscale-0 group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" 
               alt={aotm.name}
@@ -80,8 +77,6 @@ export default function Spotlight({ aotm }: { aotm: any }) {
             {/* Floating Role Tag inside Image */}
             <motion.div 
               whileHover={{ scale: 1.08 }}
-              data-cms-doc="settings/aotm"
-              data-cms-field="role"
               className="absolute bottom-4 left-4 lg:bottom-6 lg:left-6 bg-[#06D6A0] text-black border-2 border-black px-4 py-2 font-black uppercase text-[10px] lg:text-xs shadow-[4px_4px_0px_black] z-20 transition-all duration-300 group-hover:-translate-y-2 group-hover:bg-[#FFD166]"
             >
               {aotm.role || "Lead Performer"}
@@ -108,11 +103,7 @@ export default function Spotlight({ aotm }: { aotm: any }) {
             </div>
 
             {/* The Name */}
-            <h2 
-              data-cms-doc="settings/aotm"
-              data-cms-field="name"
-              className="text-5xl sm:text-6xl md:text-[5.5rem] font-black uppercase leading-[0.85] tracking-tighter mb-8 break-words text-black"
-            >
+            <h2 className="text-5xl sm:text-6xl md:text-[5.5rem] font-black uppercase leading-[0.85] tracking-tighter mb-8 break-words text-black">
               {aotm.name.split(' ')[0]} <br />
               <span className="text-[#FF5F5F] underline decoration-8 underline-offset-8 decoration-black">
                  {aotm.name.split(' ').slice(1).join(' ')}
@@ -121,11 +112,7 @@ export default function Spotlight({ aotm }: { aotm: any }) {
 
             {/* The Quote */}
             <div className="relative pl-6 border-l-8 border-[#06D6A0] mb-12">
-              <p 
-                data-cms-doc="settings/aotm"
-                data-cms-field="citation"
-                className="text-xl md:text-3xl font-bold leading-tight tracking-tight text-black"
-              >
+              <p className="text-xl md:text-3xl font-bold leading-tight tracking-tight text-black">
                 "{aotm.citation || "Defining the future of theater."}"
               </p>
             </div>
@@ -136,11 +123,7 @@ export default function Spotlight({ aotm }: { aotm: any }) {
                 <h4 className="font-black uppercase text-xs text-white tracking-widest bg-black px-2 py-1 inline-block border-2 border-black">
                   &gt; KEY_ACHIEVEMENT
                 </h4>
-                <p 
-                  data-cms-doc="settings/aotm"
-                  data-cms-field="achievement"
-                  className="font-bold text-sm md:text-base leading-relaxed text-black"
-                >
+                <p className="font-bold text-sm md:text-base leading-relaxed text-black">
                   {aotm.achievement || "N/A"}
                 </p>
               </div>
@@ -149,11 +132,7 @@ export default function Spotlight({ aotm }: { aotm: any }) {
                 <h4 className="font-black uppercase text-xs text-black tracking-widest bg-[#FFD166] px-2 py-1 inline-block border-2 border-black shadow-[2px_2px_0px_black]">
                   &gt; CORE_IMPACT
                 </h4>
-                <p 
-                  data-cms-doc="settings/aotm"
-                  data-cms-field="impact"
-                  className="font-bold text-sm md:text-base leading-relaxed text-black"
-                >
+                <p className="font-bold text-sm md:text-base leading-relaxed text-black">
                   {aotm.impact || "N/A"}
                 </p>
               </div>

@@ -3,7 +3,6 @@ import "./globals.css";
 import GlobalTicker from "@/components/ui/GlobalTicker";
 import Header from "@/components/Header";
 import Footer from "@/components/ui/Footer";
-import VisualInspectorOverlay from "@/components/visual-editor/VisualInspectorOverlay";
 
 export const metadata: Metadata = {
   title: "Swaang | The Dramatic Society",
@@ -26,9 +25,6 @@ export default function RootLayout({
           </main>
 
           <Footer />
-
-          {/* ⚡ Visual Studio CMS Inspector Overlay */}
-          <VisualInspectorOverlay />
       </body>
     </html>
   );
