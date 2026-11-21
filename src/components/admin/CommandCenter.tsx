@@ -13,6 +13,7 @@ import {
   Wallet,
   Megaphone,
   Check,
+  Sliders,
 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot, setDoc, getDocs, collection, getDoc } from "firebase/firestore";
@@ -83,15 +84,16 @@ export default function CommandCenter({
         meta: {
           system: "Swaang Dramatic Society CMS",
           exportedAt: new Date().toISOString(),
-          version: "2.5.0",
+          version: "2.6.0",
         },
       };
 
-      const [homepageSnap, brandingSnap, auditionResourcesSnap, broadcastSnap] = await Promise.all([
+      const [homepageSnap, brandingSnap, auditionResourcesSnap, broadcastSnap, joinFormsSnap] = await Promise.all([
         getDoc(doc(db, "settings", "homepage")),
         getDoc(doc(db, "settings", "site_config")),
         getDoc(doc(db, "settings", "audition_resources")),
         getDoc(doc(db, "settings", "broadcast")),
+        getDoc(doc(db, "settings", "join_forms")),
       ]);
 
       backupData.settings = {
@@ -99,6 +101,7 @@ export default function CommandCenter({
         site_config: brandingSnap.data() || null,
         audition_resources: auditionResourcesSnap.data() || null,
         broadcast: broadcastSnap.data() || null,
+        join_forms: joinFormsSnap.data() || null,
       };
 
       for (const col of [
@@ -184,8 +187,9 @@ export default function CommandCenter({
       )}
 
       {/* QUICK LAUNCH SHORTCUTS BAR */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
+          { tab: "form_builder", label: "Join Us Form Studio", sub: "Custom Fields & Wings", icon: Sliders },
           { tab: "auditions", label: "Judge Auditions", sub: "Casting Desk & Matrix", icon: UserCheck },
           { tab: "archive", label: "Production Archive", sub: "Plays & Short Films", icon: Film },
           { tab: "budget", label: "Manage Finances", sub: "Show Budget & Ledger", icon: Wallet },

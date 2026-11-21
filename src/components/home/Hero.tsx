@@ -45,6 +45,7 @@ function Magnetic({ children, className = "" }: { children: React.ReactNode; cla
 export default function Hero({ data, activeNoticesCount = 0 }: { data: any, activeNoticesCount?: number }) {
   const [activeNotice, setActiveNotice] = useState<any>(null);
   const [isAuditionLive, setIsAuditionLive] = useState(false);
+  const [joinCtaText, setJoinCtaText] = useState("JOIN US");
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
@@ -59,20 +60,41 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
       (err) => console.warn("Hero notices listener warning:", err)
     );
 
-    // Listen for auditions status
+    // Listen for auditions / join_forms live status & CTA label
     const unsubscribeAuditions = onSnapshot(
       doc(db, "settings", "auditions"),
       (docSnap) => {
         if (docSnap.exists()) {
-          setIsAuditionLive(docSnap.data().isLive || false);
+          const audData = docSnap.data();
+          setIsAuditionLive(audData.isLive || false);
+          if (typeof audData.ctaText === "string" && audData.ctaText.trim()) {
+            setJoinCtaText(audData.ctaText.trim());
+          }
         }
       },
       (err) => console.warn("Hero auditions status listener warning:", err)
     );
 
+    const unsubscribeJoinForms = onSnapshot(
+      doc(db, "settings", "join_forms"),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const jfData = docSnap.data();
+          if (typeof jfData.masterLive === "boolean") {
+            setIsAuditionLive(jfData.masterLive);
+          }
+          if (typeof jfData.heroCtaText === "string" && jfData.heroCtaText.trim()) {
+            setJoinCtaText(jfData.heroCtaText.trim());
+          }
+        }
+      },
+      (err) => console.warn("Hero join_forms status listener warning:", err)
+    );
+
     return () => {
       unsubscribeNotices();
       unsubscribeAuditions();
+      unsubscribeJoinForms();
     };
   }, []);
 
@@ -248,7 +270,7 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any, acti
                  className={`group flex items-center justify-between w-full bg-black border-4 border-black px-6 py-4 shadow-[8px_8px_0px_white] hover:shadow-[12px_12px_0px_white] transition-all duration-200 active:shadow-none active:translate-y-2 active:translate-x-2`}
                >
                  <span className={`font-mono font-black text-lg md:text-xl uppercase tracking-widest text-[#06D6A0] group-hover:text-white transition-colors`}>
-                   {isAuditionLive ? "JOIN US" : "EXPLORE"}
+                   {isAuditionLive ? joinCtaText : "EXPLORE"}
                  </span>
                  <motion.div 
                    whileHover={{ rotate: 45, scale: 1.15 }}

@@ -324,22 +324,37 @@
     @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap;
   }
   .adm-badge-neutral { @apply border-adm-line bg-adm-surface-2 text-adm-fg-2; }
-  .adm-badge-accent { @apply border-adm-accent/35 bg-adm-accent/12 text-adm-accent-text; }
-  .adm-badge-success { @apply border-adm-success/30 bg-adm-success/12 text-adm-success; }
-  .adm-badge-danger { @apply border-adm-danger/30 bg-adm-danger/12 text-adm-danger; }
-  .adm-badge-info { @apply border-adm-info/30 bg-adm-info/12 text-adm-info; }
+  .adm-badge-accent, .adm-badge-gold { @apply border-adm-accent/35 bg-adm-accent/12 text-adm-accent-text; }
+  .adm-badge-success, .adm-badge-emerald { @apply border-adm-success/30 bg-adm-success/12 text-adm-success; }
+  .adm-badge-danger, .adm-badge-crimson { @apply border-adm-danger/30 bg-adm-danger/12 text-adm-danger; }
+  .adm-badge-info, .adm-badge-sky { @apply border-adm-info/30 bg-adm-info/12 text-adm-info; }
   .adm-badge-warning { @apply border-adm-warning/30 bg-adm-warning/12 text-adm-warning; }
   .adm-badge-violet { @apply border-adm-violet/30 bg-adm-violet/12 text-adm-violet; }
+
+  /* ---- Button & Typography Aliases ---- */
+  .adm-btn-gold {
+    @apply border border-adm-accent/40 bg-adm-accent/15 text-adm-accent-text hover:bg-adm-accent hover:text-adm-accent-fg;
+  }
+  .adm-btn-outline {
+    @apply border border-adm-line-strong bg-adm-surface-2 text-adm-fg hover:bg-adm-surface-3;
+  }
+  .adm-text-1 { @apply text-adm-fg; }
+  .adm-text-2 { @apply text-adm-fg-2; }
+  .adm-text-3 { @apply text-adm-fg-3; }
+  .adm-text-gold { @apply text-adm-accent-text; }
+  .adm-surface-2 { @apply bg-adm-surface-2; }
 
   /* ---- Segmented control & filter chips ---- */
   .adm-seg {
     @apply inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-adm-line bg-adm-surface-2 p-1;
     scrollbar-width: none;
   }
-  .adm-seg-item {
+  .adm-seg-item,
+  .adm-seg > button {
     @apply inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-adm-fg-2 transition hover:text-adm-fg;
   }
-  .adm-seg-item[data-active="true"] {
+  .adm-seg-item[data-active="true"],
+  .adm-seg > button[data-active="true"] {
     @apply bg-adm-fg text-adm-bg shadow-sm;
   }
   .adm-chip {
@@ -350,7 +365,7 @@
   }
 
   /* ---- Misc ---- */
-  .adm-divider { @apply border-t border-adm-line; }
+  .adm-divider { @apply border-adm-line; }
   .adm-scroll-x {
     @apply flex overflow-x-auto;
     scrollbar-width: none;

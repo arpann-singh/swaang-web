@@ -42,12 +42,17 @@ import {
   Command,
   ChevronRight,
   Loader2,
+  Rocket,
+  Sliders,
+  Layers,
+  FileSpreadsheet,
 } from "lucide-react";
 
 // --- ADMIN MODULE COMPONENTS ---
 import BrandingEditor from "@/components/admin/BrandingEditor";
 import InboxManager from "@/components/admin/InboxManager";
 import AuditionsManager from "@/components/admin/AuditionsManager";
+import JoinFormsManager from "@/components/admin/JoinFormsManager";
 import EventsManager from "@/components/admin/EventsManager";
 import TeamManager from "@/components/admin/TeamManager";
 import GalleryManager from "@/components/admin/GalleryManager";
@@ -210,6 +215,17 @@ export default function AdminDashboard() {
         { id: "archive", label: "Production Archive", tag: "FILM", icon: Film, desc: "Stage plays, Nukkad Nataks & short films" },
         { id: "blog", label: "Articles & Blog", tag: "TEXT", icon: Newspaper, desc: "Publish & edit articles behind the curtain" },
         { id: "gallery", label: "Visual Gallery", tag: "MEDIA", icon: Images, desc: "Bulk photo upload & homepage curation" },
+      ],
+    },
+    {
+      id: "FORMS",
+      title: "FORMS & RECRUITMENT",
+      shortTitle: "Forms",
+      tabs: [
+        { id: "join_launchpad", label: "Join Us Launchpad", tag: "LIVE", icon: Rocket, desc: "Make forms live on Join Us button, Hero CTA & schedule" },
+        { id: "form_builder", label: "Form & Question Studio", tag: "BUILD", icon: Sliders, desc: "Create custom forms, 19 field types & conditional logic" },
+        { id: "form_categories", label: "Wings & Categories", tag: "WINGS", icon: Layers, desc: "Society wings, departments, quotas & card colors" },
+        { id: "form_responses", label: "Form Responses", tag: "SHEET", icon: FileSpreadsheet, badge: pendingAuditionsCount, desc: "Dynamic custom question responses & full CSV export" },
       ],
     },
     {
@@ -638,6 +654,18 @@ export default function AdminDashboard() {
               {activeTab === "timeline" && <TimelineManager />}
               {activeTab === "archive" && <ArchiveManager />}
               {activeTab === "inbox" && <InboxManager messages={messages} />}
+              {activeTab === "join_launchpad" && (
+                <JoinFormsManager initialSubTab="launchpad" auditions={auditions} onNavigateTab={handleJump} />
+              )}
+              {activeTab === "form_builder" && (
+                <JoinFormsManager initialSubTab="builder" auditions={auditions} onNavigateTab={handleJump} />
+              )}
+              {activeTab === "form_categories" && (
+                <JoinFormsManager initialSubTab="wings" auditions={auditions} onNavigateTab={handleJump} />
+              )}
+              {activeTab === "form_responses" && (
+                <JoinFormsManager initialSubTab="responses" auditions={auditions} onNavigateTab={handleJump} />
+              )}
               {activeTab === "auditions" && <AuditionsManager auditions={auditions} />}
               {activeTab === "resources" && <ResourcesManager />}
               {activeTab === "events" && <EventsManager />}
@@ -743,7 +771,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="font-display text-lg font-bold text-adm-fg">
-                      All 22 Admin Modules
+                      All {flatTabs.length} Admin Modules
                     </h3>
                     <p className="text-xs text-adm-fg-3">
                       Tap any module to switch workspace immediately
@@ -793,7 +821,7 @@ export default function AdminDashboard() {
                 {/* Category Filter Chips */}
                 <div className="flex items-center gap-1.5 overflow-x-auto mt-3 adm-scroll-x">
                   {[
-                    { id: "ALL", label: "All (22)" },
+                    { id: "ALL", label: `All (${flatTabs.length})` },
                     ...tabCategories.map((c) => ({ id: c.id, label: `${c.shortTitle} (${c.tabs.length})` })),
                   ].map((c) => (
                     <button

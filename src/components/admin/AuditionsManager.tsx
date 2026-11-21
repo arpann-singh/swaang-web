@@ -78,7 +78,10 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
     const targetState = !isLive;
     setIsLive(targetState);
     try {
-      await setDoc(doc(db, "settings", "auditions"), { isLive: targetState }, { merge: true });
+      await Promise.all([
+        setDoc(doc(db, "settings", "auditions"), { isLive: targetState }, { merge: true }),
+        setDoc(doc(db, "settings", "join_forms"), { masterLive: targetState }, { merge: true }),
+      ]);
     } catch (err: any) {
       setIsLive(!targetState);
       alert("Failed to change status: " + err.message);
@@ -357,9 +360,21 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                           <h3 className="font-display font-bold text-xl text-adm-fg leading-tight truncate">
                             {a.name}
                           </h3>
-                          <span className="adm-badge adm-badge-accent mt-1.5">
-                            {a.role || "General Acting"}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            <span className="adm-badge adm-badge-accent">
+                              {a.wing || a.role || "General Acting"}
+                            </span>
+                            {a.ticketId && (
+                              <span className="adm-badge adm-badge-neutral font-mono text-[10px]">
+                                #{a.ticketId}
+                              </span>
+                            )}
+                          </div>
+                          {a.formTitle && (
+                            <p className="text-[11px] text-adm-fg-3 mt-1 truncate">
+                              Form: {a.formTitle}
+                            </p>
+                          )}
                         </div>
                         <span className={`adm-badge ${getStatusBadge(a.status)} shrink-0`}>
                           {a.status || "Pending"}
@@ -413,7 +428,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                       </div>
 
                       {/* LINKS */}
-                      {(a.photoLink || a.portfolio || a.experience) && (
+                      {(a.photoLink || a.portfolio) && (
                         <div className="flex gap-2 mb-3">
                           {a.photoLink && (
                             <a
@@ -425,9 +440,9 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                               Headshot ⤾
                             </a>
                           )}
-                          {(a.portfolio || a.experience) && (
+                          {a.portfolio && (
                             <a
-                              href={a.portfolio || a.experience}
+                              href={a.portfolio}
                               target="_blank"
                               rel="noreferrer"
                               className="adm-btn adm-btn-secondary adm-btn-sm flex-1"
@@ -440,8 +455,25 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
 
                       {/* MOTIVATION / STATEMENT */}
                       <div className="adm-panel p-3 text-xs italic text-adm-fg-2 max-h-24 overflow-y-auto">
-                        "{a.motivation || a.message || "No motivation statement provided."}"
+                        "{a.experience || a.motivation || a.message || "No motivation statement provided."}"
                       </div>
+
+                      {/* CUSTOM FORM ANSWERS SUMMARY */}
+                      {a.customAnswers && Object.keys(a.customAnswers).length > 0 && (
+                        <div className="mt-2.5 adm-panel p-2.5 space-y-1 max-h-28 overflow-y-auto">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-adm-accent-text">
+                            Custom Form Answers ({Object.keys(a.customAnswers).length})
+                          </p>
+                          {Object.entries(a.customAnswers).slice(0, 4).map(([k, v]) => (
+                            <div key={k} className="text-[11px] flex justify-between gap-2">
+                              <span className="text-adm-fg-3 truncate">{k}:</span>
+                              <span className="text-adm-fg font-medium truncate max-w-[55%]">
+                                {Array.isArray(v) ? v.join(", ") : String(v ?? "—")}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* STATUS ACTION BUTTONS */}
