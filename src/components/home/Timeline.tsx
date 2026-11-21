@@ -57,29 +57,43 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
   return (
     <section id="journey" className="py-20 md:py-28 bg-[#FFF9F0] text-black relative border-b-8 border-black overflow-hidden selection:bg-[#FF5F5F] selection:text-white">
       
-      {/* 🎭 THEATRICAL WATERMARK */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.03] select-none pointer-events-none overflow-hidden -rotate-2 z-0">
-        <h1 className="text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black">
-          THE GLIMPSE // 10 YEARS OF SWAANG // CHRONOLOGY //
-        </h1>
-        <h1 className="text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black -ml-36">
-          FROM THE STREETS OF BHILAI TO THE NATIONAL STAGE //
-        </h1>
+      {/* 🎭 KINETIC THEATRICAL WATERMARK */}
+      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.04] select-none pointer-events-none overflow-hidden -rotate-2 z-0">
+        <motion.h1
+          animate={{ x: ["0%", "-45%"] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          className="text-[16vw] md:text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black"
+        >
+          THE GLIMPSE // 10 YEARS OF SWAANG // CHRONOLOGY // THE GLIMPSE //
+        </motion.h1>
+        <motion.h1
+          animate={{ x: ["-45%", "0%"] }}
+          transition={{ duration: 34, repeat: Infinity, ease: "linear" }}
+          className="text-[16vw] md:text-[14vw] font-black uppercase whitespace-nowrap leading-none tracking-tighter text-black -ml-36"
+        >
+          FROM THE STREETS OF BHILAI TO THE NATIONAL STAGE // FROM THE STREETS //
+        </motion.h1>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         
         {/* ============================================================== */}
         {/* 🎬 SECTION HEADER                                              */}
         {/* ============================================================== */}
-        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-black pb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ type: "spring", stiffness: 220, damping: 18 }}
+          className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-black pb-8"
+        >
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="bg-[#FFD166] text-black px-4 py-1.5 border-2 border-black font-mono font-black uppercase text-[11px] tracking-[0.3em] shadow-[3px_3px_0px_black] flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2.5 mb-3">
+              <span className="bg-[#FFD166] text-black px-4 py-1.5 border-2 border-black font-mono font-black uppercase text-[11px] tracking-[0.25em] shadow-[3px_3px_0px_black] flex items-center gap-2">
                 <Clapperboard size={14} className="text-[#FF5F5F]" />
                 ACT // 02 • THE CHRONICLES
               </span>
-              <span className="bg-black text-[#06D6A0] px-3 py-1 font-mono font-black text-[10px] uppercase tracking-wider hidden sm:inline-block">
+              <span className="bg-black text-[#06D6A0] px-3 py-1 font-mono font-black text-[10px] uppercase tracking-wider">
                 EST. 2014 // 10-YEAR ARCHIVE
               </span>
             </div>
@@ -92,12 +106,12 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
           <p className="md:max-w-xs font-mono font-bold text-xs md:text-sm leading-relaxed uppercase bg-white border-4 border-black p-4 shadow-[4px_4px_0px_black] text-black">
             A GLIMPSE INTO A DECADE OF REVOLUTIONARY STREET THEATRE & PROSCENIUM TRIUMPHS.
           </p>
-        </div>
+        </motion.div>
 
         {/* ============================================================== */}
         {/* 📸 3-CARD GLIMPSE GRID (Compact Snapshot)                       */}
         {/* ============================================================== */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 mb-12">
           {glimpseEvents.map((item, index) => {
             const cat = categoryMap[item.category] || categoryMap.milestone;
             const CatIcon = cat.icon;
@@ -106,10 +120,14 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
             return (
               <motion.div
                 key={item.id || index}
+                initial={{ opacity: 0, y: 45, rotate: index % 2 === 0 ? -2 : 2 }}
+                whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
                 whileHover={{ y: -6 }}
-                transition={{ type: "spring", stiffness: 350, damping: 15 }}
+                whileTap={{ scale: 0.96, rotate: -1 }}
+                transition={{ delay: index * 0.1, type: "spring", stiffness: 260, damping: 18 }}
                 onClick={() => setActiveStory(item)}
-                className="bg-white border-4 md:border-8 border-black p-5 md:p-6 shadow-[8px_8px_0px_black] hover:shadow-[14px_14px_0px_#FF5F5F] transition-all flex flex-col justify-between group cursor-pointer"
+                className="bg-white border-6 md:border-8 border-black p-5 md:p-6 shadow-[8px_8px_0px_black] hover:shadow-[14px_14px_0px_#FF5F5F] transition-all flex flex-col justify-between group cursor-pointer select-none"
               >
                 <div>
                   {/* Card Header */}
@@ -130,7 +148,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                       <img
                         src={photo}
                         alt={item.event || item.title}
-                        className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                        className="w-full h-full object-cover md:grayscale md:contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                       />
                     ) : (
                       <div className="w-full h-full bg-[#1F1F1F] flex flex-col items-center justify-center p-4 text-center text-white relative">
@@ -164,8 +182,8 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
                   <span className="text-[10px] font-black text-black/50 uppercase">
                     GLIMPSE #{index + 1}
                   </span>
-                  <span className="font-black uppercase text-[11px] text-black group-hover:text-[#FF5F5F] flex items-center gap-1 group-hover:translate-x-1 transition-all">
-                    <span>QUICK PEEK</span>
+                  <span className="font-black uppercase text-[11px] bg-[#FFD166] border-2 border-black px-2.5 py-0.5 shadow-[2px_2px_0px_black] text-black group-hover:bg-[#FF5F5F] group-hover:text-white flex items-center gap-1 transition-all">
+                    <span>TAP TO PEEK</span>
                     <ChevronRight size={14} strokeWidth={3} />
                   </span>
                 </div>
@@ -177,7 +195,13 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
         {/* ============================================================== */}
         {/* 🏛️ PROMINENT GATEWAY BANNER TO THE FULL JOURNEY PAGE           */}
         {/* ============================================================== */}
-        <div className="bg-black text-[#FFF9F0] border-4 md:border-8 border-black p-6 md:p-8 shadow-[12px_12px_0px_#06D6A0] flex flex-col lg:flex-row items-center justify-between gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ type: "spring", stiffness: 220, damping: 18 }}
+          className="bg-black text-[#FFF9F0] border-6 md:border-8 border-black p-6 md:p-8 shadow-[10px_10px_0px_#06D6A0] md:shadow-[12px_12px_0px_#06D6A0] flex flex-col lg:flex-row items-center justify-between gap-6"
+        >
           <div className="text-center lg:text-left">
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-2">
               <span className="bg-[#06D6A0] text-black px-3 py-0.5 font-mono font-black text-[10px] uppercase tracking-widest border border-black">
@@ -202,7 +226,7 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
             <span>ENTER FULL JOURNEY ARCHIVE</span>
             <ArrowRight size={18} strokeWidth={3} className="group-hover:translate-x-1.5 transition-transform" />
           </Link>
-        </div>
+        </motion.div>
 
       </div>
 

@@ -1,112 +1,204 @@
 "use client";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { Sparkles, Award } from "lucide-react";
 
 export default function FacultyBlueprint({ data }: { data?: any }) {
   const mentorName = data?.facultyName || "PROF. NAMRATA BHARGAVA";
   const mentorTitle = data?.facultyTitle || "FOUNDER'S VISION";
-  const mentorQuote = data?.facultyQuote || "EVERY STANDING OVATION IS A TESTAMENT TO THE STRUCTURE THAT HOLDS THE STAGE. SWAANG EXISTS BECAUSE OF YOUR UNWAVERING SUPPORT, YOUR STRATEGIC VISION, AND YOUR TIMELESS MENTORSHIP. YOU BELIEVED IN US BEFORE THE CURTAIN ROSE — AND THAT BELIEF MADE ALL THE DIFFERENCE.";
+  const mentorQuote =
+    data?.facultyQuote ||
+    "EVERY STANDING OVATION IS A TESTAMENT TO THE STRUCTURE THAT HOLDS THE STAGE. SWAANG EXISTS BECAUSE OF YOUR UNWAVERING SUPPORT, YOUR STRATEGIC VISION, AND YOUR TIMELESS MENTORSHIP. YOU BELIEVED IN US BEFORE THE CURTAIN ROSE — AND THAT BELIEF MADE ALL THE DIFFERENCE.";
   const mentorImage = data?.facultyImage || "/faculty-backbone.jpg";
   const mentorBadge = data?.facultyBadge || "Founding Mentor";
 
+  const [blueprintMode, setBlueprintMode] = useState(false);
+  const [saluteCount, setSaluteCount] = useState(0);
+
   return (
-    <section className="py-28 px-6 bg-[var(--bg-primary)] relative overflow-hidden border-y-8 border-[var(--border-primary)]">
-      
+    <section
+      id="backbone"
+      className="py-20 sm:py-28 px-4 sm:px-6 bg-[var(--bg-primary)] relative overflow-hidden border-y-8 border-[var(--border-primary)]"
+    >
       {/* 🏛️ BACKGROUND KINETIC TEXT -> HARSH RED STAMP */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden opacity-[0.03] z-0">
-        <h2 className="text-[20vw] font-black uppercase leading-none whitespace-nowrap text-[#FF5F5F] border-[2vw] border-[#FF5F5F] p-8 -rotate-12">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden opacity-[0.04] z-0">
+        <motion.h2
+          initial={{ scale: 1.3, rotate: -18 }}
+          whileInView={{ scale: 1, rotate: -12 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", stiffness: 180, damping: 16 }}
+          className="text-[20vw] font-black uppercase leading-none whitespace-nowrap text-[#FF5F5F] border-[2vw] border-[#FF5F5F] p-8"
+        >
           APPROVED
-        </h2>
+        </motion.h2>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
-          
+        <div className="flex flex-col lg:flex-row items-center gap-12 sm:gap-16 lg:gap-20">
           {/* LEFT SIDE: THE ARCHITECTURAL PHOTO & BADGE */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50, rotate: -2 }}
-            whileInView={{ opacity: 1, x: 0, rotate: 0 }}
-            viewport={{ once: true }}
+          <motion.div
+            initial={{ opacity: 0, y: 40, rotate: -2 }}
+            whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ type: "spring", stiffness: 220, damping: 18 }}
             className="w-full lg:w-5/12 relative"
           >
-            {/* Architectural Blueprint Markers -> Brutalist Crosshairs */}
-            <div className="absolute -top-8 -left-8 w-16 h-16 border-t-8 border-black z-20" />
-            <div className="absolute -bottom-8 -right-8 w-16 h-16 border-b-8 border-r-8 border-black z-20" />
+            {/* Animated Architectural Blueprint Markers */}
+            <motion.div
+              animate={{ x: [0, -3, 0], y: [0, -3, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-4 -left-4 sm:-top-8 sm:-left-8 w-12 h-12 sm:w-16 sm:h-16 border-t-8 border-l-8 border-black z-20 pointer-events-none"
+            />
+            <motion.div
+              animate={{ x: [0, 3, 0], y: [0, 3, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-4 -right-4 sm:-bottom-8 sm:-right-8 w-12 h-12 sm:w-16 sm:h-16 border-b-8 border-r-8 border-black z-20 pointer-events-none"
+            />
 
-            <div className="bg-white border-8 border-black p-4 md:p-6 shadow-[16px_16px_0px_black] relative">
+            <motion.div
+              whileTap={{ scale: 0.98, rotate: blueprintMode ? 1 : -1 }}
+              onClick={() => setBlueprintMode((b) => !b)}
+              className={`border-6 sm:border-8 border-black p-3.5 sm:p-6 transition-all duration-300 relative cursor-pointer select-none ${
+                blueprintMode
+                  ? "bg-[#FFD166] shadow-[12px_12px_0px_#FF5F5F]"
+                  : "bg-white shadow-[12px_12px_0px_black] sm:shadow-[16px_16px_0px_black]"
+              }`}
+            >
               {/* CSS Masking Tape */}
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-10 bg-[#FFF9F0] border-4 border-black/10 shadow-[2px_2px_0px_rgba(0,0,0,0.1)] -rotate-3 z-30 opacity-90 mix-blend-multiply" />
-              <div className="absolute -bottom-4 right-10 w-24 h-10 bg-[#FFF9F0] border-4 border-black/10 shadow-[2px_2px_0px_rgba(0,0,0,0.1)] rotate-6 z-30 opacity-90 mix-blend-multiply" />
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 h-8 sm:h-10 bg-[#FFF9F0] border-2 border-black/30 shadow-[2px_2px_0px_rgba(0,0,0,0.1)] -rotate-3 z-30 flex items-center justify-center">
+                <span className="font-mono font-black text-[9px] uppercase tracking-widest text-black">
+                  TAP PORTRAIT: {blueprintMode ? "ARCHIVAL LENS" : "STAGE COLOR"}
+                </span>
+              </div>
 
-              <div className="relative group overflow-hidden h-[380px] md:h-[550px] border-4 border-black bg-gray-100">
-                <img 
-                  src={mentorImage} 
-                  alt={mentorName} 
-                  className="w-full h-full object-cover grayscale-0 group-hover:grayscale transition-all duration-700"
+              <div className="relative group overflow-hidden h-[360px] sm:h-[420px] md:h-[530px] border-4 border-black bg-gray-100">
+                <img
+                  src={mentorImage}
+                  alt={mentorName}
+                  className={`w-full h-full object-cover transition-all duration-700 ${
+                    blueprintMode
+                      ? "grayscale contrast-125 scale-105"
+                      : "grayscale-0 group-hover:grayscale"
+                  }`}
                 />
-                
+
+                {/* Animated Blueprint Scanner Beam on Mobile & Desktop */}
+                <motion.div
+                  animate={{ top: ["0%", "100%", "0%"] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  className="absolute left-0 right-0 h-1 bg-[#06D6A0]/70 shadow-[0_0_12px_#06D6A0] pointer-events-none z-20"
+                />
+
                 {/* ID Overlay (Pillar of Swaang) */}
-                <div className="absolute bottom-4 right-4 bg-black text-[#06D6A0] border-4 border-black px-4 py-2 font-mono font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#06D6A0]">
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-black text-[#06D6A0] border-4 border-black px-3 sm:px-4 py-1.5 sm:py-2 font-mono font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-[4px_4px_0px_#06D6A0]">
                   LOC: CHIEF_MENTOR
                 </div>
               </div>
-            </div>
-
-            {/* 🎖️ NEW: FOUNDING MENTOR MEDAL BADGE (Explicit Tribute) */}
-            <motion.div 
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 5, repeat: Infinity }}
-              className="absolute right-0 md:-right-10 top-1/4 md:top-1/4 z-30 flex flex-col items-center gap-1.5 scale-75 md:scale-100 origin-right"
-            >
-                <div className="w-20 h-20 bg-[#FF5F5F] border-4 border-black rounded-full flex flex-col items-center justify-center p-3 text-center shadow-[4px_4px_10px_rgba(0,0,0,0.5)] active:translate-y-1 transition-all">
-                    <span className="text-3xl">🏆</span>
-                </div>
-                <div className="bg-[var(--bg-primary)] border-2 border-black px-2 py-0.5 rounded-full text-[8px] font-black uppercase text-black tracking-widest whitespace-nowrap">
-                    {mentorBadge}
-                </div>
             </motion.div>
+
+            {/* 🎖️ FOUNDING MENTOR MEDAL BADGE (Tap for Standing Ovation) */}
+            <motion.button
+              type="button"
+              onClick={() => setSaluteCount((c) => c + 1)}
+              whileTap={{ scale: 1.2, rotate: 12 }}
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute right-2 md:-right-10 top-8 md:top-1/4 z-30 flex flex-col items-center gap-1.5 scale-90 md:scale-100 origin-right cursor-pointer"
+            >
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#FF5F5F] border-4 border-black rounded-full flex flex-col items-center justify-center p-2 text-center shadow-[4px_4px_0px_black]">
+                <span className="text-2xl sm:text-3xl">🏆</span>
+              </div>
+              <div className="bg-[#FFD166] border-2 border-black px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase text-black tracking-widest whitespace-nowrap shadow-[2px_2px_0px_black]">
+                {saluteCount > 0 ? `👏 OVATION ×${saluteCount}` : mentorBadge}
+              </div>
+            </motion.button>
           </motion.div>
 
           {/* RIGHT SIDE: THE EXECUTIVE SPECIFICATIONS */}
-          <div className="w-full lg:w-7/12 space-y-10">
-            <div>
-              <p className="bg-[#FF5F5F] text-black border-4 border-black font-mono font-black uppercase tracking-[0.3em] text-xs px-4 py-1.5 shadow-[4px_4px_0px_black] inline-block mb-6">
+          <div className="w-full lg:w-7/12 space-y-8 sm:space-y-10">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ type: "spring", stiffness: 220, damping: 18 }}
+            >
+              <p className="bg-[#FF5F5F] text-black border-4 border-black font-mono font-black uppercase tracking-[0.25em] text-[11px] sm:text-xs px-4 py-1.5 shadow-[4px_4px_0px_black] inline-block mb-5">
                 // EXECUTIVE_FOUNDATION //
               </p>
-              
+
               <h2 className="text-[13vw] sm:text-7xl md:text-8xl font-black uppercase tracking-tighter text-black leading-[0.85]">
                 THE <br />
-                <span className="text-[#06D6A0]" style={{ WebkitTextStroke: '3px black' }}>BACKBONE</span>
+                <span
+                  className="text-[#06D6A0]"
+                  style={{ WebkitTextStroke: "2.5px black" }}
+                >
+                  BACKBONE
+                </span>
               </h2>
 
-              {/* 🔥 NEW: LARGE, READABLE AUTHORITATIVE NAME (The main update) */}
-              <motion.h4 
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                className="text-xl sm:text-3xl md:text-4xl font-mono font-black uppercase tracking-widest text-black mt-10 leading-tight relative bg-[#FFD166] border-4 border-black p-4 shadow-[8px_8px_0px_black] inline-block w-full max-w-xl"
+              {/* LARGE, READABLE AUTHORITATIVE NAME */}
+              <motion.h4
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                whileTap={{ scale: 0.98 }}
+                className="text-lg sm:text-3xl md:text-4xl font-mono font-black uppercase tracking-wider sm:tracking-widest text-black mt-7 sm:mt-10 leading-tight relative bg-[#FFD166] border-4 border-black p-4 shadow-[6px_6px_0px_black] sm:shadow-[8px_8px_0px_black] inline-block w-full max-w-xl"
               >
                 {mentorName}
-                <span className="font-black text-sm block mt-2 text-[#FF5F5F]">{mentorTitle}</span>
+                <span className="font-black text-xs sm:text-sm block mt-1.5 text-[#FF5F5F]">
+                  {mentorTitle}
+                </span>
               </motion.h4>
-            </div>
+            </motion.div>
 
-            {/* 🔥 NEW: PURE TRIBUTE QUOTE (Stats removed) */}
-            <div className="relative bg-white border-8 border-black p-8 shadow-[12px_12px_0px_black] mt-12 max-w-2xl">
-              <div className="absolute -top-6 -left-6 bg-[#FF5F5F] border-4 border-black w-12 h-12 flex items-center justify-center shadow-[4px_4px_0px_black]">
-                <span className="font-mono font-black text-2xl text-white">"</span>
-              </div>
-              <p className="text-lg md:text-xl font-mono font-bold text-black leading-relaxed">
+            {/* PURE TRIBUTE QUOTE */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.96 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0.25 }}
+              whileTap={{ scale: 0.99 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 240, damping: 18 }}
+              className="relative bg-white border-6 sm:border-8 border-black p-6 sm:p-8 shadow-[10px_10px_0px_black] sm:shadow-[12px_12px_0px_black] mt-8 sm:mt-12 max-w-2xl"
+            >
+              <motion.div
+                initial={{ scale: 1.6, rotate: -15 }}
+                whileInView={{ scale: 1, rotate: 0 }}
+                viewport={{ once: true }}
+                className="absolute -top-5 -left-4 sm:-top-6 sm:-left-6 bg-[#FF5F5F] border-4 border-black w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center shadow-[4px_4px_0px_black]"
+              >
+                <span className="font-mono font-black text-2xl text-white">&ldquo;</span>
+              </motion.div>
+              <p className="text-sm sm:text-lg md:text-xl font-mono font-bold text-black leading-relaxed">
                 {mentorQuote}
               </p>
-            </div>
+            </motion.div>
 
-            {/* AUTHORIZATION CREDENTIAL */}
-            <div className="pt-8 flex items-center gap-6 border-t-8 border-black text-center mt-12">
-                 <p className="font-mono font-black text-xs uppercase tracking-widest text-black bg-[#06D6A0] border-4 border-black px-4 py-2 shadow-[4px_4px_0px_black]">
-                   WITH DEEPEST GRATITUDE FOR ENGINEERING THE STAGE.
-                 </p>
-            </div>
+            {/* AUTHORIZATION CREDENTIAL + STANDING OVATION BUTTON */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="pt-6 sm:pt-8 flex flex-wrap items-center justify-between gap-4 border-t-8 border-black mt-8 sm:mt-12"
+            >
+              <p className="font-mono font-black text-[11px] sm:text-xs uppercase tracking-widest text-black bg-[#06D6A0] border-4 border-black px-4 py-2.5 shadow-[4px_4px_0px_black]">
+                WITH DEEPEST GRATITUDE FOR ENGINEERING THE STAGE.
+              </p>
+
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.92 }}
+                onClick={() => setSaluteCount((c) => c + 1)}
+                className="bg-black text-[#FFD166] border-4 border-black px-4 py-2.5 font-mono font-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_#FF5F5F] flex items-center gap-2"
+              >
+                <Sparkles size={14} className="text-[#FF5F5F]" />
+                <span>
+                  {saluteCount > 0
+                    ? `STANDING OVATION (${saluteCount})`
+                    : "GIVE STANDING OVATION"}
+                </span>
+              </motion.button>
+            </motion.div>
           </div>
-
         </div>
       </div>
     </section>
