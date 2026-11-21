@@ -40,6 +40,8 @@
     --text-primary: #2D2D2D;
     --border-primary: #2D2D2D;
     --card-primary: #ffffff;
+    --adm-font-display: "Cinzel", Georgia, serif;
+    --adm-font-ui: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 
   body {
