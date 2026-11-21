@@ -1,29 +1,50 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { verifyAdminAccess } from "@/lib/authConfig";
 import { db, auth } from "@/lib/firebase";
 import { doc, onSnapshot, collection, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, 
-  X, 
-  LogOut, 
-  Terminal, 
-  Compass, 
-  UserCheck, 
-  Clock, 
-  Mail, 
-  LayoutGrid, 
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
+import {
+  Search,
+  X,
+  LogOut,
+  LayoutDashboard,
+  BarChart3,
+  Palette,
+  Star,
+  History,
+  Film,
+  Newspaper,
+  Images,
+  UserCheck,
+  BookOpen,
+  Users,
+  GraduationCap,
+  Ticket,
+  ClipboardList,
+  CalendarClock,
+  CalendarX,
+  KeyRound,
+  Clapperboard,
+  Wallet,
+  Inbox,
+  Megaphone,
+  FileSignature,
+  LayoutGrid,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ExternalLink,
   Sun,
-  Moon
+  Moon,
+  Command,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
 
-// --- EXISTING COMPONENTS ---
+// --- ADMIN MODULE COMPONENTS ---
 import BrandingEditor from "@/components/admin/BrandingEditor";
 import InboxManager from "@/components/admin/InboxManager";
 import AuditionsManager from "@/components/admin/AuditionsManager";
@@ -36,13 +57,11 @@ import TimelineManager from "@/components/admin/TimelineManager";
 import CreditsEditor from "@/components/admin/CreditsEditor";
 import NoticesManager from "@/components/admin/NoticesManager";
 import BackstageManager from "@/components/admin/BackstageManager";
-
-// --- PRODUCTIVITY & ARCHIVE COMPONENTS ---
-import LetterGenerator from "@/components/admin/LetterGenerator"; 
+import LetterGenerator from "@/components/admin/LetterGenerator";
 import ConflictMapper from "@/components/admin/ConflictMapper";
 import ProductionCalendar from "@/components/admin/ProductionCalendar";
-import CommandCenter from "@/components/admin/CommandCenter"; 
-import CommandPalette from "@/components/admin/CommandPalette"; 
+import CommandCenter from "@/components/admin/CommandCenter";
+import CommandPalette from "@/components/admin/CommandPalette";
 import AlumniManager from "@/components/admin/AlumniManager";
 import BlogManager from "@/components/admin/BlogManager";
 import ArchiveManager from "@/components/admin/ArchiveManager";
@@ -51,10 +70,12 @@ import BudgetManager from "@/components/admin/BudgetManager";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("dashboard"); 
-  const [searchQuery, setSearchQuery] = useState(""); 
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [searchQuery, setSearchQuery] = useState("");
   const [sidebarFilter, setSidebarFilter] = useState("");
+  const [mobileCatFilter, setMobileCatFilter] = useState("ALL");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
@@ -64,13 +85,14 @@ export default function AdminDashboard() {
   const [team, setTeam] = useState<any[]>([]);
   const [schedule, setSchedule] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [authLoading, setAuthLoading] = useState(true); 
+  const [authLoading, setAuthLoading] = useState(true);
+  const mainScrollRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
 
   // Load persisted theme
   useEffect(() => {
     const saved = localStorage.getItem("swaang_admin_theme") as "dark" | "light" | null;
-    if (saved) {
+    if (saved === "light" || saved === "dark") {
       setTheme(saved);
     }
   }, []);
@@ -84,9 +106,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     let unsubs: (() => void)[] = [];
 
-    const unsubAuth = onAuthStateChanged(auth, async (u) => { 
+    const unsubAuth = onAuthStateChanged(auth, async (u) => {
       if (!u) {
-        router.push("/admin"); 
+        router.push("/admin");
       } else {
         const hasAccess = await verifyAdminAccess(u);
         if (!hasAccess) {
@@ -98,30 +120,41 @@ export default function AdminDashboard() {
         setCurrentUser(u);
         setAuthLoading(false);
 
-        const unsubConfig = onSnapshot(doc(db, "settings", "site_config"), (d) => {
-          setSiteConfig(d.data() || {});
-        }, (err) => console.warn("Site config listener warning:", err));
+        const unsubConfig = onSnapshot(
+          doc(db, "settings", "site_config"),
+          (d) => setSiteConfig(d.data() || {}),
+          (err) => console.warn("Site config listener warning:", err)
+        );
 
-        const unsubInbox = onSnapshot(query(collection(db, "messages"), orderBy("createdAt", "desc")), (s) => 
-          setMessages(s.docs.map(d => ({ id: d.id, ...d.data() }))),
+        const unsubInbox = onSnapshot(
+          query(collection(db, "messages"), orderBy("createdAt", "desc")),
+          (s) => setMessages(s.docs.map((d) => ({ id: d.id, ...d.data() }))),
           (err) => console.warn("Inbox listener warning:", err)
         );
 
-        const unsubAuditions = onSnapshot(query(collection(db, "auditions"), orderBy("submittedAt", "desc")), (s) => {
-          setAuditions(s.docs.map(d => ({ id: d.id, ...d.data() })));
-        }, (err) => console.warn("Auditions listener warning:", err));
+        const unsubAuditions = onSnapshot(
+          query(collection(db, "auditions"), orderBy("submittedAt", "desc")),
+          (s) => setAuditions(s.docs.map((d) => ({ id: d.id, ...d.data() }))),
+          (err) => console.warn("Auditions listener warning:", err)
+        );
 
-        const unsubTeam = onSnapshot(collection(db, "team"), (s) => {
-          setTeam(s.docs.map(d => ({ id: d.id, ...d.data() })));
-        }, (err) => console.warn("Team listener warning:", err));
+        const unsubTeam = onSnapshot(
+          collection(db, "team"),
+          (s) => setTeam(s.docs.map((d) => ({ id: d.id, ...d.data() }))),
+          (err) => console.warn("Team listener warning:", err)
+        );
 
-        const unsubSched = onSnapshot(query(collection(db, "production_schedule"), orderBy("date", "asc")), (s) => {
-          setSchedule(s.docs.map(d => ({ id: d.id, ...d.data() })));
-          setLoading(false);
-        }, (err) => {
-          console.warn("Schedule listener warning:", err);
-          setLoading(false);
-        });
+        const unsubSched = onSnapshot(
+          query(collection(db, "production_schedule"), orderBy("date", "asc")),
+          (s) => {
+            setSchedule(s.docs.map((d) => ({ id: d.id, ...d.data() })));
+            setLoading(false);
+          },
+          (err) => {
+            console.warn("Schedule listener warning:", err);
+            setLoading(false);
+          }
+        );
 
         unsubs = [unsubConfig, unsubInbox, unsubAuditions, unsubTeam, unsubSched];
       }
@@ -129,7 +162,7 @@ export default function AdminDashboard() {
 
     return () => {
       unsubAuth();
-      unsubs.forEach(unsub => unsub());
+      unsubs.forEach((unsub) => unsub());
     };
   }, [router]);
 
@@ -137,411 +170,244 @@ export default function AdminDashboard() {
     setActiveTab(tabId);
     setSearchQuery(queryText || "");
     setMobileMenuOpen(false);
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const openCommandPalette = () => {
+    window.dispatchEvent(new CustomEvent("open-terminal"));
   };
 
   const aggregatedStats = {
-    crewCount: team.filter(m => m.category === "active" || m.category === "president").length,
+    crewCount: team.filter((m) => m.category === "active" || m.category === "president").length,
     unreadCount: messages.length,
     activeShow: siteConfig.currentProduction || "No Active Show",
-    nextCall: schedule.length > 0 ? `${schedule[0].title} (${schedule[0].date})` : "No Calls Scheduled"
+    nextCall: schedule.length > 0 ? `${schedule[0].title} (${schedule[0].date})` : "No Calls Scheduled",
   };
 
-  const pendingAuditionsCount = auditions.filter(a => !a.status || a.status === "pending").length;
+  const pendingAuditionsCount = auditions.filter((a) => !a.status || a.status === "pending").length;
 
-  // 🗂️ CATEGORIZED TAB ARCHITECTURE
+  // 🗂️ COMPLETE 22-MODULE CATEGORIZED ARCHITECTURE
   const tabCategories = [
     {
+      id: "EXEC",
       title: "EXECUTIVE HUB",
+      shortTitle: "Executive",
       tabs: [
-        { id: "dashboard", label: "Master Hub", tag: "MAIN" },
-        { id: "analytics", label: "Analytics", tag: "STATS" },
-      ]
+        { id: "dashboard", label: "Master Hub", tag: "MAIN", icon: LayoutDashboard, desc: "Operations overview, broadcast & backup" },
+        { id: "analytics", label: "Analytics", tag: "STATS", icon: BarChart3, desc: "Live Firestore telemetry across 7 collections" },
+      ],
     },
     {
+      id: "MEDIA",
       title: "EDITORIAL & MEDIA",
+      shortTitle: "Editorial",
       tabs: [
-        { id: "branding", label: "Brand Identity", tag: "VISUAL" },
-        { id: "spotlight", label: "Spotlight (AOTM)", tag: "HERO" },
-        { id: "timeline", label: "Timeline & Journey", tag: "HIST" },
-        { id: "archive", label: "Production Archive", tag: "FILM" },
-        { id: "blog", label: "Articles & Blog", tag: "TEXT" },
-        { id: "gallery", label: "Visual Gallery", tag: "MEDIA" },
-      ]
+        { id: "branding", label: "Brand Identity", tag: "VISUAL", icon: Palette, desc: "Hero, Faculty Backbone, Journey & Founders" },
+        { id: "spotlight", label: "Spotlight (AOTM)", tag: "HERO", icon: Star, desc: "Artist of the Month editorial & preview" },
+        { id: "timeline", label: "Timeline & Journey", tag: "HIST", icon: History, desc: "10-year historical milestones chronicle" },
+        { id: "archive", label: "Production Archive", tag: "FILM", icon: Film, desc: "Stage plays, Nukkad Nataks & short films" },
+        { id: "blog", label: "Articles & Blog", tag: "TEXT", icon: Newspaper, desc: "Publish & edit articles behind the curtain" },
+        { id: "gallery", label: "Visual Gallery", tag: "MEDIA", icon: Images, desc: "Bulk photo upload & homepage curation" },
+      ],
     },
     {
+      id: "CAST",
       title: "CASTING & PEOPLE",
+      shortTitle: "Casting",
       tabs: [
-        { id: "auditions", label: "Casting Desk", tag: "TRYOUT", badge: pendingAuditionsCount },
-        { id: "resources", label: "Audition Prep", tag: "DOCS" },
-        { id: "team", label: "Crew Roster", tag: "PEOPLE" },
-        { id: "alumni", label: "Alumni Hall", tag: "LEGACY" },
-      ]
+        { id: "auditions", label: "Casting Desk", tag: "TRYOUT", icon: UserCheck, badge: pendingAuditionsCount, desc: "Applicant roster & 40-pt judging matrix" },
+        { id: "resources", label: "Audition Prep", tag: "DOCS", icon: BookOpen, desc: "Monologues, character breakdowns & passkey" },
+        { id: "team", label: "Crew Roster", tag: "PEOPLE", icon: Users, desc: "Active ensemble, leaders & graduation" },
+        { id: "alumni", label: "Alumni Hall", tag: "LEGACY", icon: GraduationCap, desc: "Hall of Fame legends & past presidents" },
+      ],
     },
     {
+      id: "STAGE",
       title: "STAGE & BACKSTAGE",
+      shortTitle: "Stage",
       tabs: [
-        { id: "events", label: "Showtimes & Events", tag: "STAGE" },
-        { id: "rsvps", label: "Guest List (RSVPs)", tag: "GUESTS" },
-        { id: "schedule", label: "Rehearsal Calls", tag: "CALLS" },
-        { id: "conflicts", label: "Conflict Matrix", tag: "AUDIT" },
-        { id: "backstage", label: "Backstage Pass", tag: "ACCESS" },
-        { id: "credits", label: "Playbill Credits", tag: "CAST" },
-      ]
+        { id: "events", label: "Showtimes & Events", tag: "STAGE", icon: Ticket, desc: "Playbill desk, posters, trailers & ticketing" },
+        { id: "rsvps", label: "Guest List (RSVPs)", tag: "GUESTS", icon: ClipboardList, desc: "Audience reservations & door check-in" },
+        { id: "schedule", label: "Rehearsal Calls", tag: "CALLS", icon: CalendarClock, desc: "Drag-and-drop multi-track calendar" },
+        { id: "conflicts", label: "Conflict Matrix", tag: "AUDIT", icon: CalendarX, desc: "Cast availability heatmap by day & hour" },
+        { id: "backstage", label: "Backstage Pass", tag: "ACCESS", icon: KeyRound, desc: "Live cue system, call sheet, reports & vault" },
+        { id: "credits", label: "Playbill Credits", tag: "CAST", icon: Clapperboard, desc: "Technical architects & developer credits" },
+      ],
     },
     {
+      id: "COMMS",
       title: "FINANCE & COMMS",
+      shortTitle: "Finance",
       tabs: [
-        { id: "budget", label: "Finances & Budget", tag: "FUNDS" },
-        { id: "inbox", label: "Inquiries & Inbox", tag: "MAIL", badge: messages.length },
-        { id: "notices", label: "Public Notices", tag: "ALERT" },
-        { id: "letters", label: "Official Letters", tag: "PRINT" },
-      ]
-    }
+        { id: "budget", label: "Finances & Budget", tag: "FUNDS", icon: Wallet, desc: "Show budget cap, expenses ledger & CSV" },
+        { id: "inbox", label: "Inquiries & Inbox", tag: "MAIL", icon: Inbox, badge: messages.length, desc: "Direct contact messages & invitations" },
+        { id: "notices", label: "Public Notices", tag: "ALERT", icon: Megaphone, desc: "Global news strip alerts & priorities" },
+        { id: "letters", label: "Official Letters", tag: "PRINT", icon: FileSignature, desc: "SSTC permission PDF letter generator" },
+      ],
+    },
   ];
 
-  const flatTabs = tabCategories.flatMap(c => c.tabs);
-  const currentTabObj = flatTabs.find(t => t.id === activeTab);
+  const flatTabs = tabCategories.flatMap((c) =>
+    c.tabs.map((t) => ({ ...t, category: c.title, categoryShort: c.shortTitle, categoryId: c.id }))
+  );
+  const currentTabObj = flatTabs.find((t) => t.id === activeTab) || flatTabs[0];
+  const currentCategory = tabCategories.find((c) => c.tabs.some((t) => t.id === activeTab)) || tabCategories[0];
 
-  const filteredCategories = tabCategories.map(cat => ({
-    ...cat,
-    tabs: cat.tabs.filter(t => 
-      t.label.toLowerCase().includes(sidebarFilter.toLowerCase()) ||
-      t.id.toLowerCase().includes(sidebarFilter.toLowerCase()) ||
-      cat.title.toLowerCase().includes(sidebarFilter.toLowerCase())
-    )
-  })).filter(cat => cat.tabs.length > 0);
+  const filteredCategories = tabCategories
+    .filter((cat) => mobileCatFilter === "ALL" || cat.id === mobileCatFilter)
+    .map((cat) => ({
+      ...cat,
+      tabs: cat.tabs.filter(
+        (t) =>
+          t.label.toLowerCase().includes(sidebarFilter.toLowerCase()) ||
+          t.id.toLowerCase().includes(sidebarFilter.toLowerCase()) ||
+          t.desc.toLowerCase().includes(sidebarFilter.toLowerCase()) ||
+          cat.title.toLowerCase().includes(sidebarFilter.toLowerCase())
+      ),
+    }))
+    .filter((cat) => cat.tabs.length > 0);
 
-  if (authLoading) {
+  const themeClass = `adm ${theme === "dark" ? "adm-dark" : "adm-light"}`;
+
+  if (authLoading || loading) {
     return (
-      <div className={`admin-root ${theme === "dark" ? "admin-theme-dark" : "admin-theme-light"} min-h-screen flex flex-col items-center justify-center font-mono font-bold tracking-widest`}>
-        <div className="w-12 h-12 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mb-4" />
-        <span className="text-xs uppercase tracking-[0.3em] opacity-60">VERIFYING CLEARANCE...</span>
+      <div className={`${themeClass} min-h-screen flex flex-col items-center justify-center p-6 text-center`}>
+        <div className="adm-card p-8 max-w-sm w-full flex flex-col items-center gap-3">
+          <Loader2 size={28} className="animate-spin text-adm-accent-text" />
+          <p className="adm-h3">{authLoading ? "Verifying Clearance..." : "Initializing Studio Console..."}</p>
+          <p className="adm-muted">Connecting real-time Firestore telemetry</p>
+        </div>
       </div>
     );
   }
 
-  if (loading) {
-    return (
-      <div className={`admin-root ${theme === "dark" ? "admin-theme-dark" : "admin-theme-light"} min-h-screen flex flex-col items-center justify-center font-mono font-bold tracking-widest`}>
-        <div className="w-12 h-12 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mb-4" />
-        <span className="text-xs uppercase tracking-[0.3em] opacity-60">INITIALIZING DASHBOARD...</span>
-      </div>
-    );
-  }
+  const ActiveIcon = currentTabObj.icon || LayoutDashboard;
 
   return (
-    <div className={`admin-root ${theme === "dark" ? "admin-theme-dark" : "admin-theme-light"} flex flex-col xl:flex-row h-screen w-full overflow-hidden font-sans transition-colors duration-300`}>
-      
-      <CommandPalette 
-        onJump={handleJump} 
-        tabs={flatTabs || []} 
-        team={team || []} 
-        events={schedule || []} 
+    <div className={`${themeClass} flex flex-col xl:flex-row h-[100dvh] w-full overflow-hidden transition-colors duration-200`}>
+      <CommandPalette
+        onJump={handleJump}
+        tabs={flatTabs}
+        team={team || []}
+        events={schedule || []}
         auditions={auditions || []}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
-      {/* 📱 MINIMAL MOBILE TOP BAR */}
-      <header className="xl:hidden w-full bg-[var(--adm-sidebar)] border-b border-[var(--adm-border)] px-4 py-3 flex justify-between items-center z-30 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <span className="font-cinzel text-xl font-bold tracking-wider text-[var(--adm-text-head)]">SWAANG</span>
-          <span className="px-2 py-0.5 font-mono text-[9px] font-bold uppercase rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30">
-            {currentTabObj?.label || "STUDIO"}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Theme Switcher Button */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-body)] hover:text-amber-500 transition-colors"
-            title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
-          >
-            {theme === "dark" ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
-          </button>
-
-          <span className="flex items-center gap-1.5 font-mono text-[9px] font-medium text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            LIVE
-          </span>
-
-          <button 
-            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-            className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-body)] transition-colors"
-            title="Open command palette (Ctrl+K)"
-          >
-            <Terminal size={14} />
-          </button>
-          
-          <button 
-            onClick={() => signOut(auth)} 
-            className="p-2 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors"
-            title="Log Out"
-          >
-            <LogOut size={14} />
-          </button>
-        </div>
-      </header>
-
-      {/* 📱 FIXED BOTTOM COMMAND DOCK (THE THUMB ZONE) */}
-      <nav 
-        aria-label="Mobile Navigation Dock"
-        className="xl:hidden fixed bottom-0 left-0 right-0 h-16 bg-[var(--adm-sidebar)]/95 backdrop-blur-lg border-t border-[var(--adm-border)] z-40 flex items-stretch justify-around px-2"
+      {/* =====================================================================
+          💻 DESKTOP SIDEBAR (Collapsible Icon-Rail or Full Categorized List)
+         ===================================================================== */}
+      <aside
+        className={`hidden xl:flex flex-col shrink-0 h-full bg-adm-surface border-r border-adm-line z-40 transition-all duration-200 ${
+          sidebarCollapsed ? "w-20" : "w-72"
+        }`}
       >
-        {/* 1. Master Hub */}
-        <button 
-          onClick={() => handleJump("dashboard")} 
-          className={`flex-1 flex flex-col items-center justify-center font-mono transition-all rounded-xl my-1.5 ${
-            activeTab === "dashboard" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
-          }`}
-        >
-          <Compass size={18} />
-          <span className="text-[10px] font-medium uppercase mt-0.5">Hub</span>
-        </button>
-        
-        {/* 2. Auditions (Casting) */}
-        <button 
-          onClick={() => handleJump("auditions")} 
-          className={`flex-1 flex flex-col items-center justify-center font-mono relative transition-all rounded-xl my-1.5 ${
-            activeTab === "auditions" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
-          }`}
-        >
-          <UserCheck size={18} />
-          <span className="text-[10px] font-medium uppercase mt-0.5">Casting</span>
-          {pendingAuditionsCount > 0 && (
-            <span className="absolute top-1.5 right-3 bg-rose-500 text-white text-[8px] font-bold px-1.5 rounded-full">
-              {pendingAuditionsCount}
-            </span>
-          )}
-        </button>
-
-        {/* 3. Schedule / Call Times */}
-        <button 
-          onClick={() => handleJump("schedule")} 
-          className={`flex-1 flex flex-col items-center justify-center font-mono transition-all rounded-xl my-1.5 ${
-            activeTab === "schedule" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
-          }`}
-        >
-          <Clock size={18} />
-          <span className="text-[10px] font-medium uppercase mt-0.5">Calls</span>
-        </button>
-
-        {/* 4. Inbox */}
-        <button 
-          onClick={() => handleJump("inbox")} 
-          className={`flex-1 flex flex-col items-center justify-center font-mono relative transition-all rounded-xl my-1.5 ${
-            activeTab === "inbox" ? "bg-amber-500/15 text-amber-500 font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
-          }`}
-        >
-          <Mail size={18} />
-          <span className="text-[10px] font-medium uppercase mt-0.5">Inbox</span>
-          {messages.length > 0 && (
-            <span className="absolute top-1.5 right-3 bg-rose-500 text-white text-[8px] font-bold px-1.5 rounded-full">
-              {messages.length}
-            </span>
-          )}
-        </button>
-
-        {/* 5. Modules Grid (Triggers Full Quick-Sheet) */}
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-          className={`flex-1 flex flex-col items-center justify-center font-mono transition-all rounded-xl my-1.5 ${
-            mobileMenuOpen ? "bg-amber-500 text-black font-bold" : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
-          }`}
-        >
-          <LayoutGrid size={18} />
-          <span className="text-[10px] font-medium uppercase mt-0.5">Modules</span>
-        </button>
-      </nav>
-
-      {/* 📱 MOBILE QUICK-SHEET MODAL (SLIDE-UP DRAWER) */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileMenuOpen(false)}
-              className="xl:hidden fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="xl:hidden fixed bottom-0 left-0 right-0 max-h-[85vh] bg-[var(--adm-card)] border-t border-[var(--adm-border)] rounded-t-3xl z-50 p-6 overflow-y-auto custom-scrollbar shadow-2xl flex flex-col justify-between"
-            >
-              <div>
-                <div 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-12 h-1 bg-[var(--adm-text-muted)]/30 rounded-full mx-auto mb-4 cursor-pointer hover:bg-[var(--adm-text-muted)]"
-                />
-
-                <div className="flex justify-between items-center border-b border-[var(--adm-border)] pb-4 mb-4">
-                  <div>
-                    <h3 className="font-cinzel text-2xl font-bold uppercase text-[var(--adm-text-head)]">
-                      All Modules
-                    </h3>
-                    <p className="font-mono text-[10px] text-[var(--adm-text-muted)]">
-                      Swaang Production & Editorial Operations Grid
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-1.5 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)]"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-
-                <div className="relative mb-6">
-                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--adm-text-muted)]" />
-                  <input
-                    type="text"
-                    placeholder="Search any tool or category..."
-                    value={sidebarFilter}
-                    onChange={(e) => setSidebarFilter(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 bg-[var(--adm-input-bg)] border border-[var(--adm-border)] rounded-xl font-mono text-xs text-[var(--adm-text-head)] outline-none focus:border-amber-400/50"
-                  />
-                </div>
-
-                <div className="space-y-6">
-                  {filteredCategories.map((cat) => (
-                    <div key={cat.title}>
-                      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-500 mb-2.5">
-                        // {cat.title}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {cat.tabs.map((tab) => {
-                          const isActive = activeTab === tab.id;
-                          return (
-                            <button
-                              key={tab.id}
-                              onClick={() => handleJump(tab.id)}
-                              className={`p-3 rounded-xl border font-mono text-xs text-left transition-all flex items-center justify-between ${
-                                isActive
-                                  ? "bg-amber-500/15 text-amber-500 border-amber-500/40 font-bold shadow-sm"
-                                  : "bg-[var(--adm-card-inner)] text-[var(--adm-text-body)] hover:text-[var(--adm-text-head)] border-[var(--adm-border-subtle)]"
-                              }`}
-                            >
-                              <span className="truncate">{tab.label}</span>
-                              {tab.badge && tab.badge > 0 ? (
-                                <span className="bg-rose-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full ml-1">
-                                  {tab.badge}
-                                </span>
-                              ) : null}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-[var(--adm-border)] mt-8">
-                <div className="flex items-center justify-between mb-3 font-mono text-xs text-[var(--adm-text-muted)]">
-                  <span className="truncate pr-2">{currentUser?.email}</span>
-                  <button
-                    onClick={toggleTheme}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-xs text-[var(--adm-text-head)]"
-                  >
-                    {theme === "dark" ? <Sun size={12} className="text-amber-400" /> : <Moon size={12} className="text-indigo-600" />}
-                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
-                  </button>
-                </div>
-                <button
-                  onClick={() => signOut(auth)}
-                  className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase bg-rose-500/15 text-rose-500 border border-rose-500/30 hover:bg-rose-500/25 transition-colors"
-                >
-                  SECURE SIGN OUT
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* 💻 DESKTOP ATELIER SIDEBAR */}
-      <aside className="hidden xl:flex w-72 bg-[var(--adm-sidebar)] border-r border-[var(--adm-border)] flex-col shrink-0 h-full relative z-40 text-[var(--adm-text-body)] justify-between transition-colors">
-        
-        {/* BRAND HEADER & LIVE STATUS */}
-        <div className="p-6 pb-4 border-b border-[var(--adm-border)]">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="font-cinzel text-3xl font-bold tracking-wider text-[var(--adm-text-head)]">
-                SWAANG
-              </h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                  STUDIO CMS
-                </span>
-                <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-500">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  LIVE
-                </span>
-              </div>
+        {/* Brand Header */}
+        <div className="p-4 border-b border-adm-line flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => handleJump("dashboard")}
+            className="flex items-center gap-2.5 text-left min-w-0"
+          >
+            <div className="w-9 h-9 rounded-xl bg-adm-accent text-adm-accent-fg font-display font-bold text-lg flex items-center justify-center shrink-0 shadow-sm">
+              S
             </div>
+            {!sidebarCollapsed && (
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-xl font-bold tracking-tight text-adm-fg">SWAANG</span>
+                  <span className="adm-badge adm-badge-accent text-[10px] py-0 px-1.5">CMS</span>
+                </div>
+                <p className="text-[11px] text-adm-fg-3 truncate">Directorate Studio Console</p>
+              </div>
+            )}
+          </button>
 
-            <div className="flex items-center gap-1.5">
-              {/* Sun/Moon Toggle */}
-              <button 
-                onClick={toggleTheme}
-                className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-muted)] hover:text-amber-500 transition-colors"
-                title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
-              >
-                {theme === "dark" ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
-              </button>
-
-              <button 
-                onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {ctrlKey: true, key: 'k'}))}
-                className="p-2 rounded-lg border border-[var(--adm-border)] bg-[var(--adm-input-bg)] text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)] transition-colors"
-                title="Open Omnibar (Ctrl+K)"
-              >
-                <Terminal size={14} />
-              </button>
-            </div>
-          </div>
-
-          {/* SIDEBAR INSTANT FILTER */}
-          <div className="relative mt-4">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--adm-text-muted)]" />
-            <input
-              type="text"
-              placeholder="Search tools..."
-              value={sidebarFilter}
-              onChange={(e) => setSidebarFilter(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 bg-[var(--adm-input-bg)] border border-[var(--adm-border)] rounded-xl font-mono text-xs text-[var(--adm-text-head)] placeholder:text-[var(--adm-text-muted)] outline-none focus:border-amber-400/50 transition-colors"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="adm-btn adm-btn-ghost adm-btn-icon adm-btn-sm shrink-0"
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
         </div>
 
-        {/* 📜 SCROLLABLE CATEGORIZED NAVIGATION */}
-        <nav className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-6">
+        {/* Filter Input (Expanded Mode) */}
+        {!sidebarCollapsed && (
+          <div className="p-3 border-b border-adm-line">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-adm-fg-3 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Filter 22 modules..."
+                value={sidebarFilter}
+                onChange={(e) => setSidebarFilter(e.target.value)}
+                className="adm-input py-1.5 pl-8 pr-8 text-xs"
+              />
+              {sidebarFilter && (
+                <button
+                  type="button"
+                  onClick={() => setSidebarFilter("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-adm-fg-3 hover:text-adm-fg"
+                  aria-label="Clear filter"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Categorized Navigation List */}
+        <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-5">
           {filteredCategories.map((cat) => (
-            <div key={cat.title} className="space-y-1.5">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-wider text-[var(--adm-text-muted)] px-2">
-                {cat.title}
-              </p>
-              <div className="space-y-1">
+            <div key={cat.id} className="space-y-1">
+              {!sidebarCollapsed && (
+                <div className="px-2.5 pb-1 flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-adm-fg-3">
+                    {cat.title}
+                  </span>
+                  <span className="text-[10px] font-mono text-adm-fg-3">{cat.tabs.length}</span>
+                </div>
+              )}
+              <div className="space-y-0.5">
                 {cat.tabs.map((tab) => {
+                  const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
                   return (
                     <button
                       key={tab.id}
+                      type="button"
                       onClick={() => handleJump(tab.id)}
-                      className={`w-full text-left px-3 py-2 rounded-xl font-mono text-xs transition-all flex items-center justify-between ${
-                        isActive 
-                          ? "bg-amber-500/15 text-amber-500 font-bold border border-amber-500/30 shadow-sm" 
-                          : "text-[var(--adm-text-muted)] hover:text-[var(--adm-text-head)] hover:bg-[var(--adm-card-inner)] border border-transparent"
+                      title={sidebarCollapsed ? `${tab.label} — ${tab.desc}` : tab.desc}
+                      className={`w-full flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all relative ${
+                        sidebarCollapsed ? "justify-center" : "justify-between"
+                      } ${
+                        isActive
+                          ? "bg-adm-accent/15 text-adm-fg font-semibold border border-adm-accent/40 shadow-xs"
+                          : "text-adm-fg-2 hover:text-adm-fg hover:bg-adm-surface-2 border border-transparent"
                       }`}
                     >
-                      <span className="truncate">{tab.label}</span>
-                      {tab.badge && tab.badge > 0 ? (
-                        <span className="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full ml-1 shrink-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Icon
+                          size={16}
+                          className={`shrink-0 ${isActive ? "text-adm-accent-text" : "text-adm-fg-3"}`}
+                        />
+                        {!sidebarCollapsed && <span className="truncate">{tab.label}</span>}
+                      </div>
+
+                      {!sidebarCollapsed && tab.badge && tab.badge > 0 ? (
+                        <span className="adm-badge adm-badge-danger text-[10px] py-0 px-1.5">
                           {tab.badge}
                         </span>
+                      ) : null}
+
+                      {sidebarCollapsed && tab.badge && tab.badge > 0 ? (
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-adm-danger" />
                       ) : null}
                     </button>
                   );
@@ -550,77 +416,477 @@ export default function AdminDashboard() {
             </div>
           ))}
         </nav>
-        
-        {/* FOOTER USER CARD */}
-        <div className="p-4 border-t border-[var(--adm-border)] bg-[var(--adm-card-inner)]">
-          <div className="flex items-center justify-between mb-2">
-            <div className="truncate pr-2">
-              <span className="block font-mono text-[8px] font-bold text-[var(--adm-text-muted)] uppercase">AUTHENTICATED</span>
-              <p className="font-mono text-xs font-medium text-[var(--adm-text-head)] truncate leading-tight">
-                {currentUser?.email || "admin@swaang.club"}
-              </p>
-            </div>
-            <span className="bg-emerald-500/10 text-emerald-500 text-[8px] font-mono font-bold uppercase px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
-              LEVEL 1
-            </span>
-          </div>
 
-          <div className="flex items-center gap-2 mt-2">
+        {/* Sidebar Footer: Identity, Theme Toggle & Sign Out */}
+        <div className="p-3 border-t border-adm-line bg-adm-surface-2 space-y-2.5">
+          {!sidebarCollapsed && (
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-adm-fg-3">
+                  Authenticated Admin
+                </p>
+                <p className="text-xs font-medium text-adm-fg truncate">
+                  {currentUser?.email || "admin@swaang.club"}
+                </p>
+              </div>
+              <span className="adm-badge adm-badge-success text-[10px] py-0 px-2">LIVE</span>
+            </div>
+          )}
+
+          <div className={`flex items-center gap-1.5 ${sidebarCollapsed ? "flex-col" : ""}`}>
             <button
+              type="button"
               onClick={toggleTheme}
-              className="flex-1 py-1.5 rounded-lg font-mono text-[10px] font-bold uppercase text-[var(--adm-text-body)] hover:text-amber-500 bg-[var(--adm-card)] border border-[var(--adm-border)] transition-all flex items-center justify-center gap-1.5"
+              className={`adm-btn adm-btn-secondary adm-btn-sm ${sidebarCollapsed ? "w-10 px-0" : "flex-1"}`}
+              title={`Switch to ${theme === "dark" ? "Light" : "Dark"} theme`}
             >
-              {theme === "dark" ? <Sun size={12} className="text-amber-400" /> : <Moon size={12} className="text-indigo-600" />}
-              <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+              {theme === "dark" ? (
+                <>
+                  <Sun size={14} className="text-adm-accent-text shrink-0" />
+                  {!sidebarCollapsed && <span>Light Theme</span>}
+                </>
+              ) : (
+                <>
+                  <Moon size={14} className="shrink-0" />
+                  {!sidebarCollapsed && <span>Dark Theme</span>}
+                </>
+              )}
             </button>
 
-            <button 
-              onClick={() => signOut(auth)} 
-              className="py-1.5 px-3 rounded-lg font-mono text-[10px] font-bold uppercase text-rose-500 hover:bg-rose-500/10 border border-rose-500/30 transition-all flex items-center justify-center gap-1"
+            <button
+              type="button"
+              onClick={() => signOut(auth)}
+              className="adm-btn adm-btn-danger adm-btn-sm adm-btn-icon shrink-0"
               title="Sign Out"
+              aria-label="Sign Out"
             >
-              <LogOut size={12} />
+              <LogOut size={14} />
             </button>
           </div>
         </div>
       </aside>
 
-      {/* 🚀 MAIN CONTENT AREA */}
-      <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 xl:p-10 pb-28 xl:pb-10 custom-scrollbar bg-[var(--adm-bg)] text-[var(--adm-text-body)] transition-colors">
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={activeTab} 
-            initial={{ opacity: 0, y: 8 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            exit={{ opacity: 0, y: -8 }} 
-            transition={{ duration: 0.2 }}
-            className="max-w-7xl mx-auto w-full"
+      {/* =====================================================================
+          🚀 RIGHT COLUMN: STICKY HEADER + QUICK RAIL + WORKSPACE + MOBILE DOCK
+         ===================================================================== */}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* TOP APPLICATION HEADER (Mobile & Desktop) */}
+        <header className="w-full bg-adm-surface/95 backdrop-blur-md border-b border-adm-line px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 z-30 shrink-0">
+          {/* Left: Brand (on mobile) + Active Module Breadcrumb */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="xl:hidden w-9 h-9 rounded-xl bg-adm-accent text-adm-accent-fg font-display font-bold text-base flex items-center justify-center shrink-0 shadow-xs"
+              title="Open all 22 modules"
+            >
+              S
+            </button>
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-[11px] text-adm-fg-3">
+                <span className="font-semibold uppercase tracking-wider text-adm-accent-text truncate">
+                  {currentCategory.shortTitle}
+                </span>
+                <ChevronRight size={12} className="shrink-0" />
+                <span className="truncate hidden sm:inline">{currentTabObj.desc}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ActiveIcon size={16} className="text-adm-accent-text shrink-0 hidden sm:inline" />
+                <h1 className="text-sm sm:text-base font-bold text-adm-fg truncate">
+                  {currentTabObj.label}
+                </h1>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Search Omnibar, Public Site Link, Theme Switcher & Sign Out */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Search / Command Palette Trigger */}
+            <button
+              type="button"
+              onClick={openCommandPalette}
+              className="adm-btn adm-btn-secondary adm-btn-sm gap-2 px-2.5 sm:px-3"
+              title="Open Command Palette (Ctrl+K)"
+            >
+              <Search size={14} className="text-adm-fg-3" />
+              <span className="hidden md:inline text-xs text-adm-fg-2">Quick Jump...</span>
+              <kbd className="adm-kbd hidden sm:inline-flex">⌘K</kbd>
+            </button>
+
+            {/* Theme Toggle Pill (Always visible on mobile & desktop) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="adm-btn adm-btn-secondary adm-btn-sm px-2.5 sm:px-3"
+              title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
+              aria-label="Toggle color theme"
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun size={14} className="text-adm-accent-text" />
+                  <span className="text-xs">Light</span>
+                </>
+              ) : (
+                <>
+                  <Moon size={14} />
+                  <span className="text-xs">Dark</span>
+                </>
+              )}
+            </button>
+
+            {/* View Live Public Website */}
+            <Link
+              href="/"
+              target="_blank"
+              className="adm-btn adm-btn-ghost adm-btn-sm hidden sm:inline-flex"
+              title="Open public website in new tab"
+            >
+              <ExternalLink size={14} />
+              <span className="hidden lg:inline text-xs">Live Site</span>
+            </Link>
+
+            {/* Mobile Sign Out Button */}
+            <button
+              type="button"
+              onClick={() => signOut(auth)}
+              className="xl:hidden adm-btn adm-btn-danger adm-btn-sm adm-btn-icon"
+              title="Sign Out"
+              aria-label="Sign Out"
+            >
+              <LogOut size={14} />
+            </button>
+          </div>
+        </header>
+
+        {/* SECONDARY QUICK-SWITCH PILL RAIL
+            - On Desktop: shows sibling modules within the current category for 1-click tab switching
+            - On Mobile/Tablet: shows horizontally scrollable pills across all 22 modules so any page is 1 tap away! */}
+        <div className="w-full bg-adm-surface-2/80 border-b border-adm-line px-3 sm:px-6 py-1.5 flex items-center gap-1.5 overflow-x-auto shrink-0 adm-scroll-x">
+          {/* Desktop sibling tabs */}
+          <div className="hidden xl:flex items-center gap-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-adm-fg-3 mr-1">
+              {currentCategory.title}:
+            </span>
+            {currentCategory.tabs.map((t) => {
+              const Icon = t.icon;
+              const active = activeTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleJump(t.id)}
+                  data-active={active ? "true" : "false"}
+                  className="adm-chip min-h-7 py-1 px-2.5 text-xs"
+                >
+                  <Icon size={13} />
+                  <span>{t.label}</span>
+                  {t.badge && t.badge > 0 ? (
+                    <span className="adm-badge adm-badge-danger text-[10px] py-0 px-1.5">
+                      {t.badge}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mobile & Tablet full 22-module horizontal quick rail */}
+          <div className="flex xl:hidden items-center gap-1.5">
+            {flatTabs.map((t) => {
+              const Icon = t.icon;
+              const active = activeTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleJump(t.id)}
+                  data-active={active ? "true" : "false"}
+                  className="adm-chip min-h-7 py-1 px-2.5 text-xs"
+                >
+                  <Icon size={13} />
+                  <span>{t.label}</span>
+                  {t.badge && t.badge > 0 ? (
+                    <span className="adm-badge adm-badge-danger text-[10px] py-0 px-1.5">
+                      {t.badge}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 🚀 MAIN SCROLLABLE WORKSPACE */}
+        <main
+          ref={mainScrollRef}
+          className="flex-1 overflow-y-auto p-3.5 sm:p-6 xl:p-8 pb-28 xl:pb-12"
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              className="max-w-7xl mx-auto w-full"
+            >
+              {activeTab === "dashboard" && <CommandCenter stats={aggregatedStats} onJump={handleJump} />}
+              {activeTab === "analytics" && <AnalyticsDashboard />}
+              {activeTab === "branding" && <BrandingEditor />}
+              {activeTab === "spotlight" && <AOTMManager />}
+              {activeTab === "timeline" && <TimelineManager />}
+              {activeTab === "archive" && <ArchiveManager />}
+              {activeTab === "inbox" && <InboxManager messages={messages} />}
+              {activeTab === "auditions" && <AuditionsManager auditions={auditions} />}
+              {activeTab === "resources" && <ResourcesManager />}
+              {activeTab === "events" && <EventsManager />}
+              {activeTab === "rsvps" && <RsvpsManager />}
+              {activeTab === "team" && <TeamManager initialSearch={searchQuery} />}
+              {activeTab === "alumni" && <AlumniManager />}
+              {activeTab === "blog" && <BlogManager />}
+              {activeTab === "gallery" && <GalleryManager />}
+              {activeTab === "budget" && <BudgetManager />}
+              {activeTab === "schedule" && <ProductionCalendar />}
+              {activeTab === "letters" && <LetterGenerator />}
+              {activeTab === "conflicts" && <ConflictMapper />}
+              {activeTab === "notices" && <NoticesManager />}
+              {activeTab === "backstage" && <BackstageManager />}
+              {activeTab === "credits" && <CreditsEditor />}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+
+      {/* =====================================================================
+          📱 FIXED BOTTOM COMMAND DOCK (Mobile & Tablet Thumb Zone)
+         ===================================================================== */}
+      <nav
+        aria-label="Mobile Navigation Dock"
+        className="xl:hidden fixed bottom-0 left-0 right-0 bg-adm-surface/95 backdrop-blur-lg border-t border-adm-line z-40 px-1.5 pt-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]"
+      >
+        <div className="grid grid-cols-5 gap-1 max-w-lg mx-auto">
+          {[
+            { id: "dashboard", label: "Hub", icon: LayoutDashboard },
+            { id: "auditions", label: "Casting", icon: UserCheck, badge: pendingAuditionsCount },
+            { id: "schedule", label: "Calls", icon: CalendarClock },
+            { id: "inbox", label: "Inbox", icon: Inbox, badge: messages.length },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = activeTab === item.id && !mobileMenuOpen;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleJump(item.id)}
+                className={`relative flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+                  active
+                    ? "bg-adm-accent/15 text-adm-accent-text font-semibold"
+                    : "text-adm-fg-3 hover:text-adm-fg"
+                }`}
+              >
+                <Icon size={18} />
+                <span className="text-[11px] mt-0.5 truncate">{item.label}</span>
+                {item.badge && item.badge > 0 ? (
+                  <span className="absolute top-1 right-2.5 min-w-4 h-4 px-1 rounded-full bg-adm-danger text-white text-[10px] font-bold flex items-center justify-center">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+
+          {/* 5th Button: All 22 Modules Sheet Trigger */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`relative flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              mobileMenuOpen
+                ? "bg-adm-accent text-adm-accent-fg font-bold"
+                : "text-adm-fg-2 hover:text-adm-fg"
+            }`}
           >
-            {activeTab === "dashboard" && <CommandCenter stats={aggregatedStats} onJump={handleJump} />}
-            {activeTab === "analytics" && <AnalyticsDashboard />}
-            {activeTab === "branding" && <BrandingEditor />}
-            {activeTab === "spotlight" && <AOTMManager />}
-            {activeTab === "timeline" && <TimelineManager />}
-            {activeTab === "archive" && <ArchiveManager />}
-            {activeTab === "inbox" && <InboxManager messages={messages} />}
-            {activeTab === "auditions" && <AuditionsManager auditions={auditions} />} 
-            {activeTab === "resources" && <ResourcesManager />}
-            {activeTab === "events" && <EventsManager />}
-            {activeTab === "rsvps" && <RsvpsManager /> }
-            {activeTab === "team" && <TeamManager initialSearch={searchQuery} /> }
-            {activeTab === "alumni" && <AlumniManager /> }
-            {activeTab === "blog" && <BlogManager /> }
-            {activeTab === "gallery" && <GalleryManager /> }
-            {activeTab === "budget" && <BudgetManager />}
-            {activeTab === "schedule" && <ProductionCalendar /> }
-            {activeTab === "letters" && <LetterGenerator />} 
-            {activeTab === "conflicts" && <ConflictMapper />}
-            {activeTab === "notices" && <NoticesManager />}
-            {activeTab === "backstage" && <BackstageManager />}
-            {activeTab === "credits" && <CreditsEditor />}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+            <LayoutGrid size={18} />
+            <span className="text-[11px] mt-0.5 truncate">Modules</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* =====================================================================
+          📱 MOBILE SLIDE-UP ALL-MODULES DRAWER SHEET
+         ===================================================================== */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="xl:hidden fixed inset-0 bg-black/70 z-50 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="xl:hidden fixed bottom-0 left-0 right-0 max-h-[88dvh] bg-adm-surface border-t border-adm-line rounded-t-3xl z-50 flex flex-col overflow-hidden"
+              style={{ boxShadow: "var(--adm-shadow-lg)" }}
+            >
+              {/* Sheet Header */}
+              <div className="px-5 pt-3 pb-3.5 border-b border-adm-line shrink-0">
+                <div
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-10 h-1 bg-adm-line-strong rounded-full mx-auto mb-3 cursor-pointer"
+                />
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-adm-fg">
+                      All 22 Admin Modules
+                    </h3>
+                    <p className="text-xs text-adm-fg-3">
+                      Tap any module to switch workspace immediately
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={toggleTheme}
+                      className="adm-btn adm-btn-secondary adm-btn-sm"
+                    >
+                      {theme === "dark" ? <Sun size={14} className="text-adm-accent-text" /> : <Moon size={14} />}
+                      <span>{theme === "dark" ? "Light" : "Dark"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="adm-btn adm-btn-secondary adm-btn-icon adm-btn-sm"
+                      aria-label="Close modules drawer"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search Input */}
+                <div className="relative mt-3">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-adm-fg-3 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search any module, feature or category..."
+                    value={sidebarFilter}
+                    onChange={(e) => setSidebarFilter(e.target.value)}
+                    className="adm-input pl-9 pr-9 py-2 text-sm"
+                  />
+                  {sidebarFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setSidebarFilter("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-adm-fg-3 hover:text-adm-fg"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Category Filter Chips */}
+                <div className="flex items-center gap-1.5 overflow-x-auto mt-3 adm-scroll-x">
+                  {[
+                    { id: "ALL", label: "All (22)" },
+                    ...tabCategories.map((c) => ({ id: c.id, label: `${c.shortTitle} (${c.tabs.length})` })),
+                  ].map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setMobileCatFilter(c.id)}
+                      data-active={mobileCatFilter === c.id ? "true" : "false"}
+                      className="adm-chip min-h-7 py-1 px-3 text-xs"
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Scrollable Categorized Grid */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                {filteredCategories.map((cat) => (
+                  <div key={cat.id} className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="adm-eyebrow">{cat.title}</span>
+                      <span className="text-xs text-adm-fg-3">{cat.tabs.length} modules</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {cat.tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => handleJump(tab.id)}
+                            className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                              isActive
+                                ? "bg-adm-accent/15 border-adm-accent/45 text-adm-fg shadow-xs"
+                                : "bg-adm-surface-2 border-adm-line text-adm-fg-2 hover:text-adm-fg hover:border-adm-line-strong"
+                            }`}
+                          >
+                            <div
+                              className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
+                                isActive
+                                  ? "bg-adm-accent text-adm-accent-fg border-adm-accent"
+                                  : "bg-adm-surface text-adm-fg-2 border-adm-line"
+                              }`}
+                            >
+                              <Icon size={16} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-semibold text-sm text-adm-fg truncate">{tab.label}</span>
+                                {tab.badge && tab.badge > 0 ? (
+                                  <span className="adm-badge adm-badge-danger text-[10px] py-0 px-1.5">
+                                    {tab.badge}
+                                  </span>
+                                ) : null}
+                              </div>
+                              <p className="text-xs text-adm-fg-3 truncate mt-0.5">{tab.desc}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Sheet Footer */}
+              <div className="p-4 border-t border-adm-line bg-adm-surface-2 flex items-center justify-between gap-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <div className="min-w-0">
+                  <p className="text-[11px] text-adm-fg-3">Signed in as</p>
+                  <p className="text-xs font-semibold text-adm-fg truncate">
+                    {currentUser?.email || "admin@swaang.club"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link href="/" target="_blank" className="adm-btn adm-btn-secondary adm-btn-sm">
+                    <ExternalLink size={14} />
+                    <span>Live Site</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => signOut(auth)}
+                    className="adm-btn adm-btn-danger adm-btn-sm"
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

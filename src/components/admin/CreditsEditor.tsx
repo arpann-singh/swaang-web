@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Plus, Save, Trash2, Clapperboard, Loader2 } from "lucide-react";
 
 export default function CreditsEditor() {
   const [developers, setDevelopers] = useState<any[]>([]);
@@ -28,7 +29,18 @@ export default function CreditsEditor() {
   };
 
   const addDeveloper = () => {
-    setDevelopers([...developers, { name: "", role: "", department: "", contributions: "", github: "", linkedin: "", theme: "green" }]);
+    setDevelopers([
+      ...developers,
+      {
+        name: "",
+        role: "",
+        department: "",
+        contributions: "",
+        github: "",
+        linkedin: "",
+        theme: "green",
+      },
+    ]);
   };
 
   const updateDev = (index: number, field: string, value: string) => {
@@ -43,50 +55,132 @@ export default function CreditsEditor() {
     setDevelopers(updated);
   };
 
-  if (loading) return <div className="p-12 text-center font-black animate-pulse">Loading Cast...</div>;
+  if (loading) {
+    return (
+      <div className="adm-card p-12 flex items-center justify-center gap-3">
+        <Loader2 size={20} className="animate-spin text-adm-accent-text" />
+        <span className="adm-muted">Loading Technical Cast...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 md:p-12 max-w-7xl mx-auto pb-40 space-y-12">
-      <header className="flex flex-col md:flex-row justify-between items-center border-b-8 border-black pb-8 gap-6">
+    <div className="space-y-6 text-left w-full">
+      <header className="adm-card p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">Credits Hub</h1>
-          <p className="text-[#06D6A0] font-bold uppercase text-[10px] tracking-[0.4em]">System Architects & Engineers</p>
+          <p className="adm-eyebrow">System Architects & Engineers</p>
+          <h1 className="adm-title mt-1">Credits Hub</h1>
+          <p className="adm-muted mt-1">
+            Manage the technical cast and platform engineering credits displayed on /credits.
+          </p>
         </div>
-        <div className="flex gap-4">
-          <button onClick={addDeveloper} className="bg-white text-black border-4 border-black px-8 py-4 font-black uppercase rounded-2xl shadow-[6px_6px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-            + Add Dev
+        <div className="flex flex-wrap gap-2.5 w-full md:w-auto">
+          <button
+            type="button"
+            onClick={addDeveloper}
+            className="adm-btn adm-btn-secondary flex-1 md:flex-none"
+          >
+            <Plus size={15} />
+            <span>Add Dev</span>
           </button>
-          <button onClick={syncCredits} className="bg-[#06D6A0] border-4 border-black px-12 py-4 font-black uppercase rounded-2xl shadow-[6px_6px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-            Sync Credits
+          <button
+            type="button"
+            onClick={syncCredits}
+            className="adm-btn adm-btn-primary flex-1 md:flex-none"
+          >
+            <Save size={15} />
+            <span>Sync Credits</span>
           </button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {developers.map((dev, index) => (
-          <div key={index} className="bg-white border-4 border-black rounded-[2rem] p-8 shadow-[12px_12px_0px_var(--border-primary)] relative group">
-            <button onClick={() => removeDev(index)} className="absolute -top-4 -right-4 bg-[#FF5F5F] text-white w-10 h-10 rounded-full border-4 border-black font-black hover:scale-110 transition-transform z-10">X</button>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <input className="border-2 border-black p-3 rounded-xl font-bold" placeholder="Name (e.g. Arpan)" value={dev.name || ""} onChange={(e) => updateDev(index, 'name', e.target.value)} />
-                <input className="border-2 border-black p-3 rounded-xl font-bold" placeholder="Dept (e.g. B.Tech CSE)" value={dev.department || ""} onChange={(e) => updateDev(index, 'department', e.target.value)} />
+          <div key={index} className="adm-card p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-adm-line pb-3">
+              <span className="adm-badge adm-badge-accent font-mono">
+                Architect #{index + 1}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeDev(index)}
+                className="adm-btn adm-btn-danger adm-btn-icon adm-btn-sm"
+                title="Remove developer"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+
+            <div className="space-y-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="adm-label">Name</label>
+                  <input
+                    className="adm-input"
+                    placeholder="Name (e.g. Arpan)"
+                    value={dev.name || ""}
+                    onChange={(e) => updateDev(index, "name", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="adm-label">Department</label>
+                  <input
+                    className="adm-input"
+                    placeholder="Dept (e.g. B.Tech CSE)"
+                    value={dev.department || ""}
+                    onChange={(e) => updateDev(index, "department", e.target.value)}
+                  />
+                </div>
               </div>
-              <input className="w-full border-2 border-black p-3 rounded-xl font-bold" placeholder="Role (e.g. Lead Architect)" value={dev.role || ""} onChange={(e) => updateDev(index, 'role', e.target.value)} />
-              
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase opacity-40">Contributions (Comma Separated)</label>
-                <textarea className="w-full border-2 border-black p-3 rounded-xl font-bold h-24" placeholder="Built UI, Managed DB, Setup API..." value={dev.contributions || ""} onChange={(e) => updateDev(index, 'contributions', e.target.value)} />
+
+              <div>
+                <label className="adm-label">Role</label>
+                <input
+                  className="adm-input"
+                  placeholder="Role (e.g. Lead Architect)"
+                  value={dev.role || ""}
+                  onChange={(e) => updateDev(index, "role", e.target.value)}
+                />
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <input className="border-2 border-black p-3 rounded-xl font-mono text-xs" placeholder="GitHub URL" value={dev.github || ""} onChange={(e) => updateDev(index, 'github', e.target.value)} />
-                <input className="border-2 border-black p-3 rounded-xl font-mono text-xs" placeholder="LinkedIn URL" value={dev.linkedin || ""} onChange={(e) => updateDev(index, 'linkedin', e.target.value)} />
+
+              <div>
+                <label className="adm-label">Contributions (Comma Separated)</label>
+                <textarea
+                  className="adm-input"
+                  placeholder="Built UI, Managed DB, Setup API..."
+                  value={dev.contributions || ""}
+                  onChange={(e) => updateDev(index, "contributions", e.target.value)}
+                />
               </div>
-              
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase opacity-40">Card Glow Theme</label>
-                <select className="w-full border-2 border-black p-3 rounded-xl font-bold appearance-none bg-gray-50" value={dev.theme || "green"} onChange={(e) => updateDev(index, 'theme', e.target.value)}>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="adm-label">GitHub URL</label>
+                  <input
+                    className="adm-input text-xs"
+                    placeholder="https://github.com/..."
+                    value={dev.github || ""}
+                    onChange={(e) => updateDev(index, "github", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="adm-label">LinkedIn URL</label>
+                  <input
+                    className="adm-input text-xs"
+                    placeholder="https://linkedin.com/in/..."
+                    value={dev.linkedin || ""}
+                    onChange={(e) => updateDev(index, "linkedin", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="adm-label">Card Glow Theme</label>
+                <select
+                  className="adm-input"
+                  value={dev.theme || "green"}
+                  onChange={(e) => updateDev(index, "theme", e.target.value)}
+                >
                   <option value="green">Neon Green</option>
                   <option value="red">Stage Red</option>
                   <option value="yellow">Spotlight Yellow</option>
@@ -95,10 +189,12 @@ export default function CreditsEditor() {
             </div>
           </div>
         ))}
-        
+
         {developers.length === 0 && (
-          <div className="col-span-1 md:col-span-2 text-center p-12 border-4 border-dashed border-black/20 rounded-[2rem] text-black/40 font-black uppercase">
-            No Developers Added Yet. Click "+ Add Dev" to begin.
+          <div className="col-span-full adm-card p-12 text-center">
+            <Clapperboard size={36} className="mx-auto text-adm-fg-3 mb-2" />
+            <p className="adm-h3">No Developers Added Yet</p>
+            <p className="adm-muted mt-1">Click "+ Add Dev" above to add credits.</p>
           </div>
         )}
       </div>

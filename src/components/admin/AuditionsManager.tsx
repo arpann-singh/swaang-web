@@ -2,7 +2,18 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, deleteDoc, onSnapshot, setDoc } from "firebase/firestore";
-import { UserCheck, List, Search, Download, MessageSquare, Phone, Mail, ExternalLink, Star, Award, Trash2, CheckCircle, XCircle, Clock } from "lucide-react";
+import {
+  UserCheck,
+  List,
+  Search,
+  Download,
+  MessageSquare,
+  Phone,
+  Mail,
+  Star,
+  Award,
+  Trash2,
+} from "lucide-react";
 
 export default function AuditionsManager({ auditions }: { auditions: any[] }) {
   const [isLive, setIsLive] = useState(false);
@@ -214,66 +225,72 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       return scoreB - scoreA;
     });
 
+  const getStatusBadge = (status?: string) => {
+    if (status === "accepted") return "adm-badge-success";
+    if (status === "Shortlisted") return "adm-badge-accent";
+    if (status === "Round 1 Cleared") return "adm-badge-info";
+    if (status === "rejected") return "adm-badge-danger";
+    return "adm-badge-neutral";
+  };
+
   return (
-    <div className="space-y-8 text-left pb-16 w-full text-zinc-100">
+    <div className="space-y-6 text-left w-full">
       {/* HEADER */}
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end border-b border-white/10 pb-6 gap-6">
+      <div className="adm-card p-5 sm:p-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
         <div>
-          <h2 className="text-4xl md:text-5xl font-cinzel font-bold tracking-tight text-[#FFF9F0]">
-            Casting Desk
-          </h2>
+          <p className="adm-eyebrow">Audition Operations</p>
+          <h2 className="adm-title mt-1">Casting Desk</h2>
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            <span className="font-mono text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-              AUDITION OPERATIONS
-            </span>
-            <span className="text-xs font-mono text-zinc-400 bg-white/[0.04] px-2 py-0.5 rounded border border-white/10">
-              Total Candidates: {auditions.length}
+            <span className="adm-badge adm-badge-neutral">Total Candidates: {auditions.length}</span>
+            <span className={`adm-badge ${isLive ? "adm-badge-success" : "adm-badge-neutral"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-adm-success animate-pulse" : "bg-adm-fg-3"}`} />
+              <span>{isLive ? "Portal Live" : "Portal Closed"}</span>
             </span>
           </div>
         </div>
 
         {/* CONTROLS */}
-        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
           {/* VIEW SWITCHER */}
-          <div className="flex p-1 bg-white/[0.04] border border-white/10 rounded-xl">
+          <div className="adm-seg">
             <button
+              type="button"
               onClick={() => setViewMode("roster")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-mono text-xs transition-all ${
-                viewMode === "roster" ? "bg-amber-500 text-black font-bold shadow-sm" : "text-zinc-400 hover:text-white"
-              }`}
+              data-active={viewMode === "roster" ? "true" : "false"}
+              className="adm-seg-item"
             >
               <List size={14} />
-              Roster
+              <span>Roster</span>
             </button>
             <button
+              type="button"
               onClick={() => setViewMode("judging")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-mono text-xs transition-all ${
-                viewMode === "judging" ? "bg-amber-500 text-black font-bold shadow-sm" : "text-zinc-400 hover:text-white"
-              }`}
+              data-active={viewMode === "judging" ? "true" : "false"}
+              className="adm-seg-item"
             >
               <Award size={14} />
-              Judging Matrix
+              <span>Judging Matrix</span>
             </button>
           </div>
 
           {/* FORM LIVE TOGGLE */}
           <button
+            type="button"
             onClick={toggleFormLive}
-            className={`flex items-center gap-2 border px-4 py-2.5 rounded-xl font-mono text-xs font-medium transition-all ${
-              isLive ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : "bg-white/[0.04] text-zinc-400 border-white/10"
-            }`}
+            className={`adm-btn ${isLive ? "adm-btn-success" : "adm-btn-secondary"}`}
           >
-            <span className={`w-2 h-2 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-500"}`} />
-            {isLive ? "PORTAL OPEN" : "PORTAL CLOSED"}
+            <span className={`w-2 h-2 rounded-full ${isLive ? "bg-adm-success animate-pulse" : "bg-adm-fg-3"}`} />
+            <span>{isLive ? "Portal Open" : "Portal Closed"}</span>
           </button>
 
           {/* CSV EXPORT */}
           <button
+            type="button"
             onClick={exportToCSV}
-            className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/15 px-4 py-2.5 rounded-xl font-mono text-xs transition-all shadow-sm"
+            className="adm-btn adm-btn-secondary"
           >
-            <Download size={14} className="text-amber-400" />
-            EXPORT CSV
+            <Download size={14} className="text-adm-accent-text" />
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
@@ -282,37 +299,35 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       {/* MODE 1: CANDIDATE ROSTER & CONTACT HUB                          */}
       {/* ============================================================== */}
       {viewMode === "roster" && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* SEARCH & FILTER CONTROLS */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-[#16161A] border border-white/10 p-4 rounded-2xl shadow-sm">
+          <div className="adm-card p-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
             <div className="relative w-full md:w-80">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-adm-fg-3 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search name, phone, role..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl font-mono text-xs text-white placeholder:text-zinc-500 outline-none focus:border-amber-400/50"
+                className="adm-input pl-9"
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+            <div className="flex items-center gap-1.5 overflow-x-auto adm-scroll-x">
               {[
-                { id: "all", label: "ALL" },
-                { id: "pending", label: "PENDING" },
-                { id: "Round 1 Cleared", label: "ROUND 1" },
-                { id: "Shortlisted", label: "SHORTLISTED" },
-                { id: "accepted", label: "ACCEPTED" },
-                { id: "rejected", label: "REJECTED" },
+                { id: "all", label: "All" },
+                { id: "pending", label: "Pending" },
+                { id: "Round 1 Cleared", label: "Round 1" },
+                { id: "Shortlisted", label: "Shortlisted" },
+                { id: "accepted", label: "Accepted" },
+                { id: "rejected", label: "Rejected" },
               ].map((f) => (
                 <button
                   key={f.id}
+                  type="button"
                   onClick={() => setStatusFilter(f.id)}
-                  className={`px-3 py-1.5 font-mono text-[11px] rounded-lg transition-all ${
-                    statusFilter === f.id
-                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold"
-                      : "text-zinc-400 hover:text-white bg-white/[0.02]"
-                  }`}
+                  data-active={statusFilter === f.id ? "true" : "false"}
+                  className="adm-chip"
                 >
                   {f.label}
                 </button>
@@ -321,12 +336,11 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
           </div>
 
           {/* GRID OF APPLICANTS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAuditions.length === 0 ? (
-              <div className="col-span-full py-20 text-center border border-dashed border-white/10 rounded-3xl bg-[#16161A]/50 p-8">
-                <p className="font-mono text-zinc-500 text-sm">
-                  No applicant profiles found matching the current filters.
-                </p>
+              <div className="col-span-full py-16 text-center adm-card p-8">
+                <p className="adm-h3">No applicant profiles found</p>
+                <p className="adm-muted mt-1">Adjust your search query or status filter above.</p>
               </div>
             ) : (
               filteredAuditions.map((a) => {
@@ -334,148 +348,144 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                 return (
                   <div
                     key={a.id}
-                    className="bg-[#16161A] border border-white/10 rounded-3xl p-6 shadow-md hover:border-amber-500/30 flex flex-col justify-between transition-all group"
+                    className="adm-card p-5 flex flex-col justify-between gap-4 hover:border-adm-line-strong transition-all"
                   >
                     <div>
                       {/* TOP BADGES */}
-                      <div className="flex justify-between items-start mb-4 gap-2">
-                        <div>
-                          <h3 className="font-cinzel font-bold text-2xl text-white leading-tight">
+                      <div className="flex justify-between items-start mb-3 gap-2">
+                        <div className="min-w-0">
+                          <h3 className="font-display font-bold text-xl text-adm-fg leading-tight truncate">
                             {a.name}
                           </h3>
-                          <span className="inline-block bg-white/[0.05] text-amber-300 px-2.5 py-0.5 text-[10px] font-mono rounded-md mt-1.5 border border-amber-500/20">
+                          <span className="adm-badge adm-badge-accent mt-1.5">
                             {a.role || "General Acting"}
                           </span>
                         </div>
-                        <span
-                          className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full border shrink-0 ${
-                            a.status === "accepted"
-                              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
-                              : a.status === "Shortlisted"
-                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                              : a.status === "Round 1 Cleared"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : a.status === "rejected"
-                              ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
-                              : "bg-white/[0.04] text-zinc-400 border-white/10"
-                          }`}
-                        >
+                        <span className={`adm-badge ${getStatusBadge(a.status)} shrink-0`}>
                           {a.status || "Pending"}
                         </span>
                       </div>
 
                       {/* SCORE PILL */}
                       {totalScore !== null && (
-                        <div className="mb-4 bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 flex items-center justify-between font-mono text-xs">
-                          <span className="flex items-center gap-1.5 text-amber-300 font-medium">
-                            <Star size={13} className="fill-amber-400 text-amber-400" />
-                            PANEL SCORE
+                        <div className="mb-3 adm-panel p-2.5 flex items-center justify-between text-xs">
+                          <span className="flex items-center gap-1.5 text-adm-accent-text font-semibold">
+                            <Star size={13} className="fill-current" />
+                            <span>Panel Score</span>
                           </span>
-                          <span className="bg-amber-400 text-black px-2 py-0.5 rounded font-bold text-xs">
+                          <span className="adm-badge adm-badge-accent font-mono">
                             {totalScore} / 40
                           </span>
                         </div>
                       )}
 
                       {/* CONTACT CHANNELS */}
-                      <div className="grid grid-cols-2 gap-2 mb-4 font-mono">
+                      <div className="grid grid-cols-2 gap-2 mb-3">
                         {a.phone && (
                           <button
+                            type="button"
                             onClick={() => openWhatsApp(a.name, a.phone)}
-                            className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 py-2 px-2.5 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors"
+                            className="adm-btn adm-btn-success adm-btn-sm"
                             title="Send WhatsApp message"
                           >
                             <MessageSquare size={13} />
-                            WhatsApp
+                            <span>WhatsApp</span>
                           </button>
                         )}
                         {a.phone && (
                           <a
                             href={`tel:${a.phone}`}
-                            className="bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 border border-white/10 py-2 px-2.5 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors"
+                            className="adm-btn adm-btn-secondary adm-btn-sm"
                           >
                             <Phone size={13} />
-                            Call
+                            <span>Call</span>
                           </a>
                         )}
                         {a.email && (
                           <a
                             href={`mailto:${a.email}`}
-                            className="col-span-2 bg-white/[0.03] hover:bg-white/[0.06] text-zinc-300 border border-white/10 py-1.5 px-3 rounded-xl text-xs truncate flex items-center gap-2 transition-colors"
+                            className="col-span-2 adm-panel px-3 py-2 text-xs text-adm-fg-2 hover:text-adm-fg truncate flex items-center gap-2 transition-colors"
                           >
-                            <Mail size={12} className="shrink-0 text-zinc-500" />
+                            <Mail size={12} className="shrink-0 text-adm-fg-3" />
                             <span className="truncate">{a.email}</span>
                           </a>
                         )}
                       </div>
 
                       {/* LINKS */}
-                      <div className="flex gap-2 mb-4 font-mono text-xs">
-                        {a.photoLink && (
-                          <a
-                            href={a.photoLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/10 py-1.5 rounded-xl text-center transition-colors"
-                          >
-                            Headshot ⤾
-                          </a>
-                        )}
-                        {(a.portfolio || a.experience) && (
-                          <a
-                            href={a.portfolio || a.experience}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/10 py-1.5 rounded-xl text-center transition-colors"
-                          >
-                            Portfolio ⤾
-                          </a>
-                        )}
-                      </div>
+                      {(a.photoLink || a.portfolio || a.experience) && (
+                        <div className="flex gap-2 mb-3">
+                          {a.photoLink && (
+                            <a
+                              href={a.photoLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="adm-btn adm-btn-secondary adm-btn-sm flex-1"
+                            >
+                              Headshot ⤾
+                            </a>
+                          )}
+                          {(a.portfolio || a.experience) && (
+                            <a
+                              href={a.portfolio || a.experience}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="adm-btn adm-btn-secondary adm-btn-sm flex-1"
+                            >
+                              Portfolio ⤾
+                            </a>
+                          )}
+                        </div>
+                      )}
 
                       {/* MOTIVATION / STATEMENT */}
-                      <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3.5 text-xs italic text-zinc-400 max-h-24 overflow-y-auto mb-4 font-serif">
+                      <div className="adm-panel p-3 text-xs italic text-adm-fg-2 max-h-24 overflow-y-auto">
                         "{a.motivation || a.message || "No motivation statement provided."}"
                       </div>
                     </div>
 
                     {/* STATUS ACTION BUTTONS */}
-                    <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
-                      <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
+                    <div className="pt-3 border-t border-adm-line flex flex-col gap-2.5">
+                      <div className="grid grid-cols-3 gap-1.5">
                         <button
+                          type="button"
                           onClick={() => updateStatus(a.id, "Round 1 Cleared")}
-                          className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 py-1.5 rounded-lg font-bold transition-colors"
+                          className="adm-btn adm-btn-success adm-btn-sm px-2 text-xs"
                         >
                           Pass R1
                         </button>
                         <button
+                          type="button"
                           onClick={() => updateStatus(a.id, "Shortlisted")}
-                          className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 py-1.5 rounded-lg font-bold transition-colors"
+                          className="adm-btn adm-btn-secondary adm-btn-sm px-2 text-xs"
                         >
                           Shortlist
                         </button>
                         <button
+                          type="button"
                           onClick={() => updateStatus(a.id, "rejected")}
-                          className="bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 py-1.5 rounded-lg font-bold transition-colors"
+                          className="adm-btn adm-btn-danger adm-btn-sm px-2 text-xs"
                         >
                           Reject
                         </button>
                       </div>
 
-                      <div className="flex justify-between items-center mt-1">
+                      <div className="flex justify-between items-center">
                         <button
+                          type="button"
                           onClick={() => {
                             setSelectedCandidateId(a.id);
                             setViewMode("judging");
                           }}
-                          className="text-xs font-mono text-amber-400 hover:text-amber-300 underline"
+                          className="adm-link text-xs"
                         >
                           Judge in Matrix ➔
                         </button>
                         <button
+                          type="button"
                           onClick={() => deleteAudition(a.id)}
-                          className="text-zinc-500 hover:text-rose-400 p-1 transition-colors"
-                          title="Delete"
+                          className="adm-btn adm-btn-ghost adm-btn-icon adm-btn-sm text-adm-fg-3 hover:text-adm-danger"
+                          title="Delete record"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -493,49 +503,48 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
       {/* MODE 2: LIVE AUDITION JUDGING MATRIX & LEADERBOARD              */}
       {/* ============================================================== */}
       {viewMode === "judging" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* CANDIDATE SELECTOR LIST (COL 1-4) */}
-          <div className="lg:col-span-4 bg-[#16161A] border border-white/10 rounded-3xl p-6 shadow-md max-h-[85vh] overflow-y-auto custom-scrollbar flex flex-col">
-            <div className="border-b border-white/10 pb-3 mb-4">
-              <h3 className="font-cinzel font-bold text-xl text-[#FFF9F0] flex items-center gap-2">
-                <UserCheck className="text-amber-400" />
-                Audition Queue
+          <div className="lg:col-span-4 adm-card p-5 max-h-[82vh] overflow-y-auto flex flex-col">
+            <div className="border-b border-adm-line pb-3 mb-3">
+              <h3 className="adm-h2 flex items-center gap-2">
+                <UserCheck size={18} className="text-adm-accent-text" />
+                <span>Audition Queue</span>
               </h3>
-              <p className="font-mono text-[10px] text-zinc-400">
-                Select applicant to score in real time
-              </p>
+              <p className="adm-muted">Select applicant to score in real time</p>
             </div>
 
-            <div className="space-y-2 flex-1">
+            <div className="space-y-1.5 flex-1">
               {auditions.map((a) => {
                 const isSelected = a.id === selectedCandidateId;
                 const totalScore = a.evaluation?.totalScore ?? a.scores?.total ?? null;
                 return (
                   <button
                     key={a.id}
+                    type="button"
                     onClick={() => setSelectedCandidateId(a.id)}
-                    className={`w-full text-left p-3.5 rounded-2xl border transition-all ${
+                    className={`w-full text-left p-3 rounded-xl border transition-all ${
                       isSelected
-                        ? "bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm"
-                        : "bg-white/[0.02] border-white/5 text-zinc-300 hover:bg-white/[0.05]"
+                        ? "bg-adm-accent/15 border-adm-accent/45 text-adm-fg"
+                        : "bg-adm-surface-2 border-adm-line text-adm-fg-2 hover:text-adm-fg"
                     }`}
                   >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-cinzel font-bold text-base text-white leading-tight">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0">
+                        <h4 className="font-semibold text-sm text-adm-fg truncate">
                           {a.name}
                         </h4>
-                        <p className={`font-mono text-[10px] mt-0.5 ${isSelected ? "text-amber-400" : "text-zinc-500"}`}>
+                        <p className="text-xs text-adm-fg-3 truncate mt-0.5">
                           {a.role || "General"}
                         </p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         {totalScore !== null ? (
-                          <span className="font-mono font-bold text-xs bg-amber-400 text-black px-2 py-0.5 rounded">
+                          <span className="adm-badge adm-badge-accent font-mono">
                             {totalScore}/40
                           </span>
                         ) : (
-                          <span className="font-mono text-[10px] text-zinc-500">UNSCORED</span>
+                          <span className="adm-badge adm-badge-neutral text-[10px]">Unscored</span>
                         )}
                       </div>
                     </div>
@@ -546,46 +555,48 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
           </div>
 
           {/* ACTIVE JUDGING RUBRIC & SLIDERS (COL 5-8) */}
-          <div className="lg:col-span-5 bg-[#16161A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-md">
+          <div className="lg:col-span-5 adm-card p-5 sm:p-7">
             {selectedCandidate ? (
-              <div className="space-y-6">
-                <div className="border-b border-white/10 pb-4 flex justify-between items-start">
+              <div className="space-y-5">
+                <div className="border-b border-adm-line pb-4 flex justify-between items-start gap-3">
                   <div>
-                    <span className="bg-amber-500/15 text-amber-300 px-2.5 py-0.5 font-mono text-[10px] rounded-full border border-amber-500/30">
-                      CURRENT APPLICANT
-                    </span>
-                    <h3 className="font-cinzel text-3xl font-bold text-[#FFF9F0] mt-2">
+                    <span className="adm-badge adm-badge-accent">Current Applicant</span>
+                    <h3 className="font-display text-2xl sm:text-3xl font-bold text-adm-fg mt-2">
                       {selectedCandidate.name}
                     </h3>
-                    <p className="font-mono text-xs text-zinc-400">
-                      Role Target: <strong className="text-zinc-200">{selectedCandidate.role || "General Acting"}</strong>
+                    <p className="adm-muted mt-0.5">
+                      Role Target: <strong className="text-adm-fg">{selectedCandidate.role || "General Acting"}</strong>
                     </p>
                   </div>
 
-                  <div className="bg-[#121215] border border-amber-500/30 rounded-2xl p-3 text-center shadow-md">
-                    <span className="block font-mono text-[9px] text-zinc-400 uppercase">SCORE</span>
-                    <span className="font-mono text-3xl font-bold text-amber-400 leading-none">{totalScoreCalc}</span>
-                    <span className="block font-mono text-[9px] text-zinc-500">/40</span>
+                  <div className="adm-panel px-4 py-2.5 text-center shrink-0">
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-adm-fg-3">
+                      Score
+                    </span>
+                    <span className="font-display text-3xl font-bold text-adm-accent-text leading-none">
+                      {totalScoreCalc}
+                    </span>
+                    <span className="block text-[10px] font-mono text-adm-fg-3">/40</span>
                   </div>
                 </div>
 
                 {/* SLIDERS MATRIX */}
-                <div className="space-y-3.5">
+                <div className="space-y-3">
                   {[
                     { id: "voice", label: "Voice & Diction", desc: "Clarity, projection, pitch modulation" },
                     { id: "acting", label: "Acting & Emotional Range", desc: "Character depth, conviction, realism" },
                     { id: "confidence", label: "Confidence & Presence", desc: "Stage awareness, posture, eye contact" },
                     { id: "improv", label: "Improvisation & Adaptability", desc: "Response to cues, spontaneity" },
                   ].map((metric) => (
-                    <div key={metric.id} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4">
-                      <div className="flex justify-between items-center mb-1">
+                    <div key={metric.id} className="adm-panel p-3.5">
+                      <div className="flex justify-between items-center mb-1.5">
                         <div>
-                          <label className="font-mono text-xs font-bold text-zinc-200 block">
+                          <label className="text-xs font-semibold text-adm-fg block">
                             {metric.label}
                           </label>
-                          <span className="font-mono text-[10px] text-zinc-500">{metric.desc}</span>
+                          <span className="text-[11px] text-adm-fg-3">{metric.desc}</span>
                         </div>
-                        <span className="font-mono font-bold text-sm text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                        <span className="adm-badge adm-badge-accent font-mono">
                           {scores[metric.id as keyof typeof scores]} / 10
                         </span>
                       </div>
@@ -598,7 +609,7 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                         onChange={(e) =>
                           setScores({ ...scores, [metric.id]: parseInt(e.target.value) })
                         }
-                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-400 mt-2"
+                        className="adm-range mt-1"
                       />
                     </div>
                   ))}
@@ -606,43 +617,45 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
 
                 {/* DIRECTOR'S NOTES */}
                 <div>
-                  <label className="text-xs font-mono font-medium text-zinc-300 block mb-1.5">
-                    Director / Panel Observations
-                  </label>
+                  <label className="adm-label">Director / Panel Observations</label>
                   <textarea
                     placeholder="e.g. Exceptional vocal range; consider for Main Lead in Street Play..."
                     value={directorNotes}
                     onChange={(e) => setDirectorNotes(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3 font-mono text-xs text-white h-24 resize-none outline-none focus:border-amber-400/50"
+                    className="adm-input"
                   />
                 </div>
 
                 {/* SAVE & STATUS BUTTONS */}
-                <div className="space-y-3 pt-2 border-t border-white/10">
+                <div className="space-y-2.5 pt-2 border-t border-adm-line">
                   <button
+                    type="button"
                     onClick={() => saveEvaluation()}
                     disabled={isSavingScore}
-                    className="w-full bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50"
+                    className="adm-btn adm-btn-primary w-full"
                   >
-                    {isSavingScore ? "SAVING..." : "COMMIT EVALUATION SCORE"}
+                    {isSavingScore ? "Saving..." : "Commit Evaluation Score"}
                   </button>
 
-                  <div className="grid grid-cols-3 gap-2 font-mono text-[10px]">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
+                      type="button"
                       onClick={() => saveEvaluation("Round 1 Cleared")}
-                      className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 py-2 rounded-lg font-bold transition-colors"
+                      className="adm-btn adm-btn-success adm-btn-sm text-xs"
                     >
                       + Pass Round 1
                     </button>
                     <button
+                      type="button"
                       onClick={() => saveEvaluation("Shortlisted")}
-                      className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 py-2 rounded-lg font-bold transition-colors"
+                      className="adm-btn adm-btn-secondary adm-btn-sm text-xs"
                     >
                       + Shortlist
                     </button>
                     <button
+                      type="button"
                       onClick={() => saveEvaluation("rejected")}
-                      className="bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 py-2 rounded-lg font-bold transition-colors"
+                      className="adm-btn adm-btn-danger adm-btn-sm text-xs"
                     >
                       + Reject
                     </button>
@@ -650,56 +663,61 @@ export default function AuditionsManager({ auditions }: { auditions: any[] }) {
                 </div>
               </div>
             ) : (
-              <div className="py-20 text-center font-mono text-zinc-500 text-sm">
+              <div className="py-16 text-center adm-muted">
                 Select an applicant from the queue to start grading
               </div>
             )}
           </div>
 
           {/* REALTIME RANKED LEADERBOARD (COL 9-12) */}
-          <div className="lg:col-span-3 bg-[#16161A] border border-white/10 rounded-3xl p-6 shadow-md">
-            <div className="border-b border-white/10 pb-3 mb-4">
-              <h3 className="font-cinzel font-bold text-lg text-[#FFF9F0] flex items-center gap-2">
-                <Award className="text-amber-400" />
-                Live Standings
+          <div className="lg:col-span-3 adm-card p-5">
+            <div className="border-b border-adm-line pb-3 mb-3">
+              <h3 className="adm-h2 flex items-center gap-2">
+                <Award size={18} className="text-adm-accent-text" />
+                <span>Live Standings</span>
               </h3>
-              <p className="font-mono text-[9px] text-zinc-400 uppercase">Ranked by panel score</p>
+              <p className="adm-muted">Ranked by panel score</p>
             </div>
 
-            <div className="space-y-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="space-y-2 max-h-[70vh] overflow-y-auto">
               {rankedAuditions.length === 0 ? (
-                <p className="font-mono text-xs text-zinc-500 italic py-6 text-center">
+                <p className="adm-muted italic py-6 text-center">
                   No applicants scored yet.
                 </p>
               ) : (
                 rankedAuditions.map((candidate, idx) => {
                   const score = candidate.evaluation?.totalScore ?? candidate.scores?.total ?? 0;
+                  const isSelected = candidate.id === selectedCandidateId;
                   return (
                     <div
                       key={candidate.id}
                       onClick={() => setSelectedCandidateId(candidate.id)}
-                      className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                        candidate.id === selectedCandidateId
-                          ? "bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm"
-                          : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05]"
+                      className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                        isSelected
+                          ? "bg-adm-accent/15 border-adm-accent/45 text-adm-fg"
+                          : "bg-adm-surface-2 border-adm-line hover:border-adm-line-strong"
                       }`}
                     >
-                      <div className="flex items-center gap-2.5 truncate">
-                        <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono font-bold text-[10px] ${
-                          idx === 0 ? "bg-amber-400 text-black" : idx === 1 ? "bg-zinc-300 text-black" : idx === 2 ? "bg-amber-700 text-white" : "bg-white/10 text-zinc-300"
-                        }`}>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`w-6 h-6 rounded-full flex items-center justify-center font-mono font-bold text-xs shrink-0 ${
+                            idx === 0
+                              ? "bg-adm-accent text-adm-accent-fg"
+                              : "bg-adm-surface text-adm-fg-2 border border-adm-line"
+                          }`}
+                        >
                           {idx + 1}
                         </span>
-                        <div className="truncate">
-                          <p className="font-mono font-bold text-xs text-white truncate leading-tight">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-xs text-adm-fg truncate leading-tight">
                             {candidate.name}
                           </p>
-                          <p className="font-mono text-[9px] text-zinc-400">
+                          <p className="text-[11px] text-adm-fg-3">
                             {candidate.status || "Pending"}
                           </p>
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 ml-2 shrink-0">
+                      <span className="adm-badge adm-badge-accent font-mono ml-2 shrink-0">
                         {score}
                       </span>
                     </div>

@@ -1,30 +1,37 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { 
-  collection, addDoc, doc, deleteDoc, updateDoc, 
-  serverTimestamp, onSnapshot, query, orderBy 
+import {
+  collection,
+  addDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Home, Trash2, X, Check } from "lucide-react";
+import { Pencil, Home, Trash2, X, Check, Images, Upload } from "lucide-react";
 
 const GalleryManager = () => {
   const [gallery, setGallery] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<any | null>(null);
-  
+
   const [newPhoto, setNewPhoto] = useState({
     title: "",
     description: "",
-    showOnHome: false
+    showOnHome: false,
   });
 
-  const IMGBB_API_KEY = "098e6a70fbe6f7594e40f4641a1998b0";
+  const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || "098e6a70fbe6f7594e40f4641a1998b0";
 
   useEffect(() => {
     const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
     return onSnapshot(q, (snap) => {
-      setGallery(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setGallery(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
   }, []);
 
@@ -33,7 +40,7 @@ const GalleryManager = () => {
     if (files.length === 0) return;
 
     setUploading(true);
-    
+
     for (const file of files as File[]) {
       const formData = new FormData();
       formData.append("image", file);
@@ -52,14 +59,14 @@ const GalleryManager = () => {
             description: newPhoto.description || "Awaiting admin curation.",
             showOnHome: newPhoto.showOnHome,
             status: "Pending Curation",
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
           });
         }
       } catch (error) {
         console.error("Bulk item failed:", error);
       }
     }
-    
+
     setUploading(false);
     setNewPhoto({ title: "", description: "", showOnHome: false });
     alert("Bulk Staging Complete! 🎞️");
@@ -73,7 +80,7 @@ const GalleryManager = () => {
       await updateDoc(doc(db, "gallery", editingPhoto.id), {
         title: editingPhoto.title,
         description: editingPhoto.description,
-        status: "Curated"
+        status: "Curated",
       });
       setEditingPhoto(null);
     } catch (err) {
@@ -92,90 +99,208 @@ const GalleryManager = () => {
   };
 
   return (
-    <div className="space-y-12 pb-40">
-      <div className="border-b-8 border-black pb-4 mb-4 flex items-center">
-         <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-black bg-[#FFD166] px-6 py-3 border-4 border-black inline-block shadow-[8px_8px_0px_black]">The Gallery</h2>
+    <div className="space-y-6 text-left w-full">
+      <div className="adm-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-adm-accent/15 border border-adm-accent/35 flex items-center justify-center text-adm-accent-text shrink-0">
+            <Images size={20} />
+          </div>
+          <div>
+            <p className="adm-eyebrow">Visual Archive & Media</p>
+            <h2 className="adm-title mt-0.5">The Gallery</h2>
+          </div>
+        </div>
+        <span className="adm-badge adm-badge-neutral">{gallery.length} Photos</span>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         <div className="xl:col-span-1">
-          
           {/* 🔥 DYNAMIC FORM: SWITCHES BETWEEN UPLOAD AND EDIT */}
           {!editingPhoto ? (
-            <div className="bg-[#FFF9F0] border-8 border-black p-8 shadow-[12px_12px_0px_#06D6A0] space-y-6 sticky top-10">
-              <div className="border-b-8 border-black pb-4">
-                <h2 className="font-mono font-black uppercase text-black bg-[#06D6A0] inline-block px-2 py-1 tracking-widest border-2 border-black text-sm">Bulk Upload (Crew)</h2>
-              </div>
-              
-              <div className="space-y-4">
-                  <input type="text" placeholder="GENERAL TITLE (OPTIONAL)" value={newPhoto.title} onChange={e => setNewPhoto({...newPhoto, title: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
-                  
-                  <textarea placeholder="General Description" value={newPhoto.description} onChange={e => setNewPhoto({...newPhoto, description: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-bold h-24 resize-none shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
+            <div className="adm-card p-5 sm:p-6 space-y-4">
+              <div className="border-b border-adm-line pb-3">
+                <span className="adm-badge adm-badge-success mb-1">Bulk Upload (Crew)</span>
+                <h3 className="adm-h2">Stage Multiple Photos</h3>
               </div>
 
-              <div className="flex items-center gap-4 p-4 bg-black text-white border-4 border-black shadow-[4px_4px_0px_black]">
-                <input type="checkbox" checked={newPhoto.showOnHome} onChange={e => setNewPhoto({...newPhoto, showOnHome: e.target.checked})} className="w-6 h-6 accent-[#FFD166] cursor-pointer" />
-                <label className="text-[10px] font-mono font-black uppercase tracking-widest">Show on Homepage</label>
+              <div className="space-y-3.5">
+                <div>
+                  <label className="adm-label">General Title (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Samvid 2026 Rehearsals"
+                    value={newPhoto.title}
+                    onChange={(e) => setNewPhoto({ ...newPhoto, title: e.target.value })}
+                    className="adm-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="adm-label">General Description</label>
+                  <textarea
+                    placeholder="General Description"
+                    value={newPhoto.description}
+                    onChange={(e) => setNewPhoto({ ...newPhoto, description: e.target.value })}
+                    className="adm-input"
+                  />
+                </div>
               </div>
 
-              <label className={`block text-center cursor-pointer bg-[#06D6A0] text-black border-4 border-black py-4 font-black uppercase text-sm shadow-[6px_6px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_black] hover:bg-[#FFD166] transition-all ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
-                {uploading ? "PROCESSING BULK..." : "SELECT MULTIPLE PHOTOS"}
-                <input type="file" multiple className="hidden" accept="image/*" onChange={handleBulkUpload} />
+              <label className="adm-panel p-3.5 flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newPhoto.showOnHome}
+                  onChange={(e) => setNewPhoto({ ...newPhoto, showOnHome: e.target.checked })}
+                  className="adm-check"
+                />
+                <span className="text-sm font-medium text-adm-fg">Show on Homepage</span>
+              </label>
+
+              <label
+                className={`adm-btn adm-btn-primary w-full cursor-pointer ${
+                  uploading ? "opacity-50 pointer-events-none" : ""
+                }`}
+              >
+                <Upload size={15} />
+                <span>{uploading ? "Processing Bulk..." : "Select Multiple Photos"}</span>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleBulkUpload}
+                />
               </label>
             </div>
           ) : (
-            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="bg-[#FFD166] border-8 border-black p-8 shadow-[12px_12px_0px_#FF5F5F] space-y-6 sticky top-10">
-              <div className="border-b-8 border-black pb-4">
-                <h2 className="font-mono font-black uppercase text-black bg-[#FF5F5F] inline-block px-2 py-1 tracking-widest border-2 border-black text-sm">Curate Archive</h2>
-              </div>
-              <div className="aspect-video border-4 border-black bg-black">
-                <img src={editingPhoto.url} className="w-full h-full object-cover" />
-              </div>
-              
-              <div className="space-y-4">
-                  <input required type="text" value={editingPhoto.title} onChange={e => setEditingPhoto({...editingPhoto, title: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-black uppercase text-sm shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
-                  <textarea value={editingPhoto.description} onChange={e => setEditingPhoto({...editingPhoto, description: e.target.value})} className="w-full bg-white border-4 border-black p-4 font-bold h-32 resize-none shadow-[4px_4px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all" />
+            <motion.div
+              initial={{ x: -12, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="adm-card p-5 sm:p-6 space-y-4"
+            >
+              <div className="border-b border-adm-line pb-3">
+                <span className="adm-badge adm-badge-accent mb-1">Curate Archive</span>
+                <h3 className="adm-h2">Edit Photo Metadata</h3>
               </div>
 
-              <div className="flex gap-4">
-                <button onClick={handleUpdate} className="flex-1 bg-black text-[#06D6A0] border-4 border-black py-4 font-black uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#06D6A0] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-2">
-                  <Check size={16} strokeWidth={3} /> SAVE
+              <div className="aspect-video rounded-xl border border-adm-line bg-adm-surface-2 overflow-hidden">
+                <img src={editingPhoto.url} className="w-full h-full object-cover" alt="Preview" />
+              </div>
+
+              <div className="space-y-3.5">
+                <div>
+                  <label className="adm-label">Photo Title *</label>
+                  <input
+                    required
+                    type="text"
+                    value={editingPhoto.title}
+                    onChange={(e) =>
+                      setEditingPhoto({ ...editingPhoto, title: e.target.value })
+                    }
+                    className="adm-input"
+                  />
+                </div>
+                <div>
+                  <label className="adm-label">Description</label>
+                  <textarea
+                    value={editingPhoto.description}
+                    onChange={(e) =>
+                      setEditingPhoto({ ...editingPhoto, description: e.target.value })
+                    }
+                    className="adm-input"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleUpdate}
+                  className="adm-btn adm-btn-primary flex-1"
+                >
+                  <Check size={15} />
+                  <span>Save</span>
                 </button>
-                <button onClick={() => setEditingPhoto(null)} className="flex-1 bg-white text-black border-4 border-black py-4 font-black uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_black] hover:translate-x-1 hover:translate-y-1 hover:shadow-none hover:bg-[#FF5F5F] hover:text-white transition-all flex items-center justify-center gap-2">
-                  <X size={16} strokeWidth={3} /> ABORT
+                <button
+                  type="button"
+                  onClick={() => setEditingPhoto(null)}
+                  className="adm-btn adm-btn-secondary flex-1"
+                >
+                  <X size={15} />
+                  <span>Abort</span>
                 </button>
               </div>
             </motion.div>
           )}
         </div>
 
-        <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
           <AnimatePresence>
             {gallery.map((img) => (
-              <motion.div layout key={img.id} className="bg-white border-8 border-black overflow-hidden shadow-[12px_12px_0px_black] group flex flex-col hover:-translate-y-2 hover:shadow-[16px_16px_0px_black] transition-all">
-                <div className="relative aspect-video border-b-8 border-black bg-black">
-                  <img src={img.url} className="w-full h-full object-cover transition-all" alt={img.title} />
-                  
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    <button onClick={() => setEditingPhoto(img)} className="p-3 bg-[#06D6A0] border-4 border-black shadow-[4px_4px_0px_black] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all text-black" title="Edit Data">
-                      <Pencil size={16} strokeWidth={3} />
+              <motion.div
+                layout
+                key={img.id}
+                className="adm-card overflow-hidden flex flex-col justify-between group"
+              >
+                <div className="relative aspect-video border-b border-adm-line bg-adm-surface-2">
+                  <img
+                    src={img.url}
+                    className="w-full h-full object-cover"
+                    alt={img.title}
+                  />
+
+                  <div className="absolute top-2.5 right-2.5 flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditingPhoto(img)}
+                      className="adm-btn adm-btn-secondary adm-btn-icon adm-btn-sm bg-adm-surface/90 backdrop-blur-xs"
+                      title="Edit Data"
+                    >
+                      <Pencil size={14} />
                     </button>
-                    <button onClick={() => toggleHomeVisibility(img.id, img.showOnHome)} className={`p-3 border-4 border-black shadow-[4px_4px_0px_black] hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all text-black ${img.showOnHome ? "bg-[#FFD166]" : "bg-white"}`} title="Toggle Homepage">
-                      <Home size={16} strokeWidth={3} />
+                    <button
+                      type="button"
+                      onClick={() => toggleHomeVisibility(img.id, img.showOnHome)}
+                      className={`adm-btn adm-btn-icon adm-btn-sm ${
+                        img.showOnHome
+                          ? "adm-btn-primary"
+                          : "adm-btn-secondary bg-adm-surface/90 backdrop-blur-xs"
+                      }`}
+                      title="Toggle Homepage"
+                    >
+                      <Home size={14} />
                     </button>
-                    <button onClick={() => handleDelete(img.id)} className="p-3 bg-white border-4 border-black shadow-[4px_4px_0px_black] hover:translate-y-1 hover:translate-x-1 hover:shadow-none hover:bg-[#FF5F5F] hover:text-white transition-all text-black" title="Delete Image">
-                      <Trash2 size={16} strokeWidth={3} />
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(img.id)}
+                      className="adm-btn adm-btn-danger adm-btn-icon adm-btn-sm bg-adm-surface/90 backdrop-blur-xs"
+                      title="Delete Image"
+                    >
+                      <Trash2 size={14} />
                     </button>
                   </div>
 
                   {img.status === "Pending Curation" && (
-                    <div className="absolute bottom-4 left-4 bg-[#FF5F5F] border-2 border-black text-black font-mono text-[10px] font-black px-2 py-1 uppercase tracking-widest shadow-[2px_2px_0px_black]">NEEDS TITLE</div>
+                    <div className="absolute bottom-2.5 left-2.5">
+                      <span className="adm-badge adm-badge-danger bg-adm-surface/90 backdrop-blur-xs">
+                        Needs Title
+                      </span>
+                    </div>
                   )}
                 </div>
-                
-                <div className="p-6 flex-1 bg-[#FFF9F0]">
-                  <h3 className="font-black uppercase text-xl text-black tracking-tight line-clamp-1">{img.title}</h3>
-                  <p className="text-xs font-mono font-black text-gray-600 mt-2 line-clamp-2 uppercase leading-relaxed">{img.description || "NO_DESCRIPTION_PROVIDED"}</p>
+
+                <div className="p-4 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-display font-bold text-base text-adm-fg line-clamp-1">
+                      {img.title}
+                    </h3>
+                    {img.showOnHome && (
+                      <span className="adm-badge adm-badge-accent text-[10px]">Homepage</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-adm-fg-3 mt-1 line-clamp-2 leading-relaxed">
+                    {img.description || "No description provided"}
+                  </p>
                 </div>
               </motion.div>
             ))}

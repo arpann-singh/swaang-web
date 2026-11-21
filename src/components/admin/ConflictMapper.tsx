@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
+import { CalendarX, Users, X } from "lucide-react";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 8);
@@ -10,88 +11,152 @@ const HOURS = Array.from({ length: 12 }, (_, i) => i + 8);
 export default function ConflictMapper() {
   const [allSchedules, setAllSchedules] = useState<any[]>([]);
   const [selectedCrew, setSelectedCrew] = useState<string[]>([]);
-  const [activeDetail, setActiveDetail] = useState<{ day: string, hour: number, busyNames: string[] } | null>(null);
+  const [activeDetail, setActiveDetail] = useState<{
+    day: string;
+    hour: number;
+    busyNames: string[];
+  } | null>(null);
 
   useEffect(() => {
     return onSnapshot(collection(db, "availability"), (s) => {
-      setAllSchedules(s.docs.map(d => d.data()));
+      setAllSchedules(s.docs.map((d) => d.data()));
     });
   }, []);
 
   const getSlotData = (day: string, hour: number) => {
     const id = `${day}-${hour}`;
-    const targetSchedules = selectedCrew.length > 0 
-      ? allSchedules.filter(s => selectedCrew.includes(s.userId))
-      : allSchedules;
-    
-    const busyPeople = targetSchedules.filter(s => s.slots.includes(id));
-    const busyNames = busyPeople.map(p => p.userName);
+    const targetSchedules =
+      selectedCrew.length > 0
+        ? allSchedules.filter((s) => selectedCrew.includes(s.userId))
+        : allSchedules;
+
+    const busyPeople = targetSchedules.filter((s) => s.slots?.includes(id));
+    const busyNames = busyPeople.map((p) => p.userName);
     const ratio = targetSchedules.length > 0 ? busyPeople.length / targetSchedules.length : 0;
 
     return { ratio, busyNames, totalChecked: targetSchedules.length };
   };
 
   const getHeatColor = (ratio: number) => {
-    if (ratio === 0) return "bg-[#06D6A0] shadow-[0_0_10px_rgba(6,214,160,0.3)]"; 
-    if (ratio < 0.3) return "bg-green-200 border-green-300";
-    if (ratio < 0.6) return "bg-yellow-200 border-yellow-300";
-    return "bg-red-400 border-red-500 shadow-inner"; 
+    if (ratio === 0)
+      return "bg-adm-success/20 border-adm-success/40 text-adm-success hover:bg-adm-success/30";
+    if (ratio < 0.3)
+      return "bg-adm-success/10 border-adm-success/25 text-adm-fg-2 hover:bg-adm-success/20";
+    if (ratio < 0.6)
+      return "bg-adm-accent/20 border-adm-accent/40 text-adm-accent-text hover:bg-adm-accent/30";
+    return "bg-adm-danger/20 border-adm-danger/40 text-adm-danger hover:bg-adm-danger/30";
   };
 
   return (
-    <div className="space-y-8 pb-20">
-      <div className="bg-[#2D2D2D] p-8 rounded-[2.5rem] shadow-[10px_10px_0px_#FFD166] text-white flex justify-between items-center">
+    <div className="space-y-6 text-left w-full">
+      <div className="adm-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-4xl font-black uppercase tracking-tighter italic">Conflict Mapper</h2>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#06D6A0] mt-1">Click a slot to see who is busy</p>
+          <p className="adm-eyebrow">Cast Availability Audit</p>
+          <h2 className="adm-title mt-1">Conflict Mapper</h2>
+          <p className="adm-muted mt-1">
+            Click any day/hour slot on the heatmap to see which ensemble members are busy or free for rehearsal.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="adm-badge adm-badge-success">0% Busy (Free)</span>
+          <span className="adm-badge adm-badge-accent">&lt;60% Busy</span>
+          <span className="adm-badge adm-badge-danger">High Conflict</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* 👥 CREW SELECTOR */}
-        <div className="xl:col-span-3 bg-white border-4 border-black p-6 rounded-[2.5rem] shadow-[6px_6px_0px_black] h-fit">
-          <h3 className="font-black uppercase text-[10px] mb-4 text-[#FF5F5F] tracking-widest">Filter by Cast</h3>
-          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-            {allSchedules.map(s => (
-              <button 
-                key={s.userId} 
-                onClick={() => setSelectedCrew(prev => prev.includes(s.userId) ? prev.filter(id => id !== s.userId) : [...prev, s.userId])}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${selectedCrew.includes(s.userId) ? 'bg-[#2D2D2D] text-white border-black' : 'bg-gray-50 border-transparent hover:border-black/10'}`}
+        <div className="xl:col-span-3 adm-card p-5">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-adm-line">
+            <h3 className="adm-h3 flex items-center gap-2">
+              <Users size={16} className="text-adm-accent-text" />
+              <span>Filter by Cast</span>
+            </h3>
+            {selectedCrew.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelectedCrew([])}
+                className="adm-link text-xs"
               >
-                <div className={`w-2 h-2 rounded-full ${selectedCrew.includes(s.userId) ? 'bg-[#06D6A0]' : 'bg-gray-300'}`} />
-                <span className="font-black text-[10px] uppercase truncate">{s.userName}</span>
+                Clear ({selectedCrew.length})
               </button>
-            ))}
+            )}
+          </div>
+          <div className="space-y-1.5 max-h-[420px] overflow-y-auto pr-1">
+            {allSchedules.length === 0 ? (
+              <p className="adm-muted py-6 text-center">No crew availability schedules submitted yet.</p>
+            ) : (
+              allSchedules.map((s) => {
+                const isSelected = selectedCrew.includes(s.userId);
+                return (
+                  <button
+                    key={s.userId}
+                    type="button"
+                    onClick={() =>
+                      setSelectedCrew((prev) =>
+                        prev.includes(s.userId)
+                          ? prev.filter((id) => id !== s.userId)
+                          : [...prev, s.userId]
+                      )
+                    }
+                    className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
+                      isSelected
+                        ? "bg-adm-accent/15 text-adm-fg border-adm-accent/45 font-semibold"
+                        : "bg-adm-surface-2 text-adm-fg-2 border-adm-line hover:text-adm-fg"
+                    }`}
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        isSelected ? "bg-adm-accent" : "bg-adm-fg-3"
+                      }`}
+                    />
+                    <span className="text-xs truncate">{s.userName}</span>
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
 
         {/* 🗺️ MASTER HEATMAP */}
-        <div className="xl:col-span-9 bg-white border-4 border-black p-6 rounded-[2.5rem] shadow-[8px_8px_0px_black]">
+        <div className="xl:col-span-9 adm-card p-4 sm:p-6">
           <div className="overflow-x-auto">
-            <table className="w-full border-separate border-spacing-1">
+            <table className="w-full border-separate border-spacing-1.5 min-w-[460px]">
               <thead>
                 <tr>
-                  <th className="p-2"></th>
-                  {DAYS.map(d => <th key={d} className="p-2 font-black text-[10px] uppercase text-black">{d}</th>)}
+                  <th className="p-2 w-16 text-right text-xs font-semibold text-adm-fg-3">Hour</th>
+                  {DAYS.map((d) => (
+                    <th
+                      key={d}
+                      className="p-2 text-center font-mono text-xs font-bold uppercase text-adm-fg"
+                    >
+                      {d}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {HOURS.map(h => (
+                {HOURS.map((h) => (
                   <tr key={h}>
-                    <td className="p-2 font-black text-[9px] text-black/40 text-right">{h}:00</td>
-                    {DAYS.map(d => {
+                    <td className="p-2 font-mono text-xs text-adm-fg-3 text-right whitespace-nowrap">
+                      {h}:00
+                    </td>
+                    {DAYS.map((d) => {
                       const { ratio, busyNames } = getSlotData(d, h);
                       return (
                         <td key={d} className="p-0">
-                          <button 
+                          <button
+                            type="button"
                             onClick={() => setActiveDetail({ day: d, hour: h, busyNames })}
-                            className={`w-full h-10 rounded-lg border-2 transition-all hover:scale-105 hover:z-10 relative group ${getHeatColor(ratio)}`}
+                            className={`w-full h-10 rounded-lg border transition-all flex items-center justify-center relative ${getHeatColor(
+                              ratio
+                            )}`}
                           >
-                             {busyNames.length > 0 && (
-                               <span className="absolute top-1 right-1 text-[8px] font-black bg-black/10 rounded px-1">
-                                 {busyNames.length}
-                               </span>
-                             )}
+                            {busyNames.length > 0 && (
+                              <span className="text-[11px] font-mono font-bold">
+                                {busyNames.length}
+                              </span>
+                            )}
                           </button>
                         </td>
                       );
@@ -107,33 +172,49 @@ export default function ConflictMapper() {
       {/* 🔍 MODAL: WHO IS BUSY? */}
       <AnimatePresence>
         {activeDetail && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setActiveDetail(null)} 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveDetail(null)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-xs"
             />
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-              className="bg-white border-8 border-black p-10 rounded-[3rem] shadow-[15px_15px_0px_#FF5F5F] relative z-10 w-full max-w-md"
+            <motion.div
+              initial={{ scale: 0.95, y: 12 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 12 }}
+              className="adm-card p-6 sm:p-8 relative z-10 w-full max-w-md space-y-5"
+              style={{ boxShadow: "var(--adm-shadow-lg)" }}
             >
-              <div className="mb-6 border-b-4 border-black pb-4">
-                <h4 className="text-3xl font-black uppercase tracking-tighter">
-                  {activeDetail.day} @ {activeDetail.hour}:00
-                </h4>
-                <p className="text-[10px] font-black uppercase text-[#FF5F5F] mt-1">Conflict Breakdown</p>
+              <div className="flex items-start justify-between border-b border-adm-line pb-4">
+                <div>
+                  <p className="adm-eyebrow">Conflict Breakdown</p>
+                  <h4 className="font-display text-2xl font-bold text-adm-fg mt-0.5">
+                    {activeDetail.day} @ {activeDetail.hour}:00
+                  </h4>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveDetail(null)}
+                  className="adm-btn adm-btn-secondary adm-btn-icon adm-btn-sm"
+                >
+                  <X size={15} />
+                </button>
               </div>
 
               <div className="space-y-3">
-                <p className="font-black uppercase text-xs">Students Busy ({activeDetail.busyNames.length}):</p>
+                <p className="text-xs font-semibold text-adm-fg-2">
+                  Students Busy ({activeDetail.busyNames.length}):
+                </p>
                 {activeDetail.busyNames.length === 0 ? (
-                  <div className="p-6 bg-[#06D6A0]/20 border-2 border-[#06D6A0] rounded-2xl text-[#06D6A0] font-black text-center uppercase text-sm">
-                    🌟 All Clear! Rehearse Away.
+                  <div className="p-6 rounded-xl bg-adm-success/12 border border-adm-success/30 text-adm-success font-semibold text-center text-sm">
+                    🌟 All Clear! Everyone is available to rehearse.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="grid grid-cols-1 gap-2 max-h-[280px] overflow-y-auto pr-1">
                     {activeDetail.busyNames.map((name, i) => (
-                      <div key={i} className="bg-gray-100 p-3 rounded-xl border-2 border-black/5 font-bold text-sm uppercase">
+                      <div key={i} className="adm-panel p-3 text-sm font-medium text-adm-fg">
                         {name}
                       </div>
                     ))}
@@ -141,9 +222,10 @@ export default function ConflictMapper() {
                 )}
               </div>
 
-              <button 
+              <button
+                type="button"
                 onClick={() => setActiveDetail(null)}
-                className="w-full mt-8 bg-[#2D2D2D] text-white py-4 rounded-2xl font-black uppercase text-xs shadow-[4px_4px_0px_black] active:shadow-none active:translate-y-1 transition-all"
+                className="adm-btn adm-btn-primary w-full"
               >
                 Close Desk
               </button>

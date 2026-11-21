@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 
 export default function IdentityHub() {
   const [data, setData] = useState<any>({ styles: {} });
@@ -13,58 +13,64 @@ export default function IdentityHub() {
   }, []);
 
   const syncData = async () => {
-    await updateDoc(doc(db, "settings", "homepage"), data);
+    await setDoc(doc(db, "settings", "homepage"), data, { merge: true });
     alert("Directorate Identity Synced!");
   };
 
-  const HubCard = ({ title, prefix, color }: any) => (
-    <div className="bg-white border-4 border-black rounded-[2.5rem] p-8 shadow-[8px_8px_0px_black] space-y-6">
-      <div className="flex items-center gap-4">
-        <div className={`w-4 h-10 ${color} border-2 border-black rounded-full`}></div>
-        <h3 className="text-2xl font-black uppercase tracking-tighter">{title}</h3>
+  const HubCard = ({ title, prefix, badge }: any) => (
+    <div className="adm-card p-6 space-y-4">
+      <div className="flex items-center justify-between border-b border-adm-line pb-3">
+        <h3 className="adm-h2">{title}</h3>
+        <span className={`adm-badge ${badge}`}>{prefix}</span>
       </div>
 
-      <div className="space-y-4">
-        <input 
-          className="w-full border-2 border-black rounded-xl p-3 font-bold"
-          placeholder="Name"
-          value={data[`${prefix}Name`] || ""}
-          onChange={e => setData({...data, [`${prefix}Name`]: e.target.value})}
-        />
-        <textarea 
-          className="w-full border-2 border-black rounded-xl p-3 font-bold h-32"
-          placeholder="Stage Message"
-          value={data[`${prefix}Note`] || ""}
-          onChange={e => setData({...data, [`${prefix}Note`]: e.target.value})}
-        />
-        <input 
-          className="w-full border-2 border-black rounded-xl p-3 font-mono text-xs"
-          placeholder="Photo URL (ImgBB)"
-          value={data[`${prefix}Image`] || ""}
-          onChange={e => setData({...data, [`${prefix}Image`]: e.target.value})}
-        />
+      <div className="space-y-3">
+        <div>
+          <label className="adm-label">Name</label>
+          <input
+            className="adm-input"
+            placeholder="Name"
+            value={data[`${prefix}Name`] || ""}
+            onChange={(e) => setData({ ...data, [`${prefix}Name`]: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="adm-label">Stage Message</label>
+          <textarea
+            className="adm-input"
+            placeholder="Stage Message"
+            value={data[`${prefix}Note`] || ""}
+            onChange={(e) => setData({ ...data, [`${prefix}Note`]: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="adm-label">Photo URL (ImgBB)</label>
+          <input
+            className="adm-input text-xs"
+            placeholder="Photo URL (ImgBB)"
+            value={data[`${prefix}Image`] || ""}
+            onChange={(e) => setData({ ...data, [`${prefix}Image`]: e.target.value })}
+          />
+        </div>
       </div>
 
-      <button 
-        onClick={syncData}
-        className={`w-full py-4 border-4 border-black rounded-2xl font-black uppercase ${color} shadow-[4px_4px_0px_black] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all`}
-      >
+      <button type="button" onClick={syncData} className="adm-btn adm-btn-primary w-full">
         Sync {title}
       </button>
     </div>
   );
 
   return (
-    <div className="p-8 space-y-12">
-      <div className="border-b-4 border-black pb-6">
-        <h1 className="text-6xl font-black uppercase italic tracking-tighter">Identity Hub</h1>
-        <p className="text-[#FF5F5F] font-bold uppercase text-xs tracking-[0.3em] mt-2">The Face of Swaang</p>
+    <div className="space-y-6 text-left w-full">
+      <div className="adm-card p-5 sm:p-6">
+        <p className="adm-eyebrow">The Face of Swaang</p>
+        <h1 className="adm-title mt-1">Identity Hub</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-        <HubCard title="Main Founder" prefix="founder" color="bg-[#FFD166]" />
-        <HubCard title="Co-Founder 1" prefix="coFounder1" color="bg-[#06D6A0]" />
-        <HubCard title="Co-Founder 2" prefix="coFounder2" color="bg-[#FF5F5F]" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <HubCard title="Main Founder" prefix="founder" badge="adm-badge-accent" />
+        <HubCard title="Co-Founder 1" prefix="coFounder1" badge="adm-badge-success" />
+        <HubCard title="Co-Founder 2" prefix="coFounder2" badge="adm-badge-danger" />
       </div>
     </div>
   );

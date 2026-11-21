@@ -3,9 +3,15 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
-import { 
-  Activity, Users, Ticket, Film, Mail, 
-  Calendar, Award, Sparkles, TrendingUp, Layers 
+import {
+  Users,
+  Ticket,
+  Film,
+  Mail,
+  Calendar,
+  Award,
+  TrendingUp,
+  Layers,
 } from "lucide-react";
 
 export default function AnalyticsDashboard() {
@@ -60,7 +66,8 @@ export default function AnalyticsDashboard() {
       title: "Audition Applicants",
       val: stats.applicants,
       icon: Users,
-      color: "bg-[#FF5F5F] text-white",
+      badgeClass: "adm-badge-danger",
+      iconWrap: "bg-adm-danger/12 text-adm-danger border-adm-danger/30",
       desc: "Total registered auditionees in the talent pool",
       badge: "TALENT",
     },
@@ -68,7 +75,8 @@ export default function AnalyticsDashboard() {
       title: "Active Team & Crew",
       val: stats.crew,
       icon: Award,
-      color: "bg-[#06D6A0] text-black",
+      badgeClass: "adm-badge-success",
+      iconWrap: "bg-adm-success/12 text-adm-success border-adm-success/30",
       desc: "Directory of actors, directors, writers & tech crew",
       badge: "ROSTER",
     },
@@ -76,7 +84,8 @@ export default function AnalyticsDashboard() {
       title: "Stage Productions",
       val: stats.events,
       icon: Film,
-      color: "bg-[#FFD166] text-black",
+      badgeClass: "adm-badge-accent",
+      iconWrap: "bg-adm-accent/15 text-adm-accent-text border-adm-accent/35",
       desc: "Active repertoire & upcoming performances",
       badge: "MAINSTAGE",
     },
@@ -84,7 +93,8 @@ export default function AnalyticsDashboard() {
       title: "Archive Titles",
       val: stats.archive,
       icon: Layers,
-      color: "bg-white text-black",
+      badgeClass: "adm-badge-violet",
+      iconWrap: "bg-adm-violet/12 text-adm-violet border-adm-violet/30",
       desc: "Past productions preserved in /archive",
       badge: "CATALOG",
     },
@@ -92,7 +102,8 @@ export default function AnalyticsDashboard() {
       title: "Guest RSVPs",
       val: stats.rsvps,
       icon: Ticket,
-      color: "bg-[#06D6A0] text-black",
+      badgeClass: "adm-badge-success",
+      iconWrap: "bg-adm-success/12 text-adm-success border-adm-success/30",
       desc: "Audience reservations & show guest list",
       badge: "AUDIENCE",
     },
@@ -100,7 +111,8 @@ export default function AnalyticsDashboard() {
       title: "Inbox Inquiries",
       val: stats.messages,
       icon: Mail,
-      color: "bg-[#FF5F5F] text-white",
+      badgeClass: "adm-badge-info",
+      iconWrap: "bg-adm-info/12 text-adm-info border-adm-info/30",
       desc: "Contact messages & stage invitations",
       badge: "COMMS",
     },
@@ -108,67 +120,63 @@ export default function AnalyticsDashboard() {
       title: "Timeline Milestones",
       val: stats.timeline,
       icon: Calendar,
-      color: "bg-[#FFD166] text-black",
+      badgeClass: "adm-badge-accent",
+      iconWrap: "bg-adm-accent/15 text-adm-accent-text border-adm-accent/35",
       desc: "10-year historical events in /journey",
       badge: "LEGACY",
     },
   ];
 
+  const totalRecords = Object.values(stats).reduce((a, b) => a + b, 0);
+
   return (
-    <div className="space-y-8 text-left pb-20 w-full font-mono">
+    <div className="space-y-6 text-left w-full">
       {/* Header */}
-      <div className="bg-[#FFF9F0] border-4 border-black p-6 md:p-8 shadow-[8px_8px_0px_black] flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div className="adm-card p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="p-2 bg-[#FFD166] text-black border-2 border-black shadow-[2px_2px_0px_black]">
-              <TrendingUp size={20} />
-            </span>
-            <span className="font-black text-xs uppercase tracking-widest bg-black text-[#06D6A0] px-3 py-1 border-2 border-black">
-              LIVE FIRESTORE TELEMETRY
-            </span>
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp size={15} className="text-adm-accent-text" />
+            <span className="adm-eyebrow">Live Firestore Telemetry</span>
           </div>
-          <h1 className="font-cinzel text-4xl md:text-6xl font-black uppercase tracking-tighter text-black leading-none">
-            Club Analytics
-          </h1>
-          <p className="text-xs font-bold uppercase tracking-wider text-black/70 mt-2">
+          <h1 className="adm-title">Club Analytics</h1>
+          <p className="adm-muted mt-1">
             Real-time aggregate data and metrics across all Swaang public pages and backstage portals.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-black text-[#06D6A0] px-4 py-2 border-2 border-black font-black text-xs uppercase">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#06D6A0] animate-pulse" />
-          <span>Real-time Synced</span>
+        <div className="flex items-center gap-2.5">
+          <span className="adm-badge adm-badge-neutral">
+            Total Records: {loading ? "—" : totalRecords}
+          </span>
+          <span className="adm-badge adm-badge-success">
+            <span className="w-1.5 h-1.5 rounded-full bg-adm-success animate-pulse" />
+            <span>Real-time Synced</span>
+          </span>
         </div>
       </div>
 
       {/* METRIC CARDS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {cards.map((c, i) => {
           const Icon = c.icon;
           return (
             <div
               key={i}
-              className={`${c.color} p-6 border-4 border-black shadow-[8px_8px_0px_black] flex flex-col justify-between group hover:-translate-y-1 transition-all relative overflow-hidden`}
+              className="adm-card p-5 flex flex-col justify-between gap-4 hover:border-adm-line-strong transition-all"
             >
-              <div className="flex items-start justify-between mb-4">
-                <span className="bg-black text-white px-2 py-0.5 text-[9px] font-black uppercase border border-white/20">
-                  {c.badge}
-                </span>
-                <div className="p-2 bg-black text-white border-2 border-black">
+              <div className="flex items-center justify-between">
+                <span className={`adm-badge ${c.badgeClass}`}>{c.badge}</span>
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${c.iconWrap}`}>
                   <Icon size={18} />
                 </div>
               </div>
 
               <div>
-                <p className="text-5xl md:text-6xl font-black tracking-tight leading-none mb-2">
+                <p className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-adm-fg leading-none mb-2">
                   {loading ? "—" : c.val}
                 </p>
-                <h3 className="font-black uppercase text-xs tracking-wider mb-1">
-                  {c.title}
-                </h3>
-                <p className="text-[10px] opacity-75 font-medium leading-tight">
-                  {c.desc}
-                </p>
+                <h3 className="adm-h3 mb-1">{c.title}</h3>
+                <p className="adm-muted leading-snug">{c.desc}</p>
               </div>
             </div>
           );

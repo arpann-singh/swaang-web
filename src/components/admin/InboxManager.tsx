@@ -2,34 +2,35 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { Mail, Phone, Trash2, Check, Inbox } from "lucide-react";
 
 export default function InboxManager({ messages: initialMessages }: { messages?: any[] }) {
-  // 🧠 State to hold the live messages
   const [messages, setMessages] = useState<any[]>(initialMessages || []);
 
   useEffect(() => {
-    // 🔌 LIVE WIRE: Watch the messages collection in real-time
     const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
-    
-    const unsub = onSnapshot(q, (snap) => {
-      setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, (error) => {
-      // Fallback in case the Firebase index hasn't been built yet
-      console.warn("Falling back to JS sorting", error);
-      const fallbackUnsub = onSnapshot(collection(db, "messages"), (fallbackSnap) => {
-        // 🔥 FIXED: Added "as any" and typed a, b as "any" to satisfy Vercel
-        let fetched = fallbackSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-        fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
-        setMessages(fetched);
-      });
-    });
+
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      },
+      (error) => {
+        console.warn("Falling back to JS sorting", error);
+        onSnapshot(collection(db, "messages"), (fallbackSnap) => {
+          const fetched = fallbackSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
+          fetched.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+          setMessages(fetched);
+        });
+      }
+    );
 
     return () => unsub();
   }, []);
 
   const markAsRead = async (id: string, currentStatus: string) => {
     try {
-      const newStatus = currentStatus === 'unread' ? 'read' : 'unread';
+      const newStatus = currentStatus === "unread" ? "read" : "unread";
       await updateDoc(doc(db, "messages", id), { status: newStatus });
     } catch (err) {
       alert("Failed to update status.");
@@ -46,80 +47,118 @@ export default function InboxManager({ messages: initialMessages }: { messages?:
   };
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8 border-b-8 border-[var(--border-primary)] pb-4">
-        <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Communications</h2>
-        <p className="font-black uppercase tracking-[0.3em] text-[#06D6A0] text-[10px] mt-1">Direct Messages</p>
+    <div className="space-y-6 text-left w-full">
+      <div className="adm-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p className="adm-eyebrow">Direct Messages</p>
+          <h2 className="adm-title mt-1">Communications & Inbox</h2>
+          <p className="adm-muted mt-1">
+            Review inquiries, sponsorship proposals, and event invitations submitted from the public contact page.
+          </p>
+        </div>
+        <span className="adm-badge adm-badge-accent">
+          {messages.length} {messages.length === 1 ? "Message" : "Messages"}
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {messages.length === 0 ? (
-          <div className="col-span-full py-20 text-center border-4 border-dashed border-[var(--border-primary)]/20 rounded-[2rem]">
-            <p className="font-black uppercase text-gray-400 text-xl">The inbox is empty.</p>
+          <div className="col-span-full py-16 text-center adm-card p-8">
+            <Inbox size={36} className="mx-auto text-adm-fg-3 mb-2" />
+            <p className="adm-h3">The inbox is empty</p>
+            <p className="adm-muted mt-1">New messages from the contact form will appear here in real time.</p>
           </div>
         ) : (
-          messages.map(msg => (
-            <div key={msg.id} className={`bg-white border-4 border-[var(--border-primary)] rounded-[2rem] p-6 sm:p-8 flex flex-col transition-all duration-300 ${msg.status === 'unread' ? 'shadow-[8px_8px_0px_#FF5F5F]' : 'shadow-[8px_8px_0px_var(--border-primary)] opacity-80'}`}>
-              
-              {/* Header: Name, Date, Status */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b-4 border-[var(--border-primary)]/10">
+          messages.map((msg) => {
+            const isUnread = msg.status === "unread";
+            return (
+              <div
+                key={msg.id}
+                className={`adm-card p-5 sm:p-6 flex flex-col justify-between gap-4 transition-all ${
+                  isUnread ? "border-adm-accent/50" : "opacity-90"
+                }`}
+              >
                 <div>
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-black text-xl md:text-2xl uppercase tracking-tighter leading-none">{msg.name}</h3>
-                    {msg.status === 'unread' && <span className="w-3 h-3 bg-[#FF5F5F] rounded-full animate-pulse"></span>}
+                  {/* Header: Name, Date, Status */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 pb-3.5 border-b border-adm-line">
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="font-display font-bold text-xl text-adm-fg leading-tight">
+                          {msg.name}
+                        </h3>
+                        {isUnread && (
+                          <span className="adm-badge adm-badge-danger">Unread</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-adm-fg-3 mt-1">
+                        {msg.createdAt ? new Date(msg.createdAt).toLocaleString() : "Unknown Date"}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => markAsRead(msg.id, msg.status)}
+                      className={`adm-btn adm-btn-sm ${
+                        isUnread ? "adm-btn-primary" : "adm-btn-secondary"
+                      }`}
+                    >
+                      <Check size={13} />
+                      <span>{isUnread ? "Mark as Read" : "Mark Unread"}</span>
+                    </button>
                   </div>
-                  <p className="font-bold text-[10px] uppercase tracking-widest text-gray-400 mt-2">
-                    {msg.createdAt ? new Date(msg.createdAt).toLocaleString() : 'Unknown Date'}
-                  </p>
+
+                  {/* Subject */}
+                  <h4 className="adm-h3 text-adm-accent-text mb-3 border-l-2 border-adm-accent pl-3">
+                    {msg.subject || "General Inquiry"}
+                  </h4>
+
+                  {/* Contact Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-2.5 mb-4">
+                    <a
+                      href={`mailto:${msg.email}`}
+                      className="flex-1 adm-panel px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs text-adm-fg hover:border-adm-line-strong transition-colors overflow-hidden"
+                    >
+                      <span className="font-semibold flex items-center gap-1.5 shrink-0 text-adm-info">
+                        <Mail size={13} />
+                        <span>Email</span>
+                      </span>
+                      <span className="truncate text-adm-fg-2">{msg.email}</span>
+                    </a>
+
+                    {msg.phone && (
+                      <a
+                        href={`tel:${msg.phone}`}
+                        className="flex-1 adm-panel px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs text-adm-fg hover:border-adm-line-strong transition-colors"
+                      >
+                        <span className="font-semibold flex items-center gap-1.5 text-adm-accent-text">
+                          <Phone size={13} />
+                          <span>Call</span>
+                        </span>
+                        <span className="font-mono text-adm-fg-2">{msg.phone}</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {/* The Message Body */}
+                  <div className="adm-panel p-4 text-sm text-adm-fg-2 leading-relaxed whitespace-pre-wrap">
+                    {msg.message}
+                  </div>
                 </div>
-                
-                <button 
-                  onClick={() => markAsRead(msg.id, msg.status)}
-                  className={`px-4 py-2 border-2 border-[var(--border-primary)] rounded-lg font-black text-[9px] uppercase tracking-widest hover:-translate-y-0.5 transition-all ${msg.status === 'unread' ? 'bg-[#FF5F5F] text-white shadow-[2px_2px_0px_var(--border-primary)]' : 'bg-gray-100 hover:bg-gray-200'}`}
-                >
-                  {msg.status === 'unread' ? 'Mark as Read' : 'Mark Unread'}
-                </button>
+
+                {/* Action Buttons */}
+                <div className="pt-3 border-t border-adm-line flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => deleteMessage(msg.id)}
+                    className="adm-btn adm-btn-danger adm-btn-sm"
+                  >
+                    <Trash2 size={13} />
+                    <span>Delete Permanently</span>
+                  </button>
+                </div>
               </div>
-
-              {/* Subject */}
-              <h4 className="font-black text-lg text-[#06D6A0] uppercase mb-4 tracking-tight border-l-4 border-[#06D6A0] pl-3">
-                {msg.subject}
-              </h4>
-
-              {/* 📞 CONTACT BUTTONS (Neo-Brutalist Action Blocks) */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                {/* Email is always required by the form */}
-                <a href={`mailto:${msg.email}`} className="flex-1 flex items-center justify-between bg-blue-100 border-2 border-[var(--border-primary)] py-2.5 px-4 rounded-xl hover:bg-blue-200 transition-colors shadow-[2px_2px_0px_var(--border-primary)] hover:translate-y-0.5 hover:shadow-none group overflow-hidden">
-                  <span className="font-black text-[10px] uppercase flex items-center gap-2 shrink-0">✉️ Email</span>
-                  <span className="font-bold text-[11px] lowercase truncate ml-2">{msg.email}</span>
-                </a>
-                
-                {/* Phone is optional, only shows if they provided it */}
-                {msg.phone && (
-                  <a href={`tel:${msg.phone}`} className="flex-1 flex items-center justify-between bg-[#FFD166] border-2 border-[var(--border-primary)] py-2.5 px-4 rounded-xl hover:bg-yellow-400 transition-colors shadow-[2px_2px_0px_var(--border-primary)] hover:translate-y-0.5 hover:shadow-none group">
-                    <span className="font-black text-[10px] uppercase flex items-center gap-2">📞 Call</span>
-                    <span className="font-bold text-[12px] tracking-widest">{msg.phone}</span>
-                  </a>
-                )}
-              </div>
-
-              {/* The Message Body */}
-              <div className="bg-gray-50 p-6 rounded-2xl border-2 border-[var(--border-primary)]/10 mb-6 flex-1 text-sm md:text-base font-medium leading-relaxed whitespace-pre-wrap">
-                {msg.message}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="mt-auto flex justify-end">
-                <button 
-                  onClick={() => deleteMessage(msg.id)}
-                  className="bg-white text-red-500 border-2 border-red-200 hover:border-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-black text-[10px] uppercase transition-colors"
-                >
-                  Delete Permanently
-                </button>
-              </div>
-
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -2,11 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { 
-  collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, 
-  query, orderBy, serverTimestamp 
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  orderBy,
+  serverTimestamp,
 } from "firebase/firestore";
-import { Plus, Trash2, Edit3, Film, Upload, Video, X, Filter } from "lucide-react";
+import { Plus, Trash2, Edit3, Film, Upload, Video, X, Filter, Loader2 } from "lucide-react";
 
 export default function ArchiveManager() {
   const [productions, setProductions] = useState<any[]>([]);
@@ -104,32 +111,28 @@ export default function ArchiveManager() {
     }
   };
 
-  const filtered = filterType === "all" 
-    ? productions 
-    : productions.filter((p) => p.type === filterType);
+  const filtered =
+    filterType === "all"
+      ? productions
+      : productions.filter((p) => p.type === filterType);
 
   return (
-    <div className="space-y-8 text-left pb-20 w-full">
+    <div className="space-y-6 text-left w-full">
       {/* Header */}
-      <div className="bg-[#FFF9F0] border-4 border-black p-6 md:p-8 shadow-[8px_8px_0px_black] flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div className="adm-card p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="p-2 bg-[#FF5F5F] text-white border-2 border-black shadow-[2px_2px_0px_black]">
-              <Film size={20} />
-            </span>
-            <span className="font-mono font-black text-xs uppercase tracking-widest bg-black text-[#06D6A0] px-3 py-1 border-2 border-black">
-              /archive CINEMA
-            </span>
+          <div className="flex items-center gap-2 mb-1">
+            <Film size={15} className="text-adm-accent-text" />
+            <span className="adm-eyebrow">/archive Cinema Catalog</span>
           </div>
-          <h1 className="font-cinzel text-4xl md:text-6xl font-black uppercase tracking-tighter text-black leading-none">
-            Production Archive
-          </h1>
-          <p className="font-mono text-xs font-bold uppercase tracking-wider text-black/70 mt-2">
-            Manage public past productions, trailers, posters & synopsis displayed on the /archive page.
+          <h1 className="adm-title">Production Archive</h1>
+          <p className="adm-muted mt-1">
+            Manage public past productions, trailers, posters & synopses displayed on the /archive page.
           </p>
         </div>
 
         <button
+          type="button"
           onClick={() => {
             if (isCreating) {
               setIsCreating(false);
@@ -139,48 +142,44 @@ export default function ArchiveManager() {
               setIsCreating(true);
             }
           }}
-          className="w-full md:w-auto bg-[#06D6A0] text-black border-4 border-black px-6 py-4 font-black uppercase text-xs shadow-[6px_6px_0px_black] hover:bg-[#FFD166] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className={`adm-btn w-full md:w-auto ${isCreating ? "adm-btn-secondary" : "adm-btn-primary"}`}
         >
-          {isCreating ? <X size={16} /> : <Plus size={16} strokeWidth={3} />}
+          {isCreating ? <X size={16} /> : <Plus size={16} />}
           <span>{isCreating ? "Close Form" : "Add Production"}</span>
         </button>
       </div>
 
       {/* CREATE / EDIT FORM */}
       {isCreating && (
-        <form
-          onSubmit={handleSubmit}
-          className="bg-[#FFF9F0] border-4 border-black p-6 md:p-8 shadow-[8px_8px_0px_black] space-y-6 font-mono text-xs"
-        >
-          <div className="border-b-4 border-black pb-3 flex items-center justify-between">
-            <h2 className="font-black text-base uppercase tracking-tight text-black flex items-center gap-2">
-              <span className="w-3 h-3 bg-[#FFD166] border border-black" />
+        <form onSubmit={handleSubmit} className="adm-card p-5 sm:p-7 space-y-5">
+          <div className="border-b border-adm-line pb-3 flex items-center justify-between">
+            <h2 className="adm-h2">
               {editingId ? "Edit Archive Title" : "New Archive Title"}
             </h2>
-            <span className="text-[10px] text-gray-500 font-bold uppercase">
+            <span className="adm-badge adm-badge-neutral font-mono">
               {editingId ? `ID: ${editingId}` : "Creating new record"}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
-              <label className="block font-black uppercase text-black mb-1">Production Title *</label>
+              <label className="adm-label">Production Title *</label>
               <input
                 required
                 type="text"
                 placeholder="e.g. COURT MARTIAL"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full bg-white border-4 border-black p-3 font-black text-sm uppercase shadow-[3px_3px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all"
+                className="adm-input font-semibold"
               />
             </div>
 
             <div>
-              <label className="block font-black uppercase text-black mb-1">Production Type *</label>
+              <label className="adm-label">Production Type *</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full bg-white border-4 border-black p-3 font-bold text-xs uppercase shadow-[3px_3px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all"
+                className="adm-input"
               >
                 <option value="stage">Stage Play</option>
                 <option value="nukkad">Nukkad Natak (Street)</option>
@@ -191,55 +190,53 @@ export default function ArchiveManager() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-black uppercase text-black mb-1">Release Year *</label>
+              <label className="adm-label">Release Year *</label>
               <input
                 required
                 type="text"
                 placeholder="e.g. 2024"
                 value={formData.year}
                 onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                className="w-full bg-white border-4 border-black p-3 font-bold text-xs shadow-[3px_3px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all"
+                className="adm-input"
               />
             </div>
 
             <div>
-              <label className="block font-black uppercase text-black mb-1">Trailer / YouTube URL</label>
+              <label className="adm-label">Trailer / YouTube URL</label>
               <input
                 type="url"
                 placeholder="https://youtube.com/watch?v=..."
                 value={formData.trailerUrl}
                 onChange={(e) => setFormData({ ...formData, trailerUrl: e.target.value })}
-                className="w-full bg-white border-4 border-black p-3 font-bold text-xs shadow-[3px_3px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all"
+                className="adm-input"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-black uppercase text-black mb-1">Cinematic Synopsis *</label>
+            <label className="adm-label">Cinematic Synopsis *</label>
             <textarea
               required
               rows={3}
               placeholder="Tell the premise, theme, and dramatic stakes of this production..."
               value={formData.synopsis}
               onChange={(e) => setFormData({ ...formData, synopsis: e.target.value })}
-              className="w-full bg-white border-4 border-black p-3 font-bold text-xs shadow-[3px_3px_0px_black] focus:shadow-none focus:translate-y-1 focus:translate-x-1 outline-none transition-all resize-none"
+              className="adm-input"
             />
           </div>
 
           {/* Poster Image URL & Upload */}
-          <div className="p-4 bg-white border-4 border-black shadow-[4px_4px_0px_black] space-y-3">
-            <label className="block font-black uppercase text-black tracking-wider">
-              Poster Artwork (Image URL or File Upload)
-            </label>
-            <div className="flex flex-col sm:flex-row gap-3 items-center">
+          <div className="adm-panel p-4 space-y-3">
+            <label className="adm-label mb-0">Poster Artwork (Image URL or File Upload)</label>
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
               <input
                 type="url"
                 placeholder="https://... or upload poster image"
                 value={formData.posterUrl}
                 onChange={(e) => setFormData({ ...formData, posterUrl: e.target.value })}
-                className="flex-1 w-full bg-white border-2 border-black p-2.5 font-bold text-xs"
+                className="adm-input flex-1"
               />
-              <label className="w-full sm:w-auto bg-[#FFD166] text-black border-2 border-black px-4 py-2.5 font-black uppercase text-xs flex items-center justify-center gap-2 shadow-[2px_2px_0px_black] hover:bg-black hover:text-[#FFD166] cursor-pointer transition-all shrink-0">
+              <label className="adm-btn adm-btn-secondary cursor-pointer shrink-0">
                 <Upload size={14} />
                 <span>{uploading ? "Uploading..." : "Upload Poster"}</span>
                 <input
@@ -253,7 +250,7 @@ export default function ArchiveManager() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t-2 border-black">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-adm-line">
             <button
               type="button"
               onClick={() => {
@@ -261,14 +258,11 @@ export default function ArchiveManager() {
                 setEditingId(null);
                 setFormData(initialForm);
               }}
-              className="bg-white border-4 border-black px-6 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_black] hover:bg-gray-100 transition-all cursor-pointer"
+              className="adm-btn adm-btn-secondary"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="bg-[#06D6A0] text-black border-4 border-black px-8 py-3 font-black uppercase text-xs shadow-[4px_4px_0px_black] hover:bg-[#FFD166] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all cursor-pointer"
-            >
+            <button type="submit" className="adm-btn adm-btn-primary">
               {editingId ? "Update Production" : "Save to Archive"}
             </button>
           </div>
@@ -276,108 +270,109 @@ export default function ArchiveManager() {
       )}
 
       {/* FILTER TABS */}
-      <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-        <div className="flex items-center gap-2 bg-white border-4 border-black p-1 shadow-[4px_4px_0px_black]">
-          <span className="px-3 py-1 font-black uppercase text-black/50 flex items-center gap-1.5">
-            <Filter size={12} /> TYPE:
+      <div className="adm-card p-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto adm-scroll-x">
+          <span className="text-xs font-semibold text-adm-fg-3 flex items-center gap-1.5 mr-1">
+            <Filter size={13} /> Type:
           </span>
           {["all", "stage", "nukkad", "shortfilm"].map((t) => (
             <button
               key={t}
+              type="button"
               onClick={() => setFilterType(t)}
-              className={`px-3 py-1.5 font-black uppercase transition-all ${
-                filterType === t
-                  ? "bg-black text-[#06D6A0]"
-                  : "text-black hover:bg-gray-100"
-              }`}
+              data-active={filterType === t ? "true" : "false"}
+              className="adm-chip"
             >
               {t === "all" ? "All" : t === "stage" ? "Stage" : t === "nukkad" ? "Nukkad" : "Films"}
             </button>
           ))}
         </div>
 
-        <span className="font-black text-black/60 uppercase">
-          {filtered.length} {filtered.length === 1 ? "TITLE" : "TITLES"} IN ARCHIVE
+        <span className="adm-badge adm-badge-neutral">
+          {filtered.length} {filtered.length === 1 ? "Title" : "Titles"} in Archive
         </span>
       </div>
 
       {/* PRODUCTIONS GRID */}
       {loading ? (
-        <div className="p-12 font-mono font-black uppercase tracking-widest text-center animate-pulse">
-          Opening Archive Vault...
+        <div className="adm-card p-12 flex items-center justify-center gap-3">
+          <Loader2 size={20} className="animate-spin text-adm-accent-text" />
+          <span className="adm-muted">Opening Archive Vault...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border-4 border-black p-12 text-center shadow-[8px_8px_0px_black] font-mono">
-          <Film size={48} className="mx-auto text-black/30 mb-3" />
-          <h3 className="font-black uppercase text-xl text-black">NO PRODUCTIONS FOUND</h3>
-          <p className="text-xs text-gray-500 uppercase mt-1">
+        <div className="adm-card p-12 text-center">
+          <Film size={40} className="mx-auto text-adm-fg-3 mb-3" />
+          <h3 className="adm-h2">No Productions Found</h3>
+          <p className="adm-muted mt-1">
             Click "Add Production" above to publish records to /archive.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-mono">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((prod) => (
             <div
               key={prod.id}
-              className="bg-white border-4 border-black p-5 shadow-[6px_6px_0px_black] hover:shadow-[10px_10px_0px_#06D6A0] transition-all flex flex-col justify-between group"
+              className="adm-card p-5 hover:border-adm-line-strong transition-all flex flex-col justify-between gap-4 group"
             >
               <div>
                 {/* Poster Frame */}
-                <div className="relative aspect-[16/10] w-full bg-black border-2 border-black overflow-hidden mb-4 shadow-[3px_3px_0px_black]">
+                <div className="relative aspect-[16/10] w-full rounded-xl bg-adm-surface-2 border border-adm-line overflow-hidden mb-4">
                   {prod.posterUrl ? (
                     <img
                       src={prod.posterUrl}
                       alt={prod.title}
-                      className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#2D2D2D] flex flex-col items-center justify-center p-4 text-center text-white/50 font-black text-xs uppercase">
-                      <Film size={32} className="mb-2 text-[#FFD166]" />
-                      NO POSTER ART
+                    <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-adm-fg-3 text-xs font-medium">
+                      <Film size={28} className="mb-1.5 text-adm-accent-text opacity-70" />
+                      <span>No Poster Art</span>
                     </div>
                   )}
 
-                  <span className="absolute top-2 right-2 bg-[#FFD166] text-black px-2 py-0.5 font-black text-[9px] uppercase border border-black shadow-[2px_2px_0px_black]">
+                  <span className="absolute top-2.5 right-2.5 adm-badge adm-badge-accent bg-adm-surface/90 backdrop-blur-xs">
                     {prod.year} • {prod.type}
                   </span>
                 </div>
 
-                <h3 className="text-2xl font-black uppercase tracking-tight text-black leading-tight mb-2 group-hover:text-[#FF5F5F] transition-colors">
+                <h3 className="font-display text-xl font-bold text-adm-fg leading-snug mb-2">
                   {prod.title}
                 </h3>
 
-                <p className="text-xs font-bold text-black/75 line-clamp-3 mb-4 leading-relaxed bg-[#FFF9F0] border border-black p-2.5">
+                <p className="text-xs text-adm-fg-2 line-clamp-3 leading-relaxed adm-panel p-3">
                   {prod.synopsis || "No synopsis recorded."}
                 </p>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t-2 border-dashed border-black flex items-center justify-between text-xs">
+              <div className="pt-3 border-t border-adm-line flex items-center justify-between">
                 {prod.trailerUrl ? (
                   <a
                     href={prod.trailerUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 font-black text-[#06D6A0] bg-black px-2 py-1 text-[10px] hover:bg-[#FF5F5F] hover:text-white transition-all"
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
                   >
-                    <Video size={12} />
-                    TRAILER ↗
+                    <Video size={13} className="text-adm-accent-text" />
+                    <span>Trailer ↗</span>
                   </a>
                 ) : (
-                  <span className="text-[10px] text-gray-400 font-bold uppercase">NO TRAILER</span>
+                  <span className="text-xs text-adm-fg-3">No Trailer</span>
                 )}
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
+                    type="button"
                     onClick={() => handleEdit(prod)}
-                    className="p-2 border-2 border-black bg-white hover:bg-[#FFD166] shadow-[2px_2px_0px_black] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                    className="adm-btn adm-btn-secondary adm-btn-icon adm-btn-sm"
                     title="Edit Production"
                   >
                     <Edit3 size={14} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDelete(prod.id, prod.title)}
-                    className="p-2 border-2 border-black bg-white hover:bg-[#FF5F5F] hover:text-white shadow-[2px_2px_0px_black] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                    className="adm-btn adm-btn-danger adm-btn-icon adm-btn-sm"
                     title="Delete Production"
                   >
                     <Trash2 size={14} />

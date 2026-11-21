@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { Search, Trash2, Check, ClipboardList, Loader2 } from "lucide-react";
 
 const RsvpsManager = () => {
   const [rsvps, setRsvps] = useState<any[]>([]);
@@ -11,7 +12,7 @@ const RsvpsManager = () => {
   useEffect(() => {
     const q = query(collection(db, "rsvps"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
-      setRsvps(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setRsvps(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
       setLoading(false);
     });
     return () => unsub();
@@ -25,65 +26,97 @@ const RsvpsManager = () => {
     }
   };
 
-  const filteredRsvps = rsvps.filter(r => 
-    r.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.userName?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRsvps = rsvps.filter(
+    (r) =>
+      r.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.userName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="p-10 font-black opacity-20 uppercase">Loading Guest List...</div>;
+  if (loading) {
+    return (
+      <div className="adm-card p-12 flex items-center justify-center gap-3">
+        <Loader2 size={20} className="animate-spin text-adm-accent-text" />
+        <span className="adm-muted">Loading Guest List...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-12 bg-[var(--bg-primary)] p-4 md:p-8 min-h-screen">
-      <div className="border-b-8 border-[var(--border-primary)] pb-6 flex flex-col md:flex-row justify-between items-end gap-4">
+    <div className="space-y-6 text-left w-full">
+      <div className="adm-card p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-5xl font-black uppercase text-[var(--text-primary)]">Guest List (RSVPs)</h1>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5F5F] mt-2 text-left">Manage Event Ticketing</p>
+          <p className="adm-eyebrow">Manage Event Ticketing</p>
+          <h1 className="adm-title mt-1">Guest List (RSVPs)</h1>
+          <p className="adm-muted mt-1">
+            Track audience ticket reservations and perform real-time door check-in at the auditorium.
+          </p>
         </div>
 
         <div className="w-full md:w-80 relative">
-          <input 
-            type="text" 
-            placeholder="Search Name or Event..." 
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-adm-fg-3 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search Name or Event..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border-4 border-[var(--border-primary)] p-3 rounded-xl font-black uppercase text-[10px] shadow-[4px_4px_0px_var(--border-primary)] outline-none focus:translate-y-1 focus:shadow-none transition-all"
+            className="adm-input pl-9"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredRsvps.map((rsvp) => (
-          <div key={rsvp.id} className="bg-white border-4 border-[var(--border-primary)] p-6 rounded-[2rem] shadow-[8px_8px_0px_var(--border-primary)] flex flex-col">
-            <div className="flex justify-between items-start mb-4">
-              <span className="bg-[#FFD166] border-2 border-[var(--border-primary)] px-3 py-1 rounded-full text-[10px] font-black uppercase">
-                {rsvp.eventName}
-              </span>
-              <button 
-                onClick={() => { if(confirm('Remove this RSVP?')) deleteDoc(doc(db, "rsvps", rsvp.id)) }} 
-                className="text-[#FF5F5F] font-black uppercase hover:scale-110 transition-transform"
-                title="Delete RSVP"
-              >
-                ✕
-              </button>
-            </div>
-            <h3 className="font-black text-xl uppercase mb-1">{rsvp.userName}</h3>
-            <p className="text-xs font-bold text-gray-500 mb-4">{rsvp.userEmail} | {rsvp.userPhone}</p>
-            <div className="mt-auto pt-4 border-t-2 border-[var(--border-primary)]/10 flex justify-between items-center">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">
-                {rsvp.userBranch}
+          <div key={rsvp.id} className="adm-card p-5 flex flex-col justify-between gap-4">
+            <div>
+              <div className="flex justify-between items-start gap-2 mb-3">
+                <span className="adm-badge adm-badge-accent truncate">
+                  {rsvp.eventName || "Show Event"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm("Remove this RSVP?")) deleteDoc(doc(db, "rsvps", rsvp.id));
+                  }}
+                  className="adm-btn adm-btn-danger adm-btn-icon adm-btn-sm shrink-0"
+                  title="Delete RSVP"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+              <h3 className="font-display font-bold text-lg text-adm-fg">{rsvp.userName}</h3>
+              <p className="text-xs text-adm-fg-3 mt-1 break-all">
+                {rsvp.userEmail} {rsvp.userPhone ? `• ${rsvp.userPhone}` : ""}
               </p>
-              <button 
+            </div>
+
+            <div className="pt-3 border-t border-adm-line flex justify-between items-center gap-2">
+              <span className="adm-badge adm-badge-neutral">
+                {rsvp.userBranch || "Guest"}
+              </span>
+              <button
+                type="button"
                 onClick={() => toggleCheckIn(rsvp.id, rsvp.isCheckedIn)}
-                className={`px-3 py-1.5 border-2 border-[var(--border-primary)] rounded-xl text-[9px] font-black uppercase shadow-[2px_2px_0px_var(--border-primary)] active:translate-y-0.5 active:shadow-none transition-all ${rsvp.isCheckedIn ? 'bg-[#06D6A0] text-[var(--text-primary)]' : 'bg-white text-[var(--text-primary)] hover:bg-gray-50'}`}
+                className={`adm-btn adm-btn-sm ${
+                  rsvp.isCheckedIn ? "adm-btn-success" : "adm-btn-secondary"
+                }`}
               >
-                {rsvp.isCheckedIn ? '✓ IN' : 'Admit'}
+                {rsvp.isCheckedIn ? (
+                  <>
+                    <Check size={13} />
+                    <span>Checked In</span>
+                  </>
+                ) : (
+                  <span>Admit Guest</span>
+                )}
               </button>
             </div>
           </div>
         ))}
         {filteredRsvps.length === 0 && (
-          <div className="col-span-full p-20 border-4 border-dashed border-[var(--border-primary)]/20 rounded-[3rem] text-center opacity-40 font-black uppercase italic tracking-widest">
-            No RSVPs Found
+          <div className="col-span-full py-16 adm-card p-8 text-center">
+            <ClipboardList size={36} className="mx-auto text-adm-fg-3 mb-2" />
+            <p className="adm-h3">No RSVPs Found</p>
+            <p className="adm-muted mt-1">Audience reservations will appear here when guests RSVP to events.</p>
           </div>
         )}
       </div>

@@ -1,12 +1,31 @@
 "use client";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { 
-  collection, onSnapshot, addDoc, deleteDoc, 
-  doc, updateDoc, serverTimestamp, query, orderBy 
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit3, Camera, History, Tag, Star, Film, GraduationCap, Archive, X } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit3,
+  Camera,
+  Tag,
+  Star,
+  Film,
+  GraduationCap,
+  Archive,
+  X,
+  Loader2,
+} from "lucide-react";
 
 export default function TimelineManager() {
   const [events, setEvents] = useState<any[]>([]);
@@ -15,12 +34,11 @@ export default function TimelineManager() {
   const [uploading, setUploading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  // 🔥 Categories Config: Icons & Colors for the tags
   const categories = [
-    { id: 'milestone', label: 'Milestone', icon: Star, color: 'bg-[#FFD166]' },
-    { id: 'play', label: 'Production/Play', icon: Film, color: 'bg-[#FF5F5F]' },
-    { id: 'workshop', label: 'Workshop', icon: GraduationCap, color: 'bg-[#06D6A0]' },
-    { id: 'achievement', label: 'Achievement', icon: Archive, color: 'bg-[#2D2D2D] text-white' }
+    { id: "milestone", label: "Milestone", icon: Star, badge: "adm-badge-accent" },
+    { id: "play", label: "Production/Play", icon: Film, badge: "adm-badge-danger" },
+    { id: "workshop", label: "Workshop", icon: GraduationCap, badge: "adm-badge-success" },
+    { id: "achievement", label: "Achievement", icon: Archive, badge: "adm-badge-violet" },
   ];
 
   const initialForm = {
@@ -30,7 +48,7 @@ export default function TimelineManager() {
     description: "",
     photo1: "",
     photo2: "",
-    category: "milestone" 
+    category: "milestone",
   };
 
   const [formData, setFormData] = useState<any>(initialForm);
@@ -39,13 +57,16 @@ export default function TimelineManager() {
   useEffect(() => {
     const q = query(collection(db, "timeline"), orderBy("year", "desc"));
     const unsub = onSnapshot(q, (snap) => {
-      setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setEvents(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
       setLoading(false);
     });
     return () => unsub();
   }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'photo1' | 'photo2') => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "photo1" | "photo2"
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
@@ -53,18 +74,26 @@ export default function TimelineManager() {
     data.append("image", file);
     try {
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: "POST", body: data,
+        method: "POST",
+        body: data,
       });
       const json = await res.json();
       if (json.success) setFormData((prev: any) => ({ ...prev, [field]: json.data.url }));
-    } catch (err) { alert("Upload error."); } finally { setUploading(false); }
+    } catch (err) {
+      alert("Upload error.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (editingId) {
-        await updateDoc(doc(db, "timeline", editingId), { ...formData, updatedAt: serverTimestamp() });
+        await updateDoc(doc(db, "timeline", editingId), {
+          ...formData,
+          updatedAt: serverTimestamp(),
+        });
       } else {
         await addDoc(collection(db, "timeline"), { ...formData, createdAt: Date.now() });
       }
@@ -72,7 +101,9 @@ export default function TimelineManager() {
       setFormData(initialForm);
       setEditingId(null);
       alert("Legacy Updated! 🏛️");
-    } catch (err) { alert("Save error."); }
+    } catch (err) {
+      alert("Save error.");
+    }
   };
 
   const openForm = (ev: any = initialForm) => {
@@ -81,74 +112,116 @@ export default function TimelineManager() {
     setIsFormOpen(true);
   };
 
-  if (loading) return <div className="p-10 font-black opacity-20 uppercase tracking-widest text-center">Opening Archives...</div>;
+  if (loading) {
+    return (
+      <div className="adm-card p-12 flex items-center justify-center gap-3">
+        <Loader2 size={20} className="animate-spin text-adm-accent-text" />
+        <span className="adm-muted">Opening Timeline Chronicle...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 md:p-8 bg-[var(--bg-primary)] min-h-screen text-left">
-      
+    <div className="space-y-6 text-left w-full">
       {/* HEADER */}
-      <div className="mb-12 border-b-8 border-[var(--border-primary)] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div className="adm-card p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-[var(--text-primary)]">Chronicle</h2>
-          <p className="font-black uppercase tracking-[0.4em] text-[#FF5F5F] text-[10px] md:text-xs mt-2">Curate Swaang's Historical Timeline</p>
+          <p className="adm-eyebrow">Curate Swaang's Historical Timeline</p>
+          <h2 className="adm-title mt-1">Chronicle (Timeline & Journey)</h2>
+          <p className="adm-muted mt-1">
+            Milestones published here power both the homepage 3-card Journey Glimpse and the full /journey archive.
+          </p>
         </div>
-        <button 
-          onClick={() => openForm()} 
-          className="w-full md:w-auto bg-[#06D6A0] text-[var(--border-primary)] border-4 border-[var(--border-primary)] px-6 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-[6px_6px_0px_var(--border-primary)] hover:translate-y-1 hover:shadow-none transition-all active:scale-95"
+        <button
+          type="button"
+          onClick={() => openForm()}
+          className="adm-btn adm-btn-primary w-full md:w-auto"
         >
-          <Plus strokeWidth={3} /> Add Chronicle
+          <Plus size={16} />
+          <span>Add Chronicle</span>
         </button>
       </div>
 
       {/* FULL WIDTH GRID LAYOUT */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {events.map((ev) => {
-          const catObj = categories.find(c => c.id === ev.category) || categories[0];
+          const catObj = categories.find((c) => c.id === ev.category) || categories[0];
+          const CatIcon = catObj.icon;
           return (
-            <div key={ev.id} className="bg-white border-4 border-[var(--border-primary)] rounded-[2.5rem] shadow-[8px_8px_0px_var(--border-primary)] overflow-hidden flex flex-col group hover:translate-y-[-4px] transition-transform">
-              
+            <div key={ev.id} className="adm-card overflow-hidden flex flex-col group">
               {/* Card Header Images */}
-              <div className="h-48 bg-[#2D2D2D] relative flex border-b-4 border-[var(--border-primary)]">
+              <div className="h-44 bg-adm-surface-2 relative flex border-b border-adm-line">
                 {ev.photo1 ? (
-                  <div className="flex-1 h-full border-r-2 border-[var(--border-primary)]">
-                    <img src={ev.photo1} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Memory 1" />
+                  <div className="flex-1 h-full border-r border-adm-line">
+                    <img
+                      src={ev.photo1}
+                      className="w-full h-full object-cover"
+                      alt="Memory 1"
+                    />
                   </div>
                 ) : null}
                 {ev.photo2 ? (
-                  <div className="flex-1 h-full border-l-2 border-[var(--border-primary)]">
-                    <img src={ev.photo2} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Memory 2" />
+                  <div className="flex-1 h-full">
+                    <img
+                      src={ev.photo2}
+                      className="w-full h-full object-cover"
+                      alt="Memory 2"
+                    />
                   </div>
                 ) : null}
                 {!ev.photo1 && !ev.photo2 && (
-                   <div className="flex-1 flex items-center justify-center">
-                     <span className="text-white/20 font-black italic text-4xl">{ev.year}</span>
-                   </div>
+                  <div className="flex-1 flex items-center justify-center">
+                    <span className="font-display font-bold text-3xl text-adm-fg-3">
+                      {ev.year}
+                    </span>
+                  </div>
                 )}
-                
+
                 {/* Category Badge */}
-                <div className={`absolute top-0 left-0 px-4 py-2 ${catObj.color} border-r-4 border-b-4 border-[var(--border-primary)] rounded-br-2xl flex items-center gap-2`}>
-                  <catObj.icon size={14} strokeWidth={3} className={catObj.id === 'achievement' ? 'text-white' : 'text-black'} />
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${catObj.id === 'achievement' ? 'text-white' : 'text-black'}`}>{catObj.label}</span>
+                <div className="absolute top-3 left-3">
+                  <span className={`adm-badge ${catObj.badge} bg-adm-surface/90 backdrop-blur-xs`}>
+                    <CatIcon size={12} />
+                    <span>{catObj.label}</span>
+                  </span>
                 </div>
               </div>
 
               {/* Card Content */}
-              <div className="p-6 flex flex-col flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-[10px] font-black px-3 py-1 bg-[#FF5F5F] text-white rounded-lg border-2 border-[var(--border-primary)]">{ev.year}</span>
-                  {ev.date && <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">{ev.date}</span>}
+              <div className="p-5 flex flex-col flex-1">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="adm-badge adm-badge-accent font-mono">{ev.year}</span>
+                  {ev.date && (
+                    <span className="text-xs text-adm-fg-3">{ev.date}</span>
+                  )}
                 </div>
-                <h4 className="font-black uppercase text-xl leading-tight mb-4">{ev.event}</h4>
-                <p className="text-sm font-medium opacity-80 line-clamp-3 mb-6 flex-1">{ev.description}</p>
-                
+                <h4 className="font-display font-bold text-lg text-adm-fg leading-snug mb-2">
+                  {ev.event}
+                </h4>
+                <p className="text-xs text-adm-fg-2 line-clamp-3 mb-4 flex-1">
+                  {ev.description}
+                </p>
+
                 {/* Actions */}
-                <div className="flex gap-3 mt-auto pt-4 border-t-2 border-dashed border-[var(--border-primary)]/20">
-                   <button onClick={() => openForm(ev)} className="flex-1 flex items-center justify-center gap-2 p-3 border-2 border-[var(--border-primary)] rounded-xl font-black uppercase text-[10px] hover:bg-[#FFD166] transition-colors">
-                     <Edit3 size={14} /> Edit
-                   </button>
-                   <button onClick={async () => { if(confirm('Erase this event?')) await deleteDoc(doc(db, "timeline", ev.id)) }} className="p-3 border-2 border-red-500 rounded-xl hover:bg-red-50 text-red-500 transition-colors">
-                     <Trash2 size={16} />
-                   </button>
+                <div className="flex gap-2 mt-auto pt-3 border-t border-adm-line">
+                  <button
+                    type="button"
+                    onClick={() => openForm(ev)}
+                    className="adm-btn adm-btn-secondary adm-btn-sm flex-1"
+                  >
+                    <Edit3 size={13} />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (confirm("Erase this event?"))
+                        await deleteDoc(doc(db, "timeline", ev.id));
+                    }}
+                    className="adm-btn adm-btn-danger adm-btn-icon adm-btn-sm"
+                    title="Delete"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -159,131 +232,190 @@ export default function TimelineManager() {
       {/* 🎬 CINEMATIC OVERLAY FORM */}
       <AnimatePresence>
         {isFormOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
-          >
-            <motion.div 
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="bg-white border-4 border-[var(--border-primary)] w-full max-w-3xl rounded-[3rem] shadow-[15px_15px_0px_var(--border-primary)] relative my-8"
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsFormOpen(false)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.96, y: 16, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.96, y: 12, opacity: 0 }}
+              className="adm-card w-full max-w-2xl relative z-10 my-auto p-6 sm:p-8"
+              style={{ boxShadow: "var(--adm-shadow-lg)" }}
             >
-              {/* Close Button */}
-              <button 
-                onClick={() => setIsFormOpen(false)}
-                className="absolute -top-4 -right-4 bg-[#FF5F5F] text-white border-4 border-[var(--border-primary)] p-2 rounded-full hover:scale-110 transition-transform z-10"
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-5 max-h-[82vh] overflow-y-auto pr-1"
               >
-                <X strokeWidth={3} />
-              </button>
-
-              <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-8">
-                
-                <div className="border-b-4 border-[var(--border-primary)] pb-4 mb-8">
-                   <h3 className="text-3xl font-black uppercase tracking-tighter text-[var(--text-primary)]">
-                     {editingId ? "Edit Chronicle" : "New Chronicle Entry"}
-                   </h3>
+                <div className="flex items-center justify-between border-b border-adm-line pb-4">
+                  <h3 className="adm-title text-2xl">
+                    {editingId ? "Edit Chronicle" : "New Chronicle Entry"}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsFormOpen(false)}
+                    className="adm-btn adm-btn-secondary adm-btn-icon adm-btn-sm"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
 
                 {/* Category Selection */}
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-2 flex items-center gap-1">
-                    <Tag size={12} /> Event Category
+                <div className="space-y-2">
+                  <label className="adm-label flex items-center gap-1.5">
+                    <Tag size={13} />
+                    <span>Event Category</span>
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setFormData({...formData, category: cat.id})}
-                        className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-[var(--border-primary)] transition-all ${
-                          formData.category === cat.id ? `${cat.color} -translate-y-1 shadow-[4px_4px_0px_var(--border-primary)]` : 'bg-gray-50 opacity-60 hover:opacity-100'
-                        }`}
-                      >
-                        <cat.icon size={20} strokeWidth={2.5} className={formData.category === cat.id && cat.id === 'achievement' ? 'text-white' : 'text-black'} />
-                        <span className={`text-[9px] font-black uppercase tracking-widest text-center ${formData.category === cat.id && cat.id === 'achievement' ? 'text-white' : 'text-black'}`}>{cat.label}</span>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {categories.map((cat) => {
+                      const CatIcon = cat.icon;
+                      const active = formData.category === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, category: cat.id })}
+                          className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all ${
+                            active
+                              ? "bg-adm-accent/15 border-adm-accent text-adm-fg font-semibold"
+                              : "bg-adm-surface-2 border-adm-line text-adm-fg-2 hover:text-adm-fg"
+                          }`}
+                        >
+                          <CatIcon size={18} className={active ? "text-adm-accent-text" : ""} />
+                          <span className="text-xs text-center">{cat.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Time Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t-2 border-dashed border-[var(--border-primary)]/20">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-2">Legacy Year (Required)</label>
-                    <input required type="text" placeholder="e.g. 2024" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="w-full border-4 border-[var(--border-primary)] p-4 rounded-2xl font-black text-xl focus:border-[#06D6A0] outline-none" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="adm-label">Legacy Year (Required) *</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. 2024"
+                      value={formData.year}
+                      onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                      className="adm-input"
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-2">Specific Date (Optional)</label>
-                    <input type="text" placeholder="e.g. 15th August" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full border-4 border-[var(--border-primary)] p-4 rounded-2xl font-bold text-lg focus:border-[#06D6A0] outline-none" />
+                  <div>
+                    <label className="adm-label">Specific Date (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 15th August"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="adm-input"
+                    />
                   </div>
                 </div>
 
                 {/* Event Info */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-2">Event Title (Required)</label>
-                  <input required type="text" placeholder="e.g. Samvid 2024 Launch" value={formData.event} onChange={e => setFormData({...formData, event: e.target.value})} className="w-full border-4 border-[var(--border-primary)] p-4 rounded-2xl font-black text-2xl uppercase focus:border-[#FFD166] outline-none" />
+                <div>
+                  <label className="adm-label">Event Title (Required) *</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Samvid 2024 Launch"
+                    value={formData.event}
+                    onChange={(e) => setFormData({ ...formData, event: e.target.value })}
+                    className="adm-input font-semibold"
+                  />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-2">Story/Description (Required)</label>
-                  <textarea required placeholder="Describe the milestone..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full border-4 border-[var(--border-primary)] p-4 rounded-2xl font-medium text-lg h-32 resize-none focus:border-[#FFD166] outline-none" />
+                <div>
+                  <label className="adm-label">Story / Description (Required) *</label>
+                  <textarea
+                    required
+                    placeholder="Describe the milestone..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="adm-input"
+                  />
                 </div>
 
                 {/* Media Uploads */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t-2 border-dashed border-[var(--border-primary)]/20">
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-2">Memory 01 (Cover)</p>
-                    <label className="block aspect-video bg-[var(--bg-primary)] border-4 border-dashed border-[var(--border-primary)] rounded-3xl overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors relative group">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="adm-label">Memory 01 (Cover)</label>
+                    <label className="block aspect-video adm-panel overflow-hidden cursor-pointer relative group">
                       {formData.photo1 ? (
-                        <img src={formData.photo1} className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" alt="Memory 1" />
+                        <img
+                          src={formData.photo1}
+                          className="w-full h-full object-cover"
+                          alt="Memory 1"
+                        />
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center opacity-40">
-                          <Camera size={32} />
-                          <span className="text-[10px] font-black mt-2">UPLOAD</span>
+                        <div className="w-full h-full flex flex-col items-center justify-center text-adm-fg-3">
+                          <Camera size={24} />
+                          <span className="text-xs font-medium mt-1.5">Upload Photo 1</span>
                         </div>
                       )}
-                      {formData.photo1 && (
-                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="bg-black text-white px-4 py-2 font-black uppercase text-[10px] rounded-lg">Change</span>
-                         </div>
-                      )}
-                      <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, 'photo1')} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, "photo1")}
+                      />
                     </label>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-2">Memory 02 (Supporting)</p>
-                    <label className="block aspect-video bg-[var(--bg-primary)] border-4 border-dashed border-[var(--border-primary)] rounded-3xl overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors relative group">
+
+                  <div>
+                    <label className="adm-label">Memory 02 (Supporting)</label>
+                    <label className="block aspect-video adm-panel overflow-hidden cursor-pointer relative group">
                       {formData.photo2 ? (
-                        <img src={formData.photo2} className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" alt="Memory 2" />
+                        <img
+                          src={formData.photo2}
+                          className="w-full h-full object-cover"
+                          alt="Memory 2"
+                        />
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center opacity-40">
-                          <Camera size={32} />
-                          <span className="text-[10px] font-black mt-2">UPLOAD</span>
+                        <div className="w-full h-full flex flex-col items-center justify-center text-adm-fg-3">
+                          <Camera size={24} />
+                          <span className="text-xs font-medium mt-1.5">Upload Photo 2</span>
                         </div>
                       )}
-                      {formData.photo2 && (
-                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="bg-black text-white px-4 py-2 font-black uppercase text-[10px] rounded-lg">Change</span>
-                         </div>
-                      )}
-                      <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, 'photo2')} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, "photo2")}
+                      />
                     </label>
                   </div>
                 </div>
 
-                <div className="pt-6">
-                  <button type="submit" disabled={uploading} className="w-full bg-[#06D6A0] text-[var(--border-primary)] border-4 border-[var(--border-primary)] py-5 rounded-2xl font-black uppercase tracking-widest shadow-[8px_8px_0px_var(--border-primary)] hover:translate-y-1 hover:shadow-none transition-all text-xl">
-                    {uploading ? "Uploading Media..." : (editingId ? "Update History" : "Publish to Chronicle")}
+                <div className="pt-3 border-t border-adm-line flex justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsFormOpen(false)}
+                    className="adm-btn adm-btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={uploading}
+                    className="adm-btn adm-btn-primary"
+                  >
+                    {uploading
+                      ? "Uploading Media..."
+                      : editingId
+                      ? "Update History"
+                      : "Publish to Chronicle"}
                   </button>
                 </div>
-
               </form>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

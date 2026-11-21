@@ -4,6 +4,30 @@
   --color-brand-card: var(--card-primary);
 }
 
+/* Admin design tokens exposed as Tailwind utilities (bg-adm-surface, text-adm-fg, ...).
+   Values resolve from the active .adm-dark / .adm-light theme scope below. */
+@theme inline {
+  --color-adm-bg: var(--adm-bg);
+  --color-adm-surface: var(--adm-surface);
+  --color-adm-surface-2: var(--adm-surface-2);
+  --color-adm-surface-3: var(--adm-surface-3);
+  --color-adm-line: var(--adm-line);
+  --color-adm-line-strong: var(--adm-line-strong);
+  --color-adm-fg: var(--adm-fg);
+  --color-adm-fg-2: var(--adm-fg-2);
+  --color-adm-fg-3: var(--adm-fg-3);
+  --color-adm-accent: var(--adm-accent);
+  --color-adm-accent-hover: var(--adm-accent-hover);
+  --color-adm-accent-fg: var(--adm-accent-fg);
+  --color-adm-accent-text: var(--adm-accent-text);
+  --color-adm-success: var(--adm-success);
+  --color-adm-danger: var(--adm-danger);
+  --color-adm-info: var(--adm-info);
+  --color-adm-warning: var(--adm-warning);
+  --color-adm-violet: var(--adm-violet);
+  --font-display: var(--adm-font-display), "Cinzel", Georgia, serif;
+}
+
 @layer utilities {
   .bg-brand-bg { background-color: var(--bg-primary); }
   .text-brand-text { color: var(--text-primary); }
@@ -40,6 +64,7 @@
 }
 
 /* Notice Marquee - Colorful Edition */
+/* Thin Notice Marquee */
 @keyframes marquee {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
@@ -49,16 +74,16 @@
   display: inline-block;
   padding-left: 100%;
   animation: marquee 40s linear infinite;
-  font-size: 10px;
+  font-size: 10px; /* Smaller text */
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #fff;
-  line-height: 24px;
+  line-height: 24px; /* Matches the new thin height */
 }
 
 .notice-band-container {
-  height: 28px;
+  height: 28px; /* Very thin */
   background-color: #FF5F5F;
   border-bottom: 2px solid #2D2D2D;
   overflow: hidden;
@@ -67,26 +92,51 @@
   align-items: center;
 }
 
-/* 🔳 GLOBAL SCROLLBARS */
+/* ------------------------------------- */
+/* 🔳 GLOBAL NEO-BRUTALIST SCROLLBARS    */
+/* ------------------------------------- */
 ::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 ::-webkit-scrollbar-track {
   background: #FFF9F0;
-  border-left: 2px solid #000;
+  border-left: 4px solid #000;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #FF5F5F;
-  border: 2px solid #000;
+  border: 4px solid #000;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #06D6A0;
 }
 
+/* Specific scoping for containers asking for it explicitly */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #FFF9F0;
+  border-left: 4px solid #000;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #06D6A0;
+  border: 4px solid #000;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #FF5F5F;
+}
+
+/* ------------------------------------- */
+/* 🔳 BRUTALIST BUTTON (Heavy Press)     */
+/* ------------------------------------- */
 .brutalist-button {
   transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 4px 4px 0px #000;
@@ -102,237 +152,213 @@
 }
 
 /* =========================================================================
-   🎭 SWAANG STUDIO ADMIN THEME ENGINE (HIGH CONTRAST & FULL READABILITY)
+   🎭 SWAANG STUDIO — ADMIN DESIGN SYSTEM
+   Scoped to `.adm` so the public site is never affected.
+   Every admin component styles itself with these tokens, so text contrast
+   is guaranteed in both themes (no !important overrides needed).
    ========================================================================= */
 
-/* 1. DARK STUDIO PALETTE */
-.admin-theme-dark {
-  --adm-bg: #0E0E12;
-  --adm-sidebar: #121216;
-  --adm-card: #16161B;
-  --adm-card-inner: #1C1C22;
-  --adm-border: rgba(255, 255, 255, 0.12);
-  --adm-border-subtle: rgba(255, 255, 255, 0.06);
-  --adm-text-head: #FFFFFF;
-  --adm-text-body: #E4E4E7;
-  --adm-text-muted: #A1A1AA;
-  --adm-input-bg: #1A1A20;
-  --adm-input-border: rgba(255, 255, 255, 0.15);
-  --adm-card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
-  --adm-scroll-thumb: rgba(255, 255, 255, 0.15);
-  --adm-scroll-track: #0E0E12;
-  background-color: var(--adm-bg) !important;
-  color: var(--adm-text-body) !important;
+.adm-dark {
+  color-scheme: dark;
+  --adm-bg: #0E0E11;
+  --adm-surface: #16161A;
+  --adm-surface-2: #1D1D22;
+  --adm-surface-3: #26262C;
+  --adm-line: #28282F;
+  --adm-line-strong: #3A3A43;
+  --adm-fg: #F5F5F4;
+  --adm-fg-2: #C9C9CF;
+  --adm-fg-3: #8E8E98;
+  --adm-accent: #F5B83D;
+  --adm-accent-hover: #FFC95C;
+  --adm-accent-fg: #1C1300;
+  --adm-accent-text: #F7C35F;
+  --adm-success: #34D399;
+  --adm-danger: #F87171;
+  --adm-info: #60A5FA;
+  --adm-warning: #FBBF24;
+  --adm-violet: #A78BFA;
+  --adm-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px -18px rgba(0, 0, 0, 0.8);
+  --adm-shadow-lg: 0 30px 80px -20px rgba(0, 0, 0, 0.75);
 }
 
-/* 2. LIGHT ATELIER PALETTE */
-.admin-theme-light {
-  --adm-bg: #F8F6F0;
-  --adm-sidebar: #FFFFFF;
-  --adm-card: #FFFFFF;
-  --adm-card-inner: #F4F1EA;
-  --adm-border: #E5E0D5;
-  --adm-border-subtle: #ECE8E0;
-  --adm-text-head: #09090B;
-  --adm-text-body: #27272A;
-  --adm-text-muted: #52525B;
-  --adm-input-bg: #FFFFFF;
-  --adm-input-border: #D1D5DB;
-  --adm-card-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06), 0 0 0 1px #E5E0D5;
-  --adm-scroll-thumb: rgba(0, 0, 0, 0.15);
-  --adm-scroll-track: #F8F6F0;
-  background-color: var(--adm-bg) !important;
-  color: var(--adm-text-body) !important;
+.adm-light {
+  color-scheme: light;
+  --adm-bg: #F5F3EE;
+  --adm-surface: #FFFFFF;
+  --adm-surface-2: #F4F2ED;
+  --adm-surface-3: #EAE7E0;
+  --adm-line: #E5E1D8;
+  --adm-line-strong: #D2CDC2;
+  --adm-fg: #1A1A1E;
+  --adm-fg-2: #45454D;
+  --adm-fg-3: #66666F;
+  --adm-accent: #F2A516;
+  --adm-accent-hover: #E39410;
+  --adm-accent-fg: #1C1300;
+  --adm-accent-text: #9A5B05;
+  --adm-success: #047857;
+  --adm-danger: #C0262D;
+  --adm-info: #1D4ED8;
+  --adm-warning: #A16207;
+  --adm-violet: #6D28D9;
+  --adm-shadow: 0 1px 2px rgba(28, 25, 20, 0.04), 0 10px 30px -18px rgba(28, 25, 20, 0.18);
+  --adm-shadow-lg: 0 30px 80px -20px rgba(28, 25, 20, 0.28);
 }
 
-/* Studio scrollbars for admin */
-.admin-theme-dark ::-webkit-scrollbar,
-.admin-theme-light ::-webkit-scrollbar,
-.admin-theme-dark .custom-scrollbar::-webkit-scrollbar,
-.admin-theme-light .custom-scrollbar::-webkit-scrollbar {
-  width: 8px !important;
-  height: 8px !important;
-}
+@layer components {
+  /* ---- Shell ---- */
+  .adm {
+    background-color: var(--adm-bg);
+    color: var(--adm-fg);
+    font-family: var(--adm-font-ui), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .adm,
+  .adm * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--adm-line-strong) transparent;
+  }
+  .adm ::selection {
+    background: color-mix(in oklab, var(--adm-accent) 35%, transparent);
+    color: var(--adm-fg);
+  }
 
-.admin-theme-dark ::-webkit-scrollbar-track,
-.admin-theme-light ::-webkit-scrollbar-track {
-  background: var(--adm-scroll-track) !important;
-  border: none !important;
-}
+  /* ---- Surfaces ---- */
+  .adm-card {
+    @apply rounded-2xl border border-adm-line bg-adm-surface;
+    box-shadow: var(--adm-shadow);
+  }
+  .adm-panel {
+    @apply rounded-xl border border-adm-line bg-adm-surface-2;
+  }
 
-.admin-theme-dark ::-webkit-scrollbar-thumb,
-.admin-theme-light ::-webkit-scrollbar-thumb {
-  background: var(--adm-scroll-thumb) !important;
-  border-radius: 9999px !important;
-  border: none !important;
-}
+  /* ---- Typography ---- */
+  .adm-title {
+    @apply font-display text-[26px] leading-[1.15] font-bold tracking-tight text-adm-fg md:text-[34px];
+  }
+  .adm-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-adm-accent-text;
+  }
+  .adm-h2 {
+    @apply text-lg font-semibold tracking-tight text-adm-fg;
+  }
+  .adm-h3 {
+    @apply text-[15px] font-semibold text-adm-fg;
+  }
+  .adm-text {
+    @apply text-sm leading-relaxed text-adm-fg-2;
+  }
+  .adm-muted {
+    @apply text-[13px] text-adm-fg-3;
+  }
+  .adm-label {
+    @apply mb-1.5 block text-[13px] font-medium text-adm-fg-2;
+  }
+  .adm-hint {
+    @apply mt-1.5 text-xs text-adm-fg-3;
+  }
+  .adm-link {
+    @apply font-medium text-adm-accent-text underline-offset-4 hover:underline;
+  }
+  .adm-kbd {
+    @apply inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-adm-line-strong bg-adm-surface-2 px-1.5 font-mono text-[11px] font-medium text-adm-fg-3;
+  }
 
-/* Normalize all chunky borders to 1px */
-.admin-theme-dark .border-8,
-.admin-theme-dark .border-4,
-.admin-theme-dark .border-2,
-.admin-theme-light .border-8,
-.admin-theme-light .border-4,
-.admin-theme-light .border-2 {
-  border-width: 1px !important;
-}
+  /* ---- Form controls ---- */
+  .adm-input {
+    @apply w-full rounded-xl border border-adm-line-strong bg-adm-surface-2 px-3.5 py-2.5 text-base text-adm-fg outline-none transition placeholder:text-adm-fg-3 hover:border-adm-fg-3 focus:border-adm-accent focus:ring-4 focus:ring-adm-accent/15 disabled:cursor-not-allowed disabled:opacity-60 md:text-sm;
+  }
+  textarea.adm-input {
+    @apply min-h-24 resize-y leading-relaxed;
+  }
+  select.adm-input {
+    @apply cursor-pointer pr-9;
+  }
+  .adm-check {
+    @apply h-4 w-4 shrink-0 cursor-pointer rounded;
+    accent-color: var(--adm-accent);
+  }
+  .adm-range {
+    @apply w-full cursor-pointer;
+    accent-color: var(--adm-accent);
+  }
 
-/* Normalize chunky border colors */
-.admin-theme-dark [class*="border-black"],
-.admin-theme-dark [class*="border-[var(--border-primary)]"],
-.admin-theme-light [class*="border-black"],
-.admin-theme-light [class*="border-[var(--border-primary)]"] {
-  border-color: var(--adm-border) !important;
-}
+  /* ---- Buttons ---- */
+  .adm-btn {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition select-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-adm-accent/25 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+  }
+  .adm-btn-primary {
+    @apply bg-adm-accent text-adm-accent-fg hover:bg-adm-accent-hover;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 8px 20px -10px color-mix(in oklab, var(--adm-accent) 80%, transparent);
+  }
+  .adm-btn-secondary {
+    @apply border border-adm-line-strong bg-adm-surface-2 text-adm-fg hover:bg-adm-surface-3;
+  }
+  .adm-btn-ghost {
+    @apply text-adm-fg-2 hover:bg-adm-surface-2 hover:text-adm-fg;
+  }
+  .adm-btn-danger {
+    @apply border border-adm-danger/30 bg-adm-danger/10 text-adm-danger hover:bg-adm-danger/20;
+  }
+  .adm-btn-success {
+    @apply border border-adm-success/30 bg-adm-success/10 text-adm-success hover:bg-adm-success/20;
+  }
+  .adm-btn-sm {
+    @apply min-h-8 rounded-lg px-3 text-[13px];
+  }
+  .adm-btn-lg {
+    @apply min-h-12 px-5 text-[15px];
+  }
+  .adm-btn-icon {
+    @apply w-10 px-0;
+  }
+  .adm-btn-icon.adm-btn-sm {
+    @apply w-8;
+  }
 
-/* Replace all harsh black box shadows */
-.admin-theme-dark [class*="shadow-["],
-.admin-theme-light [class*="shadow-["] {
-  box-shadow: var(--adm-card-shadow) !important;
-}
+  /* ---- Badges ---- */
+  .adm-badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap;
+  }
+  .adm-badge-neutral { @apply border-adm-line bg-adm-surface-2 text-adm-fg-2; }
+  .adm-badge-accent { @apply border-adm-accent/35 bg-adm-accent/12 text-adm-accent-text; }
+  .adm-badge-success { @apply border-adm-success/30 bg-adm-success/12 text-adm-success; }
+  .adm-badge-danger { @apply border-adm-danger/30 bg-adm-danger/12 text-adm-danger; }
+  .adm-badge-info { @apply border-adm-info/30 bg-adm-info/12 text-adm-info; }
+  .adm-badge-warning { @apply border-adm-warning/30 bg-adm-warning/12 text-adm-warning; }
+  .adm-badge-violet { @apply border-adm-violet/30 bg-adm-violet/12 text-adm-violet; }
 
-/* Smooth out oversized radiuses */
-.admin-theme-dark .rounded-\[3rem\],
-.admin-theme-dark .rounded-\[3\.5rem\],
-.admin-theme-dark .rounded-\[2\.5rem\],
-.admin-theme-dark .rounded-\[2rem\],
-.admin-theme-light .rounded-\[3rem\],
-.admin-theme-light .rounded-\[3\.5rem\],
-.admin-theme-light .rounded-\[2\.5rem\],
-.admin-theme-light .rounded-\[2rem\] {
-  border-radius: 1.25rem !important;
-}
+  /* ---- Segmented control & filter chips ---- */
+  .adm-seg {
+    @apply inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-adm-line bg-adm-surface-2 p-1;
+    scrollbar-width: none;
+  }
+  .adm-seg-item {
+    @apply inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-adm-fg-2 transition hover:text-adm-fg;
+  }
+  .adm-seg-item[data-active="true"] {
+    @apply bg-adm-fg text-adm-bg shadow-sm;
+  }
+  .adm-chip {
+    @apply inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-adm-line bg-adm-surface px-3 text-[13px] font-medium text-adm-fg-2 transition hover:border-adm-line-strong hover:text-adm-fg;
+  }
+  .adm-chip[data-active="true"] {
+    @apply border-adm-fg bg-adm-fg text-adm-bg;
+  }
 
-/* =========================================================================
-   DARK MODE TEXT & CARD CONTRAST RULES
-   ========================================================================= */
-
-.admin-theme-dark .bg-white,
-.admin-theme-dark .bg-\[\#FFF9F0\],
-.admin-theme-dark .bg-gray-50,
-.admin-theme-dark .bg-\[var\(--bg-primary\)\] {
-  background-color: var(--adm-card) !important;
-  color: var(--adm-text-body) !important;
-  border-color: var(--adm-border) !important;
-}
-
-/* Invert all dark text inside dark theme so it is readable */
-.admin-theme-dark .text-black,
-.admin-theme-dark .text-zinc-900,
-.admin-theme-dark .text-zinc-800,
-.admin-theme-dark .text-gray-900,
-.admin-theme-dark .text-gray-800,
-.admin-theme-dark .text-\[var\(--text-primary\)\] {
-  color: var(--adm-text-body) !important;
-}
-
-/* Headings in dark theme must be pure white */
-.admin-theme-dark h1,
-.admin-theme-dark h2,
-.admin-theme-dark h3,
-.admin-theme-dark h4,
-.admin-theme-dark h5,
-.admin-theme-dark h6,
-.admin-theme-dark .font-cinzel {
-  color: var(--adm-text-head) !important;
-}
-
-/* Form inputs in dark theme */
-.admin-theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-.admin-theme-dark textarea,
-.admin-theme-dark select {
-  background-color: var(--adm-input-bg) !important;
-  border-color: var(--adm-input-border) !important;
-  color: var(--adm-text-head) !important;
-  border-radius: 0.75rem !important;
-}
-
-.admin-theme-dark input::placeholder,
-.admin-theme-dark textarea::placeholder {
-  color: #71717A !important;
-}
-
-/* =========================================================================
-   LIGHT MODE TEXT & CARD CONTRAST RULES
-   ========================================================================= */
-
-.admin-theme-light .bg-\[\#16161A\],
-.admin-theme-light .bg-\[\#16161B\],
-.admin-theme-light .bg-\[\#141418\],
-.admin-theme-light .bg-\[\#121215\],
-.admin-theme-light .bg-\[\#101014\],
-.admin-theme-light .bg-\[\#1C1B20\],
-.admin-theme-light .bg-\[\#24171B\],
-.admin-theme-light .bg-\[\#2D2D2D\],
-.admin-theme-light .bg-black {
-  background-color: var(--adm-card) !important;
-  color: var(--adm-text-body) !important;
-  border-color: var(--adm-border) !important;
-}
-
-/* Invert all white text inside light theme so it is readable */
-.admin-theme-light .text-white,
-.admin-theme-light .text-zinc-100,
-.admin-theme-light .text-zinc-200,
-.admin-theme-light .text-zinc-300,
-.admin-theme-light .text-\[\#FFF9F0\] {
-  color: var(--adm-text-head) !important;
-}
-
-.admin-theme-light .text-zinc-400,
-.admin-theme-light .text-zinc-500,
-.admin-theme-light .text-gray-400 {
-  color: var(--adm-text-muted) !important;
-}
-
-/* Headings in light theme must be crisp pitch-black */
-.admin-theme-light h1,
-.admin-theme-light h2,
-.admin-theme-light h3,
-.admin-theme-light h4,
-.admin-theme-light h5,
-.admin-theme-light h6,
-.admin-theme-light .font-cinzel {
-  color: var(--adm-text-head) !important;
-}
-
-/* Form inputs in light theme */
-.admin-theme-light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-.admin-theme-light textarea,
-.admin-theme-light select {
-  background-color: var(--adm-input-bg) !important;
-  border-color: var(--adm-input-border) !important;
-  color: var(--adm-text-head) !important;
-  border-radius: 0.75rem !important;
-}
-
-.admin-theme-light input::placeholder,
-.admin-theme-light textarea::placeholder {
-  color: #9CA3AF !important;
-}
-
-/* =========================================================================
-   BUTTON CONTRAST PROTECTION
-   ========================================================================= */
-
-/* Amber / Yellow / Emerald / Green action buttons always have dark text */
-.admin-theme-dark button[class*="bg-amber"],
-.admin-theme-dark button[class*="bg-[#FFD166]"],
-.admin-theme-dark button[class*="bg-[#06D6A0]"],
-.admin-theme-dark button[class*="bg-emerald"],
-.admin-theme-light button[class*="bg-amber"],
-.admin-theme-light button[class*="bg-[#FFD166]"],
-.admin-theme-light button[class*="bg-[#06D6A0]"],
-.admin-theme-light button[class*="bg-emerald"] {
-  color: #000000 !important;
-}
-
-/* Rose / Red / Crimson action buttons always have white text */
-.admin-theme-dark button[class*="bg-rose"],
-.admin-theme-dark button[class*="bg-red"],
-.admin-theme-dark button[class*="bg-[#FF5F5F]"],
-.admin-theme-light button[class*="bg-rose"],
-.admin-theme-light button[class*="bg-red"],
-.admin-theme-light button[class*="bg-[#FF5F5F]"] {
-  color: #FFFFFF !important;
+  /* ---- Misc ---- */
+  .adm-divider { @apply border-t border-adm-line; }
+  .adm-scroll-x {
+    @apply flex overflow-x-auto;
+    scrollbar-width: none;
+  }
+  .adm-scroll-x::-webkit-scrollbar { display: none; }
+  .adm-skeleton { @apply animate-pulse rounded-lg bg-adm-surface-2; }
+  .adm-table { @apply w-full text-left text-sm; }
+  .adm-table th { @apply border-b border-adm-line px-4 py-3 text-xs font-semibold uppercase tracking-wider text-adm-fg-3; }
+  .adm-table td { @apply border-b border-adm-line px-4 py-3 text-adm-fg-2; }
+  .adm-table tbody tr { @apply transition-colors hover:bg-adm-surface-2; }
 }
