@@ -142,7 +142,7 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any; acti
 
   return (
     <section
-      className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center overflow-hidden z-40 selection:bg-[#FF5F5F] selection:text-white pt-24 md:pt-40 pb-10 md:pb-12 px-4 md:px-8 bg-transparent"
+      className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center overflow-hidden z-40 selection:bg-[#FF5F5F] selection:text-white pt-24 md:pt-40 pb-10 md:pb-12 px-4 md:px-8 bg-[#FFF9F0] bg-stage-grid-animated border-b-8 border-black"
       onMouseMove={(e) => {
         const { currentTarget, clientX, clientY } = e;
         const { left, top, width, height } = currentTarget.getBoundingClientRect();
@@ -151,8 +151,31 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any; acti
         setMousePos({ x, y });
       }}
     >
+      {/* 🕸️ FLOATING GEOMETRIC STAGE REGISTRATION MARKS (Background Layer) */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        <motion.div
+          animate={{ rotate: 360, scale: [1, 1.08, 1] }}
+          transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-12 -right-12 w-44 h-44 rounded-full border-4 border-dashed border-black/15 flex items-center justify-center"
+        >
+          <div className="w-24 h-24 rounded-full border-2 border-black/15" />
+        </motion.div>
+
+        <motion.div
+          animate={{ y: [0, -14, 0], rotate: [-12, -4, -12] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-8 -left-6 w-24 h-24 bg-[#FFD166]/35 border-4 border-black/20 rotate-12"
+        />
+
+        <motion.div
+          animate={{ y: [0, 14, 0], rotate: [8, 18, 8] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-28 -left-8 w-20 h-20 bg-[#06D6A0]/25 border-4 border-black/20 -rotate-12"
+        />
+      </div>
+
       {/* DYNAMIC BACKGROUND WATERMARK */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex flex-col justify-center items-center opacity-[0.07] md:opacity-10">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex flex-col justify-center items-center opacity-[0.09] md:opacity-10">
         <motion.h1
           animate={{ x: ["0%", "-50%"] }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
@@ -199,8 +222,13 @@ export default function Hero({ data, activeNoticesCount = 0 }: { data: any; acti
           </span>
         </div>
 
-        {/* 2. SPACIOUS EDITORIAL POSTER CENTERPIECE */}
-        <div className="px-5 pt-8 pb-9 flex flex-col items-center text-center relative overflow-hidden">
+        {/* 2. SPACIOUS EDITORIAL POSTER CENTERPIECE WITH HALFTONE DOT MATRIX */}
+        <div className="px-5 pt-8 pb-9 flex flex-col items-center text-center relative overflow-hidden bg-dot-matrix">
+          {/* Corner Blueprint Crosshairs inside Playbill */}
+          <span className="absolute top-2.5 left-3 font-mono font-black text-xs text-black/30 select-none">+</span>
+          <span className="absolute top-2.5 right-3 font-mono font-black text-xs text-black/30 select-none">+</span>
+          <span className="absolute bottom-2.5 left-3 font-mono font-black text-xs text-black/30 select-none">+</span>
+          <span className="absolute bottom-2.5 right-3 font-mono font-black text-xs text-black/30 select-none">+</span>
           {/* Interactive Central Theatrical Arch Emblem (Tap to flip edition) */}
           <motion.button
             type="button"

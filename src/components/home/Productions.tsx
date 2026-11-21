@@ -10,10 +10,13 @@ export default function Productions({ events }: { events: any[] }) {
   return (
     <section
       id="productions"
-      className="py-20 md:py-40 px-4 sm:px-6 bg-white relative overflow-hidden border-b-8 border-black"
+      className="py-20 md:py-40 px-4 sm:px-6 bg-white bg-stage-grid relative overflow-hidden border-b-8 border-black"
     >
+      {/* 🎟️ BROADWAY CHECKERED MARQUEE BORDER STRIP */}
+      <div className="absolute top-0 left-0 right-0 h-3.5 bg-checkered-strip border-b-2 border-black pointer-events-none z-10" />
+
       {/* 🎭 KINETIC THEATRICAL MARQUEE WATERMARK */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.04] pointer-events-none overflow-hidden select-none z-0">
+      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.075] pointer-events-none overflow-hidden select-none z-0">
         <motion.h1
           animate={{ x: ["0%", "-45%"] }}
           transition={{ duration: 28, repeat: Infinity, ease: "linear" }}

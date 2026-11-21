@@ -122,7 +122,25 @@ export default function FounderNote({ data }: { data: any }) {
   };
 
   return (
-    <section className="py-20 md:py-40 px-4 sm:px-6 bg-transparent border-b-8 border-black relative overflow-hidden">
+    <section className="py-20 md:py-40 px-4 sm:px-6 bg-[#FFF9F0] bg-diagonal-hatch border-b-8 border-black relative overflow-hidden">
+      {/* 🎞️ FLOATING CUTTING-ROOM POLAROID SILHOUETTES */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <motion.div
+          animate={{ y: [0, -18, 0], rotate: [-12, -6, -12] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-16 -right-8 w-36 h-44 border-4 border-black/15 bg-[#FFD166]/20 p-2 pb-8"
+        >
+          <div className="w-full h-full border-2 border-black/10" />
+        </motion.div>
+        <motion.div
+          animate={{ y: [0, 16, 0], rotate: [10, 16, 10] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-14 -left-10 w-36 h-44 border-4 border-black/15 bg-[#FF5F5F]/15 p-2 pb-8"
+        >
+          <div className="w-full h-full border-2 border-black/10" />
+        </motion.div>
+      </div>
+
       {/* 🏙️ ANIMATED CASTING CALL WATERMARK */}
       <div className="absolute inset-0 flex flex-col justify-center gap-16 pointer-events-none opacity-10 overflow-hidden -rotate-3 z-0">
         <motion.h1

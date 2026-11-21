@@ -9,7 +9,22 @@ export default function Spotlight({ aotm }: { aotm: any }) {
   if (!aotm) return null;
 
   return (
-    <section className="py-20 md:py-40 px-4 sm:px-6 bg-transparent border-b-8 border-black relative overflow-hidden flex flex-col justify-center min-h-screen">
+    <section className="py-20 md:py-40 px-4 sm:px-6 bg-[#FFF9F0] bg-stage-grid border-b-8 border-black relative overflow-hidden flex flex-col justify-center min-h-screen">
+      {/* 🎯 CONCENTRIC ROTATING SPOTLIGHT TARGET RINGS IN BACKGROUND */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0">
+        <motion.div
+          animate={{ rotate: 360, scale: [1, 1.04, 1] }}
+          transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
+          className="w-[460px] h-[460px] sm:w-[680px] sm:h-[680px] rounded-full border-4 border-dashed border-black/15 flex items-center justify-center"
+        >
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+            className="w-[300px] h-[300px] sm:w-[460px] sm:h-[460px] rounded-full border-4 border-dashed border-[#FF5F5F]/25"
+          />
+        </motion.div>
+      </div>
+
       {/* 🎭 THEATRICAL SPOTLIGHT CURTAIN DIMMER (Works on Mobile Toggle & Desktop Hover) */}
       <div
         className={`absolute inset-0 bg-[#0F051D]/75 pointer-events-none z-0 transition-opacity duration-700 ${
@@ -31,7 +46,7 @@ export default function Spotlight({ aotm }: { aotm: any }) {
       {/* 🌪️ MULTI-ROW KINETIC MARQUEE BACKGROUND */}
       <div
         className={`absolute inset-0 flex flex-col justify-center gap-16 select-none pointer-events-none overflow-hidden transition-opacity duration-500 ${
-          isSpotlightOn ? "opacity-[0.02]" : "opacity-[0.04]"
+          isSpotlightOn ? "opacity-[0.03]" : "opacity-[0.075]"
         }`}
       >
         <motion.h2

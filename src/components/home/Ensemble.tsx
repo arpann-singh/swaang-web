@@ -28,10 +28,21 @@ export default function Ensemble({ team: parentTeam }: { team?: any[] }) {
   return (
     <section
       id="ensemble"
-      className="py-20 md:py-40 px-4 sm:px-6 bg-transparent relative overflow-hidden border-b-8 border-black"
+      className="py-20 md:py-40 px-4 sm:px-6 bg-[#FFF9F0] bg-stage-grid-animated relative overflow-hidden border-b-8 border-black"
     >
+      {/* 🥁 ROTATING NUKKAD CHOREOGRAPHY FORMATION RINGS */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+          className="w-[520px] h-[520px] md:w-[820px] md:h-[820px] rounded-full border-4 border-dashed border-[#06D6A0]/30 flex items-center justify-center"
+        >
+          <div className="w-[340px] h-[340px] md:w-[540px] md:h-[540px] rounded-full border-4 border-dashed border-black/15" />
+        </motion.div>
+      </div>
+
       {/* 🎬 KINETIC CREW WATERMARK */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.04] pointer-events-none select-none z-0">
+      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.075] pointer-events-none select-none z-0">
         <motion.h1
           animate={{ x: ["0%", "-40%"] }}
           transition={{ duration: 26, repeat: Infinity, ease: "linear" }}

@@ -18,10 +18,37 @@ export default function FacultyBlueprint({ data }: { data?: any }) {
   return (
     <section
       id="backbone"
-      className="py-20 sm:py-28 px-4 sm:px-6 bg-[var(--bg-primary)] relative overflow-hidden border-y-8 border-[var(--border-primary)]"
+      className="py-20 sm:py-28 px-4 sm:px-6 bg-[#FFF9F0] bg-blueprint-grid relative overflow-hidden border-y-8 border-[var(--border-primary)]"
     >
+      {/* 📐 ARCHITECTURAL RULER TICK BAR (Top & Bottom Blueprint Scale) */}
+      <div className="absolute top-0 left-0 right-0 h-6 bg-black/5 border-b-2 border-black/20 flex items-center justify-between px-4 font-mono text-[9px] font-black text-black/40 pointer-events-none select-none z-0 overflow-hidden">
+        <span>00cm</span>
+        <span>10cm // STAGE_AXIS_X</span>
+        <span>20cm</span>
+        <span className="hidden sm:inline">30cm // PROSCENIUM_ARCH</span>
+        <span>40cm</span>
+        <span className="hidden md:inline">50cm // BLUEPRINT_SCALE_1:100</span>
+        <span>60cm</span>
+      </div>
+
+      {/* 🧭 ROTATING ARCHITECTURAL COMPASS RINGS IN BACKGROUND */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          className="absolute top-12 -right-24 w-80 h-80 rounded-full border-4 border-dashed border-[#06D6A0]/35 flex items-center justify-center"
+        >
+          <div className="w-52 h-52 rounded-full border-2 border-black/15" />
+        </motion.div>
+        <motion.div
+          animate={{ rotate: -360 }}
+          transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full border-4 border-dashed border-black/15"
+        />
+      </div>
+
       {/* 🏛️ BACKGROUND KINETIC TEXT -> HARSH RED STAMP */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden opacity-[0.04] z-0">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden opacity-[0.075] z-0">
         <motion.h2
           initial={{ scale: 1.3, rotate: -18 }}
           whileInView={{ scale: 1, rotate: -12 }}

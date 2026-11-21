@@ -55,10 +55,16 @@ export default function Timeline({ timeline = [] }: { timeline: any[] }) {
   if (!timeline || timeline.length === 0) return null;
 
   return (
-    <section id="journey" className="py-20 md:py-28 bg-[#FFF9F0] text-black relative border-b-8 border-black overflow-hidden selection:bg-[#FF5F5F] selection:text-white">
-      
+    <section id="journey" className="py-20 md:py-28 bg-[#FFF9F0] bg-dot-matrix text-black relative border-b-8 border-black overflow-hidden selection:bg-[#FF5F5F] selection:text-white">
+      {/* 🎞️ 35MM FILM SPROCKET TRACK ALONG TOP EDGE */}
+      <div className="absolute top-0 left-0 right-0 h-5 bg-black flex items-center justify-around px-2 pointer-events-none z-0 overflow-hidden">
+        {[...Array(28)].map((_, idx) => (
+          <span key={idx} className="w-3 h-2.5 bg-[#FFF9F0] rounded-[1px] shrink-0 mx-1" />
+        ))}
+      </div>
+
       {/* 🎭 KINETIC THEATRICAL WATERMARK */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.04] select-none pointer-events-none overflow-hidden -rotate-2 z-0">
+      <div className="absolute inset-0 flex flex-col justify-center gap-24 opacity-[0.075] select-none pointer-events-none overflow-hidden -rotate-2 z-0">
         <motion.h1
           animate={{ x: ["0%", "-45%"] }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}

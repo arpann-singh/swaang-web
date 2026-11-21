@@ -14,9 +14,23 @@ export default function StageNotices({ notices }: { notices: any[] }) {
   };
 
   return (
-    <section className="py-20 md:py-24 px-4 sm:px-6 bg-[var(--bg-primary)] border-b-[8px] md:border-b-[12px] border-black relative overflow-hidden">
+    <section className="py-20 md:py-24 px-4 sm:px-6 bg-[#FFF9F0] bg-dot-matrix-animated border-b-[8px] md:border-b-[12px] border-black relative overflow-hidden">
+      {/* Pulsing Bulletin Radar Rings in Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <motion.div
+          animate={{ scale: [1, 1.35, 1], opacity: [0.14, 0.25, 0.14] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-24 -right-24 w-80 h-80 rounded-full border-4 border-dashed border-[#FF5F5F]"
+        />
+        <motion.div
+          animate={{ scale: [1.2, 0.95, 1.2], opacity: [0.12, 0.22, 0.12] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full border-4 border-dashed border-black"
+        />
+      </div>
+
       {/* Background Decor - Animated Kinetic Theatrical Hazard Tape */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20 -z-0">
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-25 -z-0">
         <div className="absolute top-[16%] -left-10 w-[130%] h-14 sm:h-20 bg-[#FFD166] border-y-4 sm:border-y-8 border-black -rotate-12 flex items-center overflow-hidden shadow-[0_6px_0px_black]">
           <motion.div
             animate={{ x: ["0%", "-50%"] }}

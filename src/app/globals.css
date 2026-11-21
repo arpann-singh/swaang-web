@@ -154,6 +154,96 @@
 }
 
 /* =========================================================================
+   🕸️ NEO-BRUTALIST ARCHITECTURAL GRIDS & ANIMATED STAGE BACKGROUNDS
+   ========================================================================= */
+@keyframes stageGridDrift {
+  0% {
+    background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px;
+  }
+  100% {
+    background-position: 40px 40px, 40px 40px, 160px 160px, 160px 160px;
+  }
+}
+
+@keyframes dotMatrixFloat {
+  0% {
+    background-position: 0px 0px;
+  }
+  100% {
+    background-position: 24px 24px;
+  }
+}
+
+/* 1. Architectural Stage Blocking Grid (Minor + Major Grid Lines) */
+.bg-stage-grid {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.085) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.085) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 0, 0, 0.16) 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 1.5px, transparent 1.5px);
+  background-size: 40px 40px, 40px 40px, 160px 160px, 160px 160px;
+}
+
+.bg-stage-grid-animated {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.09) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 95, 95, 0.16) 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(255, 95, 95, 0.16) 1.5px, transparent 1.5px);
+  background-size: 40px 40px, 40px 40px, 160px 160px, 160px 160px;
+  animation: stageGridDrift 18s linear infinite;
+}
+
+/* 2. Halftone Zine Dot-Matrix Grid */
+.bg-dot-matrix {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.22) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.bg-dot-matrix-animated {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.22) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  animation: dotMatrixFloat 14s linear infinite;
+}
+
+/* 3. Drafting Blueprint Technical Grid */
+.bg-blueprint-grid {
+  background-image:
+    linear-gradient(to right, rgba(6, 214, 160, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(6, 214, 160, 0.18) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 0, 0, 0.14) 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.14) 1.5px, transparent 1.5px);
+  background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+}
+
+/* 4. Vintage Diagonal Hatch + Cross Grid */
+.bg-diagonal-hatch {
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.055) 0px,
+      rgba(0, 0, 0, 0.055) 1.5px,
+      transparent 1.5px,
+      transparent 18px
+    ),
+    linear-gradient(to right, rgba(0, 0, 0, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+}
+
+/* 5. Broadway Checkered Border Strip */
+.bg-checkered-strip {
+  background-image: repeating-linear-gradient(
+    90deg,
+    #000000 0px,
+    #000000 16px,
+    #FFD166 16px,
+    #FFD166 32px
+  );
+}
+
+
+/* =========================================================================
    🎭 SWAANG STUDIO — ADMIN DESIGN SYSTEM
    Scoped to `.adm` so the public site is never affected.
    Every admin component styles itself with these tokens, so text contrast
