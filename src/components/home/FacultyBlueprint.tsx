@@ -109,13 +109,6 @@ export default function FacultyBlueprint({ data }: { data?: any }) {
                   }`}
                 />
 
-                {/* Animated Blueprint Scanner Beam on Mobile & Desktop */}
-                <motion.div
-                  animate={{ top: ["0%", "100%", "0%"] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                  className="absolute left-0 right-0 h-1 bg-[#06D6A0]/70 shadow-[0_0_12px_#06D6A0] pointer-events-none z-20"
-                />
-
                 {/* ID Overlay (Pillar of Swaang) */}
                 <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-black text-[#06D6A0] border-4 border-black px-3 sm:px-4 py-1.5 sm:py-2 font-mono font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-[4px_4px_0px_#06D6A0]">
                   LOC: CHIEF_MENTOR
